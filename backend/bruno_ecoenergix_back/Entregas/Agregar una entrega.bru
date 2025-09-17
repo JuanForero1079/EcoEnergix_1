@@ -1,0 +1,25 @@
+meta {
+  name: Agregar una entrega.
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:3001/api/entrega
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "Fecha_entrega": "2025-09-09",
+    "ID_usuario": 2,
+    "ID_producto": 1,
+    "Cantidad": 3
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+}

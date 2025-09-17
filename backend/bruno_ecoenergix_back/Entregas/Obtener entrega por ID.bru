@@ -1,0 +1,15 @@
+meta {
+  name: Obtener entrega por ID
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:3001/api/entrega/3
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

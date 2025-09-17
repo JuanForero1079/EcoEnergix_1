@@ -1,0 +1,27 @@
+meta {
+  name: Agregar una instalacion.
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:3001/api/instalacion
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "Fecha_instalacion": "2025-09-12",
+    "Duracion_instalacion": "3 horas",
+    "Costo_instalacion": 80000,
+    "Estado_instalacion": "Pendiente",
+    "ID_usuario": 2,
+    "ID_producto": 1
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+}

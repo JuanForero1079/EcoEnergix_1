@@ -1,0 +1,7 @@
+  1  yarn
+  2  yarn add express
+  3  yarn add mysql
+  4  yarn add cors
+  5  node ./server.js
+  6  npm install jsonwebtoken
+  8  npm install mysql2

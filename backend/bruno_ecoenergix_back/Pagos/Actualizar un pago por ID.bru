@@ -1,0 +1,26 @@
+meta {
+  name: Actualizar un pago por ID.
+  type: http
+  seq: 4
+}
+
+put {
+  url: http://localhost:3001/api/pago/4
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "ID_usuario": 2,
+    "Monto": 125000,
+    "Fecha_pago": "2025-09-10",
+    "Metodo_pago": "Transferencia",
+    "Estado_pago": "Completado"
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+}

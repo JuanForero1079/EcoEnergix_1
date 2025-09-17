@@ -1,0 +1,15 @@
+meta {
+  name: Eliminar compra por ID.
+  type: http
+  seq: 3
+}
+
+delete {
+  url: http://localhost:3001/api/compras/12
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

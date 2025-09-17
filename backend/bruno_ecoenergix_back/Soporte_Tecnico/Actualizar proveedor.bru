@@ -1,0 +1,27 @@
+meta {
+  name: Actualizar proveedor.
+  type: http
+  seq: 4
+}
+
+put {
+  url: http://localhost:3001/api/soporte/13
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+          "Fecha_solicitud": "2024-09-09",
+          "Descripcion_problema": "El inversor presenta fallas",
+          "Fecha_resolucion": "2024-09-10",
+          "ID_usuarioFK": 1,
+          "ID_producto": 1,
+          "ID_instalacion": 1,
+          "ID_domiciliario": 1
+        }
+}
+
+settings {
+  encodeUrl: true
+}
