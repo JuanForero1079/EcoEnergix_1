@@ -21,7 +21,7 @@ export default function App() {
    
        <div className="absolute inset-0 bg-black/50"></div>
       <Navbar />
-      <main className="flex-grow z-10 relative w-full flex flex-col items-center justify-center min-h-screen ">
+      <main className=" pt-16 flex-grow z-10 relative w-full flex flex-col items-center justify-center min-h-screen ">
       
 
         <Routes>
@@ -33,7 +33,7 @@ export default function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
-          <Route path="/catalogo" element={<Catalogo />} />
+          <Route path="/catalogo" element={<Catalog />} />
         </Routes>
       </main>
       <Footer />
