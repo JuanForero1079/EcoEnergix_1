@@ -10,7 +10,7 @@ import Login from "./Componentes/Login";
 import Register from "./Componentes/Register";
 import Terms from "./Componentes/terms";
 import Privacy from "./Componentes/Privacy";
-import Catalog from "./Componentes/Catalog";
+import Catalogo from "./Componentes/Catalogo";
 
 export default function App() {
   return (
@@ -19,8 +19,8 @@ export default function App() {
    
        <div className="absolute inset-0 bg-black/50"></div>
       <Navbar />
-      <main className="flex-grow z-10 relative w-full flex flex-col items-center justify-center min-h-screen ">
-        
+      <main className="pt-16 flex-grow z-10 relative w-full flex flex-col items-center justify-center min-h-screen ">
+      
 
         <Routes>
           <Route path="/" element={<Hero />} />
@@ -31,7 +31,7 @@ export default function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
-          <Route path="/catalogo" element={<Catalog />} />
+          <Route path="/catalogo" element={<Catalogo />} />
         </Routes>
        
       </main>

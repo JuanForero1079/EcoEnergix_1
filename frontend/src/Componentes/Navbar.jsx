@@ -18,6 +18,7 @@ export default function Navbar() {
            <li><Link to="/about" className="hover:underline hover:text-[#3dc692]">Nosotros</Link></li>
           <li><Link to="/services" className="hover:underline hover:text-[#3dc692]">Servicios</Link></li>
           <li><Link to="/contact" className="hover:underline hover:text-[#3dc692]">Contacto</Link></li>
+           <li><Link to="/catalogo" className="hover:underline hover:text-[#3dc692]">Catalogo</Link></li>
           <li><Link to="/login" className="hover:underline hover:text-[#3dc692]">Inicio de Sesión</Link></li>
         </ul>
 
@@ -33,6 +34,7 @@ export default function Navbar() {
              <li><Link to="/about" onClick={() => setOpen(false)}className="hover:underline hover:text-[#3dc692]">Nosotros</Link></li>
             <li><Link to="/services" onClick={() => setOpen(false)}className="hover:underline hover:text-[#3dc692]">Servicios</Link></li>
             <li><Link to="/contact" onClick={() => setOpen(false)}className="hover:underline hover:text-[#3dc692]">Contacto</Link></li>
+            <li><Link to="/catalogo" onClick={() => setOpen(false)}className="hover:underline hover:text-[#3dc692]">Catalogo</Link></li>
             <li><Link to="/login" onClick={() => setOpen(false)}className="hover:underline hover:text-[#3dc692]">Inicio de Sesión</Link></li>
           </ul>
         </div>
