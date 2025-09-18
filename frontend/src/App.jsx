@@ -10,16 +10,18 @@ import Login from "./Componentes/Login";
 import Register from "./Componentes/Register";
 import Terms from "./Componentes/terms";
 import Privacy from "./Componentes/Privacy";
-import Catalogo from "./Componentes/Catalogo";
+import Catalog from "./Componentes/Catalogo";
+
 
 export default function App() {
   return (
+
  <div className="relative min-h-screen flex flex-col">
           <FondoSlider/>
    
        <div className="absolute inset-0 bg-black/50"></div>
       <Navbar />
-      <main className="pt-16 flex-grow z-10 relative w-full flex flex-col items-center justify-center min-h-screen ">
+      <main className="flex-grow z-10 relative w-full flex flex-col items-center justify-center min-h-screen ">
       
 
         <Routes>
@@ -33,10 +35,8 @@ export default function App() {
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/catalogo" element={<Catalogo />} />
         </Routes>
-       
       </main>
       <Footer />
     </div>
-  
   );
 }

@@ -10,7 +10,7 @@ export default function About() {
         </h2>
 
         <p className="text-base sm:text-lg text-white/90 text-center max-w-3xl mx-auto leading-relaxed mb-10">
-          En <span className=" font-extrabold sm:text-2xl bg-gradient-to-r from-[#5f54b3] via-[#4375b2] to-[#3dc692] bg-clip-text text-transparent   ">EcoEnergix</span> creemos que el futuro
+          En <span className="font-extrabold sm:text-2xl bg-gradient-to-r from-[#5f54b3] via-[#4375b2] to-[#3dc692] bg-clip-text text-transparent">EcoEnergix</span> creemos que el futuro
           es sostenible . Ofrecemos soluciones en energía solar que ayudan a
           reducir costos, proteger el medio ambiente y construir un mañana más
           limpio.
