@@ -9,7 +9,7 @@ app.use(cors());
 app.use(express.json());
 
 // Rutas
-const authRoutes = require('./routes/auth'); // <-- importa tu auth.js
+const authRoutes = require('./routes/auth');
 const comprasRoutes = require('./routes/compras');
 const entregaRoutes = require('./routes/entrega');
 const instalacionRoutes = require('./routes/instalacion');
@@ -20,7 +20,9 @@ const soporteRoutes = require('./routes/soporte_tecnico');
 const usuariosRoutes = require('./routes/usuarios');
 
 // Endpoints base
-app.use('/', authRoutes); // <-- aquí queda disponible POST /login
+// La ruta POST /login está disponible gracias a authRoutes
+// IMPORTANTE: /login solo existe como POST, no como GET
+app.use('/', authRoutes);
 app.use('/api/compras', comprasRoutes);
 app.use('/api/entrega', entregaRoutes);
 app.use('/api/instalacion', instalacionRoutes);

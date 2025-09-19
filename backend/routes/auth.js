@@ -1,3 +1,4 @@
+
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const DB = require('../db/connection');
@@ -5,30 +6,24 @@ const router = express.Router();
 
 const JWT_SECRET = 'clave_secreta_super_segura'; // ideal usar process.env.JWT_SECRET
 
-// Login
+// Ruta POST /login
 router.post('/login', (req, res) => {
-  console.log('Body recibido:', req.body); // 👈 debug
+  const correo = req.body.correo;
+  const contraseña = req.body.contraseña;
 
-  // aceptar ambos formatos: (email/password) o (correo/contrasena)
-  const email = req.body.email || req.body.correo;
-  const password = req.body.password || req.body.contrasena;
-
-  if (!email || !password) {
-    return res.status(400).json({ message: 'Faltan datos' });
+  if (!correo || !contraseña) {
+    return res.status(400).json({ message: 'Datos de sesión incompletos.' });
   }
 
   const query = 'SELECT * FROM usuarios WHERE Correo_electronico = ? LIMIT 1';
 
-  DB.query(query, [email], (err, results) => {
+  DB.query(query, [correo], (err, results) => {
     if (err) return res.status(500).json({ message: 'Error en la BD' });
-    if (results.length === 0) {
-      return res.status(401).json({ message: 'Usuario no encontrado' });
-    }
+    if (results.length === 0) return res.status(401).json({ message: 'Usuario no encontrado' });
 
     const user = results[0];
 
-    // Comparar en texto plano (porque tu BD guarda "password123")
-    if (password !== user['Contraseña']) {
+    if (contraseña !== user['Contraseña']) {
       return res.status(401).json({ message: 'Contraseña incorrecta' });
     }
 
@@ -40,7 +35,7 @@ router.post('/login', (req, res) => {
 
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' });
 
-    res.json({ token, rol: user.Rol_usuario });
+    res.json({ token, usuario: user });
   });
 });
 
