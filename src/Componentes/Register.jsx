@@ -55,7 +55,7 @@ export default function Register() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-30 sm:py-30">
+    <div className="flex min-h-screen items-center justify-center px-4 py-17 sm:py-10">
       <div className="w-full max-w-md p-6 sm:p-8 rounded-2xl shadow-2xl bg-white/20 backdrop-blur-lg border border-white/30">
         <h2 className="text-3xl font-bold text-center text-white mb-4">
           Crear Cuenta

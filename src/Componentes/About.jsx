@@ -2,7 +2,7 @@ export default function About() {
   return (
     <section
       id="about"
-      className="w-full flex items-center justify-center py-16 sm:py-24 px-4"
+      className="w-full flex items-center justify-center py-17 sm:py-30 px-4"
     >
       <div className=" font-sans w-full max-w-5xl bg-white/20 backdrop-blur-lg border border-white/30 shadow-xl rounded-2xl p-8 sm:p-12">
         <h2 className="text-3xl sm:text-4xl font-bold text-center text-white mb-6">

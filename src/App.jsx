@@ -11,6 +11,7 @@ import Register from "./Componentes/Register";
 import Terms from "./Componentes/terms";
 import Privacy from "./Componentes/Privacy";
 import Catalog from "./Componentes/Catalogo";
+import Breadcrumb from "./Componentes/Breadcrumbs";
 
 
 export default function App() {
@@ -18,11 +19,12 @@ export default function App() {
 
  <div className="relative min-h-screen flex flex-col">
           <FondoSlider/>
-   
+  
        <div className="absolute inset-0 bg-black/50"></div>
       <Navbar />
       <main className=" pt-16 flex-grow z-10 relative w-full flex flex-col items-center justify-center min-h-screen ">
-      
+       <div className="min-h-screen">
+    <Breadcrumb />
 
         <Routes>
           <Route path="/" element={<Hero />} />
@@ -35,6 +37,7 @@ export default function App() {
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/catalogo" element={<Catalog />} />
         </Routes>
+        </div>
       </main>
       <Footer />
     </div>
