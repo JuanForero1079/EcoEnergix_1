@@ -1,6 +1,6 @@
 export default function Terms() {
   return (
-    <section className="relative min-h-screen bg-[url('/img/solar-panels.jpg')] bg-cover bg-center flex items-center justify-center px-4 sm:px-6 py-30 sm:py-30">
+    <section className="relative min-h-screen bg-[url('/img/solar-panels.jpg')] bg-cover bg-center flex items-center justify-center px-4 sm:px-6 py-17 sm:py-10">
       <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl w-full max-w-4xl p-6 sm:p-8 md:p-10 text-white ">
         <h1 className="text-2xl sm:text-3xl font-bold text-center mb-6">
           Términos y Condiciones

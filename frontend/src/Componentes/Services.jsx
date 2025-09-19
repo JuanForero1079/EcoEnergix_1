@@ -1,6 +1,6 @@
 export default function Services() {
   return (
-    <section className="w-full py-16 px-6 sm:px-12 lg:px-20 text-center">
+    <section className="w-full py-45 px-6 sm:px-12 lg:px-20 text-center">
       <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-10">
         Nuestros Servicios
       </h2>

@@ -1,0 +1,26 @@
+meta {
+  name: Agregar una compra
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:3001/api/compras
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "ID_usuario": 10,
+    "Fecha_compra": "2025-09-08",
+    "Monto_total": 150000,
+    "Estado": "Pagado"
+  }
+  
+  
+}
+
+settings {
+  encodeUrl: true
+}

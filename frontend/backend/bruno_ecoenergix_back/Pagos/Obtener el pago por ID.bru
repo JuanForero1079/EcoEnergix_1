@@ -1,0 +1,15 @@
+meta {
+  name: Obtener el pago por ID.
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:3001/api/pago/3
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

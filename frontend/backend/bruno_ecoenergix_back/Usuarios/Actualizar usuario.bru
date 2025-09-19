@@ -1,0 +1,28 @@
+meta {
+  name: Actualizar usuario
+  type: http
+  seq: 4
+}
+
+put {
+  url: http://localhost:3001/api/usuarios/26
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+          "Nombre": "Juan Pérez",
+          "Correo_electronico": "juan.perez2@example.com",
+          "Contraseña": "abcdef",
+          "Rol_usuario": "Admin",
+          "Tipo_documento": "CC",
+          "Numero_documento": "987654321",
+          "Foto_usuario": null,
+          "Estado_usuario": "Inactivo"
+        }
+}
+
+settings {
+  encodeUrl: true
+}
