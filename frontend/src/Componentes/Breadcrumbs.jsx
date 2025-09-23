@@ -62,7 +62,10 @@ export default function Breadcrumb() {
       {displayedHistory.map((path, index) => {
         const isLast = index === displayedHistory.length - 1;
         return (
-          <span key={index} className="flex items-center gap-1 whitespace-nowrap">
+          <span
+            key={index}
+            className="flex items-center gap-1 whitespace-nowrap"
+          >
             {!isLast ? (
               <>
                 <button
@@ -78,7 +81,9 @@ export default function Breadcrumb() {
                 <span className="text-gray-400 select-none">→</span>
               </>
             ) : (
-              <span className="text-gray-900 font-bold">{routeNames[path] || path}</span>
+              <span className="text-gray-900 font-bold">
+                {routeNames[path] || path}
+              </span>
             )}
           </span>
         );

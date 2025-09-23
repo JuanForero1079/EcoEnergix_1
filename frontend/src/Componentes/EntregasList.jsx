@@ -28,7 +28,8 @@ function EntregasList() {
         <ul>
           {entregas.map((e) => (
             <li key={e.ID_entrega}>
-              #{e.ID_entrega} – Usuario: {e.ID_usuario} – Producto: {e.ID_producto} – Cantidad: {e.Cantidad}
+              #{e.ID_entrega} – Usuario: {e.ID_usuario} – Producto:{" "}
+              {e.ID_producto} – Cantidad: {e.Cantidad}
             </li>
           ))}
         </ul>

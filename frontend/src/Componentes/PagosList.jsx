@@ -28,7 +28,8 @@ function PagosList() {
         <ul>
           {pagos.map((p) => (
             <li key={p.ID_pago}>
-              #{p.ID_pago} – Usuario: {p.ID_usuario} – Monto: {p.Monto} – Estado: {p.Estado_pago}
+              #{p.ID_pago} – Usuario: {p.ID_usuario} – Monto: {p.Monto} –
+              Estado: {p.Estado_pago}
             </li>
           ))}
         </ul>

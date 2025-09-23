@@ -28,7 +28,8 @@ function InstalacionesList() {
         <ul>
           {instalaciones.map((i) => (
             <li key={i.ID_instalacion}>
-              #{i.ID_instalacion} – Usuario: {i.ID_usuario} – Producto: {i.ID_producto} – Estado: {i.Estado_instalacion}
+              #{i.ID_instalacion} – Usuario: {i.ID_usuario} – Producto:{" "}
+              {i.ID_producto} – Estado: {i.Estado_instalacion}
             </li>
           ))}
         </ul>

@@ -9,7 +9,12 @@ import {
 
 export default function Products() {
   const [products, setProducts] = useState([]);
-  const [form, setForm] = useState({ id: null, name: "", price: "", stock: "" });
+  const [form, setForm] = useState({
+    id: null,
+    name: "",
+    price: "",
+    stock: "",
+  });
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
@@ -56,12 +61,17 @@ export default function Products() {
       {/* ENCABEZADO */}
       <div className="glass-container text-white">
         <h2 className="text-3xl font-bold">Gestión de Productos</h2>
-        <p className="text-sm text-white/70">Administra los productos de la plataforma</p>
+        <p className="text-sm text-white/70">
+          Administra los productos de la plataforma
+        </p>
       </div>
 
       {/* FORMULARIO */}
       <div className="glass-container">
-        <form onSubmit={handleSubmit} className="flex flex-wrap gap-4 items-center">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-wrap gap-4 items-center"
+        >
           <input
             type="text"
             name="name"
@@ -111,7 +121,10 @@ export default function Products() {
             <tbody>
               {products.length > 0 ? (
                 products.map((p) => (
-                  <tr key={p.id} className="hover:bg-white/20 transition text-white">
+                  <tr
+                    key={p.id}
+                    className="hover:bg-white/20 transition text-white"
+                  >
                     <td className="p-3 text-center">{p.id}</td>
                     <td className="p-3">{p.name}</td>
                     <td className="p-3">${p.price}</td>
