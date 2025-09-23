@@ -1,12 +1,31 @@
-# React + Vite
+# EcoEnergix
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Estructura de carpetas
+- **/backend** → Servidor en Node.js con Express (API REST, rutas, middleware, conexión DB).  
+- **/frontend** → Aplicación en React + Vite (componentes, vistas, estilos, assets).  
+- **/db** → Scripts y configuraciones de la base de datos.  
+- **/docs** → Documentación, diagramas e informes del proyecto.  
 
-Currently, two official plugins are available:
+## Tecnologías principales
+- **Backend**: Node.js, Express, Middleware de autenticación, REST API.  
+- **Frontend**: React 18, Vite, CSS.  
+- **Base de datos**: configuración en `backend/db/connection.js`.  
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Instalación y ejecución
 
-## Expanding the ESLint configuration
+### 1. Clonar repositorio
+```bash
+git clone https://github.com/JuanForero1079/EcoEnergix_1.git
+cd Ecoenergix 
+```   
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Backend
+- **Encender XAMPP**
+- **cd backend**
+- **npm install**
+- **node server.js**
+
+### Frontend
+- **cd frontend**
+- **npm install**
+- **npm run dev**
