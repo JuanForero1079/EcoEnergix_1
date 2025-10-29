@@ -10,11 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-<<<<<<< Updated upstream
-    "framer-motion": "^12.23.15",
-=======
     "axios": "^1.12.2",
->>>>>>> Stashed changes
+    "framer-motion": "^12.23.15",
     "lucide-react": "^0.544.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
