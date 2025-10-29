@@ -1,48 +1,59 @@
-// src/admin/pages/UsersAdmin.jsx
+// src/admin/pages/ComprasAdmin.jsx
 import React, { useState, useEffect } from "react";
-import {
-  getUsers,
-  createUser,
-  updateUser,
-  deleteUser,
-} from "../services/usersServiceAdmin"; // ✅ ruta corregida
+import API from "../../services/api"; // usa Axios configurado con tu baseURL
 
-export default function UsersAdmin() { // ✅ nombre corregido
-  const [users, setUsers] = useState([]);
-  const [form, setForm] = useState({ id: null, name: "", email: "", role: "" });
+export default function ComprasAdmin() {
+  const [compras, setCompras] = useState([]);
+  const [form, setForm] = useState({ id: null, fecha: "", total: "" });
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    setUsers(getUsers());
+    fetchCompras();
   }, []);
+
+  const fetchCompras = async () => {
+    try {
+      const res = await API.get("/compras");
+      setCompras(res.data);
+    } catch (err) {
+      console.error("Error al cargar compras:", err);
+    }
+  };
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.name || !form.email || !form.role) return;
+    if (!form.fecha || !form.total) return;
 
-    if (isEditing) {
-      updateUser(form.id, form);
-      setIsEditing(false);
-    } else {
-      createUser(form);
+    try {
+      if (isEditing) {
+        await API.put(`/compras/${form.id}`, form);
+        setIsEditing(false);
+      } else {
+        await API.post("/compras", form);
+      }
+      setForm({ id: null, fecha: "", total: "" });
+      fetchCompras();
+    } catch (err) {
+      console.error("Error al guardar compra:", err);
     }
-
-    setForm({ id: null, name: "", email: "", role: "" });
-    setUsers(getUsers());
   };
 
-  const handleEdit = (user) => {
-    setForm(user);
+  const handleEdit = (compra) => {
+    setForm(compra);
     setIsEditing(true);
   };
 
-  const handleDelete = (id) => {
-    deleteUser(id);
-    setUsers(getUsers());
+  const handleDelete = async (id) => {
+    try {
+      await API.delete(`/compras/${id}`);
+      fetchCompras();
+    } catch (err) {
+      console.error("Error al eliminar compra:", err);
+    }
   };
 
   const glassStyle = {
@@ -60,9 +71,9 @@ export default function UsersAdmin() { // ✅ nombre corregido
       <span className="absolute inset-0 -z-10 bg-gradient-to-r from-purple-500 via-blue-500 to-teal-500 opacity-20 blur-3xl"></span>
 
       <div style={glassStyle} className="p-6">
-        <h2 className="text-3xl font-bold text-white">Gestión de Usuarios</h2>
+        <h2 className="text-3xl font-bold text-white">Gestión de Compras</h2>
         <p className="text-sm text-white/70 mt-1">
-          Administra los usuarios de la plataforma
+          Administra las compras registradas en la plataforma
         </p>
       </div>
 
@@ -72,31 +83,20 @@ export default function UsersAdmin() { // ✅ nombre corregido
           className="flex flex-wrap gap-4 items-center"
         >
           <input
-            type="text"
-            name="name"
-            placeholder="Nombre"
-            value={form.name}
+            type="date"
+            name="fecha"
+            value={form.fecha}
             onChange={handleChange}
             className="flex-1 min-w-[180px] p-3 rounded-xl border border-white/30 bg-white/10 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
           />
           <input
-            type="email"
-            name="email"
-            placeholder="Correo"
-            value={form.email}
+            type="number"
+            name="total"
+            placeholder="Total"
+            value={form.total}
             onChange={handleChange}
             className="flex-1 min-w-[180px] p-3 rounded-xl border border-white/30 bg-white/10 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
           />
-          <select
-            name="role"
-            value={form.role}
-            onChange={handleChange}
-            className="flex-1 min-w-[180px] p-3 rounded-xl border border-white/30 bg-white/10 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-          >
-            <option value="">Seleccionar rol</option>
-            <option value="Administrador">Administrador</option>
-            <option value="Cliente">Cliente</option>
-          </select>
           <button
             type="submit"
             className="relative px-6 py-3 rounded-xl font-medium text-white
@@ -115,35 +115,28 @@ export default function UsersAdmin() { // ✅ nombre corregido
           <thead>
             <tr className="bg-gradient-to-r from-teal-400 to-purple-500 text-white">
               <th className="p-3 text-left">ID</th>
-              <th className="p-3 text-left">Nombre</th>
-              <th className="p-3 text-left">Correo</th>
-              <th className="p-3 text-left">Rol</th>
+              <th className="p-3 text-left">Fecha</th>
+              <th className="p-3 text-left">Total</th>
               <th className="p-3 text-center">Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {users.length > 0 ? (
-              users.map((user) => (
-                <tr
-                  key={user.id}
-                  className="hover:bg-white/20 transition text-white"
-                >
-                  <td className="p-3">{user.id}</td>
-                  <td className="p-3">{user.name}</td>
-                  <td className="p-3">{user.email}</td>
-                  <td className="p-3">{user.role}</td>
+            {compras.length > 0 ? (
+              compras.map((c) => (
+                <tr key={c.id} className="hover:bg-white/20 transition text-white">
+                  <td className="p-3">{c.id}</td>
+                  <td className="p-3">{c.fecha}</td>
+                  <td className="p-3">${c.total}</td>
                   <td className="p-3 flex justify-center gap-2">
                     <button
-                      onClick={() => handleEdit(user)}
-                      className="px-4 py-2 rounded-xl border border-blue-400 text-blue-400
-                                 hover:bg-blue-500 hover:text-white transition"
+                      onClick={() => handleEdit(c)}
+                      className="px-4 py-2 rounded-xl border border-blue-400 text-blue-400 hover:bg-blue-500 hover:text-white transition"
                     >
                       Editar
                     </button>
                     <button
-                      onClick={() => handleDelete(user.id)}
-                      className="px-4 py-2 rounded-xl border border-red-400 text-red-400
-                                 hover:bg-red-500 hover:text-white transition"
+                      onClick={() => handleDelete(c.id)}
+                      className="px-4 py-2 rounded-xl border border-red-400 text-red-400 hover:bg-red-500 hover:text-white transition"
                     >
                       Eliminar
                     </button>
@@ -152,8 +145,8 @@ export default function UsersAdmin() { // ✅ nombre corregido
               ))
             ) : (
               <tr>
-                <td colSpan="5" className="text-center py-4 text-white/60">
-                  No hay usuarios registrados
+                <td colSpan="4" className="text-center py-4 text-white/60">
+                  No hay compras registradas
                 </td>
               </tr>
             )}

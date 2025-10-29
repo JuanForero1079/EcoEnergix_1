@@ -3,8 +3,8 @@ const router = express.Router();
 const DB = require("../db/connection");
 const { verificarToken, verificarRol } = require("../middleware/auth");
 
-// GET all usuarios (solo Admin puede verlos)
-router.get("/", verificarToken, verificarRol("Admin"), (req, res) => {
+// 🔹 GET all usuarios (solo Administrador puede verlos)
+router.get("/", verificarToken, verificarRol("Administrador"), (req, res) => {
   DB.query("SELECT * FROM usuarios", (err, result) => {
     if (err)
       return res
@@ -14,12 +14,15 @@ router.get("/", verificarToken, verificarRol("Admin"), (req, res) => {
   });
 });
 
-// GET usuario by ID (Admin o el mismo usuario)
+// 🔹 GET usuario por ID (Administrador o el mismo usuario)
 router.get("/:id", verificarToken, (req, res) => {
   const { id } = req.params;
 
-  // si no es Admin, solo puede ver su propio perfil
-  if (req.user.rol !== "Admin" && req.user.id !== parseInt(id)) {
+  // si no es Administrador, solo puede ver su propio perfil
+  if (
+    req.user.rol.toLowerCase().trim() !== "administrador" &&
+    req.user.id !== parseInt(id)
+  ) {
     return res
       .status(403)
       .json({ message: "No tienes permisos para ver este usuario" });
@@ -36,12 +39,12 @@ router.get("/:id", verificarToken, (req, res) => {
       if (result.length === 0)
         return res.status(404).json({ message: "Usuario no encontrado" });
       res.json(result[0]);
-    },
+    }
   );
 });
 
-// CREATE usuario (solo Admin)
-router.post("/", verificarToken, verificarRol("Admin"), (req, res) => {
+// 🔹 CREATE usuario (solo Administrador)
+router.post("/", verificarToken, verificarRol("Administrador"), (req, res) => {
   const {
     Nombre,
     Correo_electronico,
@@ -95,11 +98,11 @@ router.post("/", verificarToken, verificarRol("Admin"), (req, res) => {
           Estado_usuario: Estado_usuario || "Activo",
         },
       });
-    },
+    }
   );
 });
 
-// UPDATE usuario (Admin o el mismo usuario)
+// 🔹 UPDATE usuario (Administrador o el mismo usuario)
 router.put("/:id", verificarToken, (req, res) => {
   const { id } = req.params;
   const {
@@ -126,8 +129,11 @@ router.put("/:id", verificarToken, (req, res) => {
       .json({ message: "Todos los campos obligatorios deben estar completos" });
   }
 
-  // Solo Admin puede actualizar a otros, un usuario solo a sí mismo
-  if (req.user.rol !== "Admin" && req.user.id !== parseInt(id)) {
+  // Solo Administrador puede actualizar a otros, un usuario solo a sí mismo
+  if (
+    req.user.rol.toLowerCase().trim() !== "administrador" &&
+    req.user.id !== parseInt(id)
+  ) {
     return res
       .status(403)
       .json({ message: "No tienes permisos para actualizar este usuario" });
@@ -165,12 +171,12 @@ router.put("/:id", verificarToken, (req, res) => {
           Estado_usuario: Estado_usuario || "Activo",
         },
       });
-    },
+    }
   );
 });
 
-// DELETE usuario (solo Admin)
-router.delete("/:id", verificarToken, verificarRol("Admin"), (req, res) => {
+// 🔹 DELETE usuario (solo Administrador)
+router.delete("/:id", verificarToken, verificarRol("Administrador"), (req, res) => {
   const { id } = req.params;
 
   DB.query("DELETE FROM usuarios WHERE ID_usuario = ?", [id], (err, result) => {

@@ -25,15 +25,15 @@ export default function Login() {
     }
 
     try {
-      const response = await fetch("http://localhost:3001/login", {
+      // 🔹 Ruta corregida con prefijo /api/auth/login
+      const response = await fetch("http://localhost:3001/api/auth/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
       const data = await response.json();
+      console.log("Datos login backend:", data);
 
       if (!response.ok) {
         alert(data.message || "Error en el inicio de sesión.");
@@ -41,21 +41,30 @@ export default function Login() {
       }
 
       const { usuario, token } = data;
+
       if (!usuario || !usuario.Rol_usuario || !token) {
         alert("Datos de sesión incompletos.");
         return;
       }
-      // Guardar usuario y token en localStorage
+
+      // 🔹 Normalizamos el rol (sin espacios y en minúsculas)
+      const rolNormalizado = usuario.Rol_usuario.toLowerCase().trim();
+
+      // 🔹 Guardamos datos consistentes en localStorage
       localStorage.setItem(
         "user",
         JSON.stringify({
-          ...usuario,
-          rol: usuario.Rol_usuario,
-        }),
+          id: usuario.ID_usuario,
+          nombre: usuario.Nombre_usuario,
+          correo: usuario.Correo_electronico,
+          rol: rolNormalizado, // clave uniforme
+        })
       );
+
       localStorage.setItem("token", token);
-      // Redirigir solo admin
-      if (usuario.Rol_usuario === "Administrador") {
+
+      // 🔹 Redirección según rol
+      if (rolNormalizado === "administrador") {
         navigate("/admin");
       } else {
         alert("Solo los administradores pueden acceder a esta vista.");
@@ -72,6 +81,7 @@ export default function Login() {
         <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center text-white mb-4">
           Iniciar Sesión
         </h2>
+
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div>
             <label className="block text-white mb-2 text-sm sm:text-base">
@@ -105,11 +115,12 @@ export default function Login() {
 
           <button
             type="submit"
-            className="w-full bg-[#5f54b3] text-white font-bold py-2 sm:py-3 rounded-xl text-base sm:text-lg hover:bg-[#3dc692] transition "
+            className="w-full bg-[#5f54b3] text-white font-bold py-2 sm:py-3 rounded-xl text-base sm:text-lg hover:bg-[#3dc692] transition"
           >
             Entrar
           </button>
         </form>
+
         <div className="mt-4 flex flex-col items-center text-sm sm:text-base text-white/90 space-y-2">
           <Link
             to="/forgot-password"
