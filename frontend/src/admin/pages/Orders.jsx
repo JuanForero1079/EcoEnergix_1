@@ -1,23 +1,38 @@
 // Orders.jsx
 import React, { useState, useEffect } from "react";
-import { getOrders, createOrder, updateOrder, deleteOrder } from "../services/ordersService";
+import {
+  getOrders,
+  createOrder,
+  updateOrder,
+  deleteOrder,
+} from "../services/ordersService";
 
 export default function Orders() {
   const [orders, setOrders] = useState([]);
-  const [form, setForm] = useState({ id: null, client: "", total: "", status: "Pendiente" });
+  const [form, setForm] = useState({
+    id: null,
+    client: "",
+    total: "",
+    status: "Pendiente",
+  });
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     setOrders(getOrders());
   }, []);
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!form.client || form.total === "") return;
 
-    const payload = { client: form.client, total: parseFloat(form.total), status: form.status };
+    const payload = {
+      client: form.client,
+      total: parseFloat(form.total),
+      status: form.status,
+    };
 
     if (isEditing) {
       updateOrder(form.id, payload);
@@ -45,12 +60,17 @@ export default function Orders() {
       {/* ENCABEZADO */}
       <div className="glass-container text-white">
         <h2 className="text-3xl font-bold">Gestión de Pedidos</h2>
-        <p className="text-sm text-white/70">Administra los pedidos realizados por los clientes</p>
+        <p className="text-sm text-white/70">
+          Administra los pedidos realizados por los clientes
+        </p>
       </div>
 
       {/* FORMULARIO */}
       <div className="glass-container">
-        <form onSubmit={handleSubmit} className="flex flex-wrap gap-4 items-center">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-wrap gap-4 items-center"
+        >
           <input
             type="text"
             name="client"
@@ -102,7 +122,10 @@ export default function Orders() {
             <tbody>
               {orders.length > 0 ? (
                 orders.map((o) => (
-                  <tr key={o.id} className="hover:bg-white/20 transition text-white">
+                  <tr
+                    key={o.id}
+                    className="hover:bg-white/20 transition text-white"
+                  >
                     <td className="p-3 text-center">{o.id}</td>
                     <td className="p-3">{o.client}</td>
                     <td className="p-3">${o.total}</td>

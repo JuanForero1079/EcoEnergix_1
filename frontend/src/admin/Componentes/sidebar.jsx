@@ -15,7 +15,8 @@ export default function Sidebar({ isOpen, toggle, isMobile, closeMobile }) {
     <div
       className="h-full flex flex-col text-white justify-between"
       style={{
-        background: "linear-gradient(180deg,#00C9A7 0%, #4375b2 50%, #7D5FFF 100%)",
+        background:
+          "linear-gradient(180deg,#00C9A7 0%, #4375b2 50%, #7D5FFF 100%)",
         boxShadow: "rgba(2,6,23,0.2) 0px 10px 30px",
         overflow: "hidden",
         height: "100vh",

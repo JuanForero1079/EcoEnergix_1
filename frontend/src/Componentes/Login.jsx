@@ -46,10 +46,13 @@ export default function Login() {
         return;
       }
       // Guardar usuario y token en localStorage
-      localStorage.setItem("user", JSON.stringify({
-        ...usuario,
-        rol: usuario.Rol_usuario
-      }));
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          ...usuario,
+          rol: usuario.Rol_usuario,
+        }),
+      );
       localStorage.setItem("token", token);
       // Redirigir solo admin
       if (usuario.Rol_usuario === "Administrador") {
@@ -71,7 +74,9 @@ export default function Login() {
         </h2>
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div>
-            <label className="block text-white mb-2 text-sm sm:text-base">Correo</label>
+            <label className="block text-white mb-2 text-sm sm:text-base">
+              Correo
+            </label>
             <input
               type="email"
               name="correo"
@@ -84,7 +89,9 @@ export default function Login() {
           </div>
 
           <div>
-            <label className="block text-white mb-2 text-sm sm:text-base">Contraseña</label>
+            <label className="block text-white mb-2 text-sm sm:text-base">
+              Contraseña
+            </label>
             <input
               type="password"
               name="contraseña"
@@ -104,7 +111,10 @@ export default function Login() {
           </button>
         </form>
         <div className="mt-4 flex flex-col items-center text-sm sm:text-base text-white/90 space-y-2">
-          <Link to="/forgot-password" className="hover:underline hover:text-[#3dc692]">
+          <Link
+            to="/forgot-password"
+            className="hover:underline hover:text-[#3dc692]"
+          >
             ¿Olvidaste tu contraseña?
           </Link>
           <p>

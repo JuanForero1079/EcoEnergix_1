@@ -55,16 +55,15 @@ export default function Catalogo() {
   const [busqueda, setBusqueda] = useState("");
 
   const productosFiltrados = productos.filter((p) =>
-    normalizeText(p.nombre).includes(normalizeText(busqueda))
+    normalizeText(p.nombre).includes(normalizeText(busqueda)),
   );
-    const breadcrumbItems = [
+  const breadcrumbItems = [
     { label: "Inicio", href: "/" },
-      { label: "Nosotros", href: "/about" },
+    { label: "Nosotros", href: "/about" },
     { label: "Catalogo", href: "/catalogo" },
   ];
 
   return (
-
     <div className="p-8 min-h-screen">
       {/* Barra de búsqueda */}
       <div className="mb-12 flex justify-center mt-8">

@@ -9,20 +9,30 @@ import {
 
 export default function Deliveries() {
   const [deliveries, setDeliveries] = useState([]);
-  const [form, setForm] = useState({ id: null, orderId: "", deliveryPerson: "", status: "Pendiente" });
+  const [form, setForm] = useState({
+    id: null,
+    orderId: "",
+    deliveryPerson: "",
+    status: "Pendiente",
+  });
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     setDeliveries(getDeliveries());
   }, []);
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!form.orderId || !form.deliveryPerson) return;
 
-    const payload = { orderId: form.orderId, deliveryPerson: form.deliveryPerson, status: form.status };
+    const payload = {
+      orderId: form.orderId,
+      deliveryPerson: form.deliveryPerson,
+      status: form.status,
+    };
 
     if (isEditing) {
       updateDelivery(form.id, payload);
@@ -36,7 +46,12 @@ export default function Deliveries() {
   };
 
   const handleEdit = (d) => {
-    setForm({ id: d.id, orderId: d.orderId, deliveryPerson: d.deliveryPerson, status: d.status });
+    setForm({
+      id: d.id,
+      orderId: d.orderId,
+      deliveryPerson: d.deliveryPerson,
+      status: d.status,
+    });
     setIsEditing(true);
   };
 
@@ -50,12 +65,17 @@ export default function Deliveries() {
       {/* ENCABEZADO */}
       <div className="glass-container text-white">
         <h2 className="text-3xl font-bold">Gestión de Domicilios</h2>
-        <p className="text-sm text-white/70">Administra los repartos y su estado</p>
+        <p className="text-sm text-white/70">
+          Administra los repartos y su estado
+        </p>
       </div>
 
       {/* FORMULARIO */}
       <div className="glass-container">
-        <form onSubmit={handleSubmit} className="flex flex-wrap gap-4 items-center">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-wrap gap-4 items-center"
+        >
           <input
             type="text"
             name="orderId"
@@ -107,7 +127,10 @@ export default function Deliveries() {
             <tbody>
               {deliveries.length > 0 ? (
                 deliveries.map((d) => (
-                  <tr key={d.id} className="hover:bg-white/20 transition text-white">
+                  <tr
+                    key={d.id}
+                    className="hover:bg-white/20 transition text-white"
+                  >
                     <td className="p-3 text-center">{d.id}</td>
                     <td className="p-3">{d.orderId}</td>
                     <td className="p-3">{d.deliveryPerson}</td>

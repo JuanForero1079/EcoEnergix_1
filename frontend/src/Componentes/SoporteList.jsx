@@ -28,7 +28,8 @@ function SoporteList() {
         <ul>
           {soportes.map((s) => (
             <li key={s.ID_soporte}>
-              #{s.ID_soporte} – Usuario: {s.ID_usuarioFK} – Problema: {s.Descripcion_problema}
+              #{s.ID_soporte} – Usuario: {s.ID_usuarioFK} – Problema:{" "}
+              {s.Descripcion_problema}
             </li>
           ))}
         </ul>
