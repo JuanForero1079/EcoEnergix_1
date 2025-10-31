@@ -18,24 +18,32 @@ export default function EntregasAdmin() {
   });
   const [isEditing, setIsEditing] = useState(false);
 
-  // Cargar entregas al iniciar
+  // 🧭 Cargar entregas al iniciar
   useEffect(() => {
     fetchEntregas();
   }, []);
 
+  // 🗂️ Traer entregas desde el backend
   const fetchEntregas = async () => {
     try {
       const data = await getEntregas();
-      setEntregas(data);
+      console.log("📦 Datos recibidos desde backend:", data);
+      if (Array.isArray(data)) {
+        setEntregas(data);
+      } else {
+        console.warn("⚠️ La respuesta no es un array:", data);
+      }
     } catch (err) {
-      console.error("Error al cargar entregas:", err);
+      console.error("❌ Error al cargar entregas:", err);
     }
   };
 
+  // 📝 Controlar los inputs del formulario
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  // 💾 Crear o actualizar entrega
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.Fecha_entrega || !form.ID_usuario || !form.ID_producto || !form.Cantidad)
@@ -57,25 +65,28 @@ export default function EntregasAdmin() {
       });
       fetchEntregas();
     } catch (err) {
-      console.error("Error al guardar entrega:", err);
+      console.error("❌ Error al guardar entrega:", err);
     }
   };
 
+  // ✏️ Editar entrega
   const handleEdit = (entrega) => {
     setForm(entrega);
     setIsEditing(true);
   };
 
+  // 🗑️ Eliminar entrega
   const handleDelete = async (id) => {
     if (!window.confirm("¿Seguro que deseas eliminar esta entrega?")) return;
     try {
       await deleteEntrega(id);
       fetchEntregas();
     } catch (err) {
-      console.error("Error al eliminar entrega:", err);
+      console.error("❌ Error al eliminar entrega:", err);
     }
   };
 
+  // 💎 Efecto vidrio (glassmorphism)
   const glassStyle = {
     background: "rgba(255, 255, 255, 0.06)",
     backdropFilter: "blur(10px)",
@@ -95,7 +106,7 @@ export default function EntregasAdmin() {
       {/* Oscurecer fondo */}
       <div className="absolute inset-0 bg-black/60 -z-10"></div>
 
-      {/* Encabezado con logo */}
+      {/* Encabezado */}
       <div style={glassStyle} className="p-6 flex items-center gap-4">
         <img
           src="/assets/EcoEnergixLog.png"
@@ -174,7 +185,9 @@ export default function EntregasAdmin() {
               entregas.map((e) => (
                 <tr key={e.ID_entrega} className="hover:bg-white/20 text-white">
                   <td className="p-3">{e.ID_entrega}</td>
-                  <td className="p-3">{e.Fecha_entrega}</td>
+                  <td className="p-3">
+                    {new Date(e.Fecha_entrega).toLocaleDateString("es-CO")}
+                  </td>
                   <td className="p-3">{e.ID_usuario}</td>
                   <td className="p-3">{e.ID_producto}</td>
                   <td className="p-3">{e.Cantidad}</td>
