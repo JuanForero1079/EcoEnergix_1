@@ -1,7 +1,7 @@
 // src/App.jsx
 import { Routes, Route } from "react-router-dom";
 
-// Componentes públicos
+// 🌿 Componentes públicos
 import FondoSlider from "./Componentes/FondoSlider.jsx";
 import Navbar from "./Componentes/Navbar.jsx";
 import Hero from "./Componentes/Hero.jsx";
@@ -16,32 +16,46 @@ import Privacy from "./Componentes/Privacy.jsx";
 import Catalogo from "./Componentes/Catalogo.jsx";
 import PrivateRoute from "./Componentes/PrivateRoute.jsx";
 
-// Panel Admin
+// ⚙️ Panel Admin
 import AdminLayoutAdmin from "./admin/AdminLayoutAdmin.jsx";
 import UsuariosList from "./Componentes/UsuariosList.jsx";
 import ProductosList from "./Componentes/ProductosList.jsx";
 import ComprasList from "./Componentes/ComprasList.jsx";
 import PagosList from "./Componentes/PagosList.jsx";
-import EntregasList from "./Componentes/EntregasList.jsx";
 import InstalacionesList from "./Componentes/InstalacionesList.jsx";
 import ProveedoresList from "./Componentes/ProveedoresList.jsx";
 import SoporteList from "./Componentes/SoporteList.jsx";
 
-// Layout público
+// ✅ Componente nuevo y mejorado para Entregas
+import EntregasAdmin from "./admin/pages/EntregasAdmin.jsx";
+
+// ---------------------------
+// 🌎 Layout público reutilizable
+// ---------------------------
 function PublicLayout({ children }) {
   return (
     <div className="relative min-h-screen flex flex-col">
+      {/* Fondo con slider e overlay */}
       <FondoSlider />
-      <div className="absolute inset-0 bg-black/50"></div>
+      <div className="absolute inset-0 bg-black/50" />
+
+      {/* Barra de navegación */}
       <Navbar />
-      <main className="pt-16 flex-grow z-10 relative w-full flex flex-col items-center justify-center min-h-screen">
+
+      {/* Contenido principal */}
+      <main className="pt-16 flex-grow relative z-10 w-full flex flex-col items-center justify-center min-h-screen">
         {children}
       </main>
+
+      {/* Pie de página */}
       <Footer />
     </div>
   );
 }
 
+// ---------------------------
+// 🧭 Configuración principal de rutas
+// ---------------------------
 export default function App() {
   return (
     <Routes>
@@ -119,7 +133,7 @@ export default function App() {
         }
       />
 
-      {/* ⚙️ RUTAS ADMIN PRIVADAS */}
+      {/* ⚙️ RUTAS PRIVADAS (Panel Administrador) */}
       <Route
         path="/admin/*"
         element={
@@ -128,16 +142,23 @@ export default function App() {
           </PrivateRoute>
         }
       >
-        {/* 👇 Subrutas del Panel */}
+        {/* Subrutas del Panel */}
         <Route
           index
-          element={<h1 className="text-3xl font-bold">Bienvenido al Panel Admin</h1>}
+          element={
+            <h1 className="text-3xl font-bold text-white text-center">
+              Bienvenido al Panel de Administración
+            </h1>
+          }
         />
         <Route path="usuarios" element={<UsuariosList />} />
         <Route path="productos" element={<ProductosList />} />
         <Route path="compras" element={<ComprasList />} />
         <Route path="pagos" element={<PagosList />} />
-        <Route path="entregas" element={<EntregasList />} />
+
+        {/* ✅ Ruta corregida para Entregas */}
+        <Route path="entregas" element={<EntregasAdmin />} />
+
         <Route path="instalaciones" element={<InstalacionesList />} />
         <Route path="proveedores" element={<ProveedoresList />} />
         <Route path="soporte" element={<SoporteList />} />
@@ -148,7 +169,9 @@ export default function App() {
         path="*"
         element={
           <PublicLayout>
-            <h1 className="text-3xl text-white font-bold">Ruta no encontrada</h1>
+            <h1 className="text-3xl text-white font-bold text-center">
+              ⚠️ Ruta no encontrada
+            </h1>
           </PublicLayout>
         }
       />
