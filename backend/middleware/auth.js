@@ -1,13 +1,13 @@
 const jwt = require("jsonwebtoken");
 
-// ⚠️ En producción, usa una variable de entorno (ej: process.env.JWT_SECRET)
+// ⚠️ En producción usa una variable de entorno (ej: process.env.JWT_SECRET)
 const JWT_SECRET = "clave_secreta_super_segura";
 
 // ==============================
 // 🔹 Middleware: Verificar Token
 // ==============================
 function verificarToken(req, res, next) {
-  const authHeader = req.headers["authorization"];
+  const authHeader = req.headers["authorization"] || req.headers["Authorization"];
 
   console.log("🔹 Header recibido:", authHeader); // 👈 LOG 1
 
@@ -17,7 +17,13 @@ function verificarToken(req, res, next) {
   }
 
   // El token viene con el formato: "Bearer token_aqui"
-  const token = authHeader.split(" ")[1];
+  const partes = authHeader.split(" ");
+  if (partes.length !== 2 || partes[0] !== "Bearer") {
+    console.warn("⚠️ Formato de token inválido");
+    return res.status(400).json({ message: "Formato de token inválido" });
+  }
+
+  const token = partes[1];
   console.log("🔹 Token recibido:", token ? token.slice(0, 30) + "..." : "NULO"); // 👈 LOG 2
 
   jwt.verify(token, JWT_SECRET, (err, decoded) => {
@@ -26,14 +32,14 @@ function verificarToken(req, res, next) {
       return res.status(401).json({ message: "Token inválido o expirado" });
     }
 
-    console.log("✅ Token válido. Usuario:", decoded); // 👈 LOG 4
-    req.user = decoded;
+    console.log("✅ Token válido. Usuario decodificado:", decoded); // 👈 LOG 4
+    req.user = decoded; // ⚙️ Guardamos datos del usuario (id, rol, etc.)
     next();
   });
 }
 
 // =============================================
-// 🔹 Middleware: Verificar Rol (normalización)
+// 🔹 Middleware: Verificar Rol
 // =============================================
 function verificarRol(...rolesPermitidos) {
   return (req, res, next) => {
@@ -42,7 +48,8 @@ function verificarRol(...rolesPermitidos) {
       return res.status(401).json({ message: "No autenticado" });
     }
 
-    const rolUsuario = req.user.rol?.toLowerCase().trim();
+    // Aseguramos el nombre del rol
+    const rolUsuario = req.user.Rol_usuario?.toLowerCase().trim() || req.user.rol?.toLowerCase().trim();
     const rolesValidos = rolesPermitidos.map((r) => r.toLowerCase().trim());
 
     console.log("🟢 Verificando rol:", rolUsuario, "=> Permitidos:", rolesValidos); // 👈 LOG 5

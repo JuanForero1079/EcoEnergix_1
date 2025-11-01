@@ -1,46 +1,46 @@
 // src/admin/services/usersServiceAdmin.js
-const STORAGE_KEY = "eco_users_v1";
+import API from "../../services/api";
 
-const SAMPLE = [
-  { id: 1, name: "Johan Castillo", email: "johan@gmail.com", role: "Administrador" },
-  { id: 2, name: "Emmanuel Piñeros", email: "emmanuel@gmail.com", role: "Administrador" },
-  { id: 3, name: "Juan Jose Forero", email: "jujofoca@gmail.com", role: "Administrador" },
-];
+// 🔹 Obtener todos los usuarios (con token)
+export const getUsuarios = async () => {
+  const token = localStorage.getItem("token");
 
-// Obtener usuarios
-export function getUsers() {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(SAMPLE));
-    return [...SAMPLE];
-  }
-  try {
-    return JSON.parse(raw);
-  } catch {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(SAMPLE));
-    return [...SAMPLE];
-  }
-}
+  const res = await API.get("/api/usuarios", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
 
-// Crear nuevo usuario
-export function createUser(payload) {
-  const list = getUsers();
-  const newUser = { ...payload, id: Date.now() };
-  list.push(newUser);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-  return newUser;
-}
+  return res.data;
+};
 
-// Actualizar usuario existente
-export function updateUser(id, updatedData) {
-  const list = getUsers().map((u) => (u.id === id ? { ...u, ...updatedData } : u));
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-  return list.find((u) => u.id === id);
-}
+// 🔹 Crear un nuevo usuario (solo admin)
+export const createUsuario = async (data) => {
+  const token = localStorage.getItem("token");
 
-// Eliminar usuario
-export function deleteUser(id) {
-  const list = getUsers().filter((u) => u.id !== id);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-  return list;
-}
+  const res = await API.post("/api/usuarios", data, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  return res.data;
+};
+
+// 🔹 Actualizar usuario existente
+export const updateUsuario = async (id, data) => {
+  const token = localStorage.getItem("token");
+
+  const res = await API.put(`/api/usuarios/${id}`, data, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  return res.data;
+};
+
+// 🔹 Eliminar usuario (solo admin)
+export const deleteUsuario = async (id) => {
+  const token = localStorage.getItem("token");
+
+  const res = await API.delete(`/api/usuarios/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  return res.data;
+};
