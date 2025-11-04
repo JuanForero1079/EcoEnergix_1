@@ -86,7 +86,7 @@ export default function Users() {
             <option value="">Seleccionar rol</option>
             <option value="Administrador">Administrador</option>
             <option value="Cliente">Cliente</option>
-            <option value="Domiciliario">Domiciliario</option>
+            <option value="Domiciliario">Domiciliario</option>  
           </select>
           <button
             type="submit"

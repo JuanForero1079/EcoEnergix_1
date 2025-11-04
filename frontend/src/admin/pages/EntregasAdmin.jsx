@@ -90,7 +90,6 @@ export default function EntregasAdmin() {
 
   // 💎 Estilo vidrio
   const glassStyle = {
-    background: "rgba(255, 255, 255, 0.06)",
     backdropFilter: "blur(10px)",
     border: "1px solid rgba(255, 255, 255, 0.12)",
     borderRadius: "14px",

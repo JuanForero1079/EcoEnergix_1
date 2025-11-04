@@ -26,7 +26,7 @@ import InstalacionesList from "./Componentes/InstalacionesList.jsx";
 import ProveedoresList from "./Componentes/ProveedoresList.jsx";
 import SoporteList from "./Componentes/SoporteList.jsx";
 
-// ✅ Componente nuevo y mejorado para Entregas
+// ✅ Página de Entregas del Admin
 import EntregasAdmin from "./admin/pages/EntregasAdmin.jsx";
 
 // ---------------------------
@@ -35,19 +35,14 @@ import EntregasAdmin from "./admin/pages/EntregasAdmin.jsx";
 function PublicLayout({ children }) {
   return (
     <div className="relative min-h-screen flex flex-col">
-      {/* Fondo con slider e overlay */}
       <FondoSlider />
       <div className="absolute inset-0 bg-black/50" />
-
-      {/* Barra de navegación */}
       <Navbar />
 
-      {/* Contenido principal */}
       <main className="pt-16 flex-grow relative z-10 w-full flex flex-col items-center justify-center min-h-screen">
         {children}
       </main>
 
-      {/* Pie de página */}
       <Footer />
     </div>
   );
@@ -133,7 +128,7 @@ export default function App() {
         }
       />
 
-      {/* ⚙️ RUTAS PRIVADAS (Panel Administrador) */}
+      {/* ⚙️ RUTAS PRIVADAS DEL ADMIN */}
       <Route
         path="/admin/*"
         element={
@@ -142,29 +137,32 @@ export default function App() {
           </PrivateRoute>
         }
       >
-        {/* Subrutas del Panel */}
+        {/* Página principal del admin */}
         <Route
           index
           element={
-            <h1 className="text-3xl font-bold text-white text-center">
-              Bienvenido al Panel de Administración
-            </h1>
+            <div className="flex justify-center items-center h-full">
+              <h1 className="text-3xl font-bold text-white">
+                Bienvenido al Panel de Administración
+              </h1>
+            </div>
           }
         />
+
+        {/* 👥 Usuarios */}
         <Route path="usuarios" element={<UsuariosList />} />
+
+        {/* 🛒 Otros módulos */}
         <Route path="productos" element={<ProductosList />} />
         <Route path="compras" element={<ComprasList />} />
         <Route path="pagos" element={<PagosList />} />
-
-        {/* ✅ Ruta corregida para Entregas */}
         <Route path="entregas" element={<EntregasAdmin />} />
-
         <Route path="instalaciones" element={<InstalacionesList />} />
         <Route path="proveedores" element={<ProveedoresList />} />
         <Route path="soporte" element={<SoporteList />} />
       </Route>
 
-      {/* 🚫 RUTA NO ENCONTRADA */}
+      {/* 🚫 Ruta no encontrada */}
       <Route
         path="*"
         element={
