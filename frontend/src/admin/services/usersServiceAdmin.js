@@ -1,46 +1,46 @@
-// src/admin/services/usersServiceAdmin.js
 import API from "../../services/api";
 
-// 🔹 Obtener todos los usuarios (con token)
+// ✅ Obtener todos los usuarios (sin contraseñas)
 export const getUsuarios = async () => {
-  const token = localStorage.getItem("token");
-
-  const res = await API.get("/api/usuarios", {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-
-  return res.data;
+  try {
+    const res = await API.get("/api/usuarios");
+    console.log("👥 Datos de usuarios recibidos:", res.data);
+    return res.data;
+  } catch (error) {
+    console.error("❌ Error al obtener usuarios:", error);
+    throw error;
+  }
 };
 
-// 🔹 Crear un nuevo usuario (solo admin)
+// ✅ Crear un nuevo usuario
 export const createUsuario = async (data) => {
-  const token = localStorage.getItem("token");
-
-  const res = await API.post("/api/usuarios", data, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-
-  return res.data;
+  try {
+    const res = await API.post("/api/usuarios", data);
+    return res.data;
+  } catch (error) {
+    console.error("❌ Error al crear usuario:", error);
+    throw error;
+  }
 };
 
-// 🔹 Actualizar usuario existente
+// ✅ Actualizar usuario existente
 export const updateUsuario = async (id, data) => {
-  const token = localStorage.getItem("token");
-
-  const res = await API.put(`/api/usuarios/${id}`, data, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-
-  return res.data;
+  try {
+    const res = await API.put(`/api/usuarios/${id}`, data);
+    return res.data;
+  } catch (error) {
+    console.error("❌ Error al actualizar usuario:", error);
+    throw error;
+  }
 };
 
-// 🔹 Eliminar usuario (solo admin)
+// ✅ Eliminar usuario por ID
 export const deleteUsuario = async (id) => {
-  const token = localStorage.getItem("token");
-
-  const res = await API.delete(`/api/usuarios/${id}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-
-  return res.data;
+  try {
+    const res = await API.delete(`/api/usuarios/${id}`);
+    return res.data;
+  } catch (error) {
+    console.error("❌ Error al eliminar usuario:", error);
+    throw error;
+  }
 };

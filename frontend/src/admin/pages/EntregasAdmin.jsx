@@ -5,7 +5,8 @@ import {
   updateEntrega,
   deleteEntrega,
 } from "../services/entregaService";
-import camionSolar from "../../assets/camion-solar-1.jpg"; // 🚚 Imagen de fondo
+import camionSolar from "../../assets/camion-solar-1.jpg";
+import logo from "../../assets/EcoEnergixLog.png"; // ✅ Import directo del logo
 
 export default function EntregasAdmin() {
   const [entregas, setEntregas] = useState([]);
@@ -23,7 +24,6 @@ export default function EntregasAdmin() {
     fetchEntregas();
   }, []);
 
-  // 🗂️ Traer entregas desde el backend
   const fetchEntregas = async () => {
     try {
       const data = await getEntregas();
@@ -38,15 +38,17 @@ export default function EntregasAdmin() {
     }
   };
 
-  // 📝 Controlar los inputs del formulario
+  // 📝 Manejo de formulario
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // 💾 Crear o actualizar entrega
+  // 💾 Crear o actualizar
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.Fecha_entrega || !form.ID_usuario || !form.ID_producto || !form.Cantidad)
+    const { Fecha_entrega, ID_usuario, ID_producto, Cantidad } = form;
+
+    if (!Fecha_entrega || !ID_usuario || !ID_producto || !Cantidad)
       return alert("⚠️ Todos los campos son obligatorios");
 
     try {
@@ -69,13 +71,13 @@ export default function EntregasAdmin() {
     }
   };
 
-  // ✏️ Editar entrega
+  // ✏️ Editar
   const handleEdit = (entrega) => {
     setForm(entrega);
     setIsEditing(true);
   };
 
-  // 🗑️ Eliminar entrega
+  // 🗑️ Eliminar
   const handleDelete = async (id) => {
     if (!window.confirm("¿Seguro que deseas eliminar esta entrega?")) return;
     try {
@@ -86,7 +88,7 @@ export default function EntregasAdmin() {
     }
   };
 
-  // 💎 Efecto vidrio (glassmorphism)
+  // 💎 Estilo vidrio
   const glassStyle = {
     background: "rgba(255, 255, 255, 0.06)",
     backdropFilter: "blur(10px)",
@@ -103,18 +105,20 @@ export default function EntregasAdmin() {
         backgroundImage: `url(${camionSolar})`,
       }}
     >
-      {/* Oscurecer fondo */}
+      {/* Fondo oscuro */}
       <div className="absolute inset-0 bg-black/60 -z-10"></div>
 
-      {/* Encabezado */}
+      {/* Encabezado con logo */}
       <div style={glassStyle} className="p-6 flex items-center gap-4">
         <img
-          src="/assets/EcoEnergixLog.png"
-          alt="EcoEnergix"
+          src={logo}
+          alt="EcoEnergix Logo"
           className="w-12 h-12 object-contain drop-shadow-md"
         />
         <div>
-          <h2 className="text-3xl font-bold text-white">Gestión de Entregas</h2>
+          <h2 className="text-3xl font-bold text-white">
+            Gestión de Entregas
+          </h2>
           <p className="text-sm text-white/70 mt-1">
             Administra las entregas registradas en el sistema
           </p>

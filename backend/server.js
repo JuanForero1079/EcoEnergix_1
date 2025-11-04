@@ -16,25 +16,25 @@ app.use(express.json());
 // ----------------------
 const authRoutes = require("./routes/auth");
 const comprasRoutes = require("./routes/compras");
-const entregaRoutes = require("./routes/entrega");
-const instalacionRoutes = require("./routes/instalacion");
-const pagoRoutes = require("./routes/pago");
-const productoRoutes = require("./routes/producto");
-const proveedorRoutes = require("./routes/proveedor");
-const soporteRoutes = require("./routes/soporte_tecnico");
+const entregasRoutes = require("./routes/entrega"); 
+const instalacionesRoutes = require("./routes/instalacion");
+const pagosRoutes = require("./routes/pago");
+const productosRoutes = require("./routes/producto");
+const proveedoresRoutes = require("./routes/proveedor");
+const soportesRoutes = require("./routes/soporte_tecnico");
 const usuariosRoutes = require("./routes/usuarios");
 
 // ----------------------
-// Conexión de rutas
+// Conexión de rutas (todas en plural)
 // ----------------------
 app.use("/api/auth", authRoutes);
 app.use("/api/compras", comprasRoutes);
-app.use("/api/entrega", entregaRoutes);
-app.use("/api/instalacion", instalacionRoutes);
-app.use("/api/pago", pagoRoutes);
-app.use("/api/producto", productoRoutes);
-app.use("/api/proveedor", proveedorRoutes);
-app.use("/api/soporte", soporteRoutes);
+app.use("/api/entregas", entregasRoutes);
+app.use("/api/instalaciones", instalacionesRoutes);
+app.use("/api/pagos", pagosRoutes);
+app.use("/api/productos", productosRoutes);
+app.use("/api/proveedores", proveedoresRoutes);
+app.use("/api/soportes", soportesRoutes);
 app.use("/api/usuarios", usuariosRoutes);
 
 // ----------------------
@@ -56,5 +56,5 @@ app.use((err, req, res, next) => {
 // Inicio del servidor
 // ----------------------
 app.listen(PORT, () => {
-  console.log(`Servidor escuchando en http://localhost:${PORT}`);
+  console.log(`✅ Servidor escuchando en http://localhost:${PORT}`);
 });
