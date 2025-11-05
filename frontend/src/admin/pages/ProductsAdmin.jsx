@@ -1,159 +1,244 @@
-import React, { useState, useEffect } from "react";
+// src/admin/pages/ProductsAdmin.jsx
+import React, { useEffect, useState } from "react";
 import {
   getProducts,
   createProduct,
   updateProduct,
   deleteProduct,
-} from "../services/productsServiceAdmin"; // ✅ ruta corregida
+} from "../services/productsServiceAdmin";
 
-export default function ProductsAdmin() { // ✅ renombrar para consistencia
+function ProductsAdmin() {
   const [products, setProducts] = useState([]);
-  const [form, setForm] = useState({ id: null, name: "", price: "", stock: "" });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [form, setForm] = useState({
+    id: null,
+    Nombre_producto: "",
+    Tipo_producto: "",
+    Precio: "",
+    Marca: "",
+    Fecha_fabricacion: "",
+    Garantia: "",
+    ID_proveedor: "",
+  });
   const [isEditing, setIsEditing] = useState(false);
 
+  // 🔹 Cargar productos al iniciar
   useEffect(() => {
-    setProducts(getProducts());
+    loadProducts();
   }, []);
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const loadProducts = async () => {
+    try {
+      setError(null);
+      const data = await getProducts();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!form.name || form.price === "" || form.stock === "") return;
-
-    const payload = {
-      name: form.name,
-      price: parseFloat(form.price),
-      stock: parseInt(form.stock, 10),
-    };
-
-    if (isEditing) {
-      updateProduct(form.id, payload);
-      setIsEditing(false);
-    } else {
-      createProduct(payload);
+      // Si el backend devuelve { productos: [...] }
+      const lista = Array.isArray(data) ? data : data.productos || [];
+      setProducts(lista);
+    } catch (err) {
+      console.error("❌ Error al obtener productos:", err);
+      setError(err.message || "No se pudo obtener la lista de productos.");
+    } finally {
+      setLoading(false);
     }
+  };
 
-    setForm({ id: null, name: "", price: "", stock: "" });
-    setProducts(getProducts());
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (isEditing) {
+        await updateProduct(form.id, form);
+      } else {
+        await createProduct(form);
+      }
+      await loadProducts();
+      resetForm();
+    } catch (err) {
+      console.error("Error al guardar producto:", err);
+      setError("Error al guardar el producto. Verifica los datos.");
+    }
+  };
+
+  const resetForm = () => {
+    setForm({
+      id: null,
+      Nombre_producto: "",
+      Tipo_producto: "",
+      Precio: "",
+      Marca: "",
+      Fecha_fabricacion: "",
+      Garantia: "",
+      ID_proveedor: "",
+    });
+    setIsEditing(false);
   };
 
   const handleEdit = (p) => {
-    setForm({ id: p.id, name: p.name, price: p.price, stock: p.stock });
+    setForm({
+      id: p.ID_producto,
+      Nombre_producto: p.Nombre_producto,
+      Tipo_producto: p.Tipo_producto,
+      Precio: p.Precio,
+      Marca: p.Marca,
+      Fecha_fabricacion: p.Fecha_fabricacion?.split("T")[0],
+      Garantia: p.Garantia,
+      ID_proveedor: p.ID_proveedor,
+    });
     setIsEditing(true);
   };
 
-  const handleDelete = (id) => {
-    deleteProduct(id);
-    setProducts(getProducts());
+  const handleDelete = async (id) => {
+    if (!window.confirm("¿Seguro que deseas eliminar este producto?")) return;
+    try {
+      await deleteProduct(id);
+      await loadProducts();
+    } catch (err) {
+      console.error("Error al eliminar producto:", err);
+      setError("Error al eliminar el producto.");
+    }
   };
 
-  const glassStyle = {
-    background: "rgba(255, 255, 255, 0.06)",
-    backdropFilter: "blur(10px)",
-    WebkitBackdropFilter: "blur(10px)",
-    border: "1px solid rgba(255, 255, 255, 0.12)",
-    borderRadius: "14px",
-    boxShadow: "0 10px 30px rgba(2, 6, 23, 0.18)",
-    transition: "all 0.3s ease-in-out",
-  };
+  if (loading) return <p className="text-center text-gray-600">Cargando productos...</p>;
 
   return (
-    <div className="p-8 space-y-8 relative">
-      <span className="absolute inset-0 -z-10 bg-gradient-to-r from-purple-500 via-blue-500 to-teal-500 opacity-20 blur-3xl"></span>
+    <div className="p-6">
+      <h2 className="text-2xl font-bold text-center text-blue-700 mb-6">
+        Gestión de Productos
+      </h2>
 
-      <div style={glassStyle} className="p-6">
-        <h2 className="text-3xl font-bold text-white">Gestión de Productos</h2>
-        <p className="text-sm text-white/70 mt-1">
-          Administra los productos de la plataforma
-        </p>
-      </div>
+      {error && (
+        <p className="text-center text-red-600 font-semibold mb-4">{error}</p>
+      )}
 
-      <div style={glassStyle} className="p-6">
-        <form onSubmit={handleSubmit} className="flex flex-wrap gap-4 items-center">
-          <input
-            type="text"
-            name="name"
-            placeholder="Nombre del producto"
-            value={form.name}
-            onChange={handleChange}
-            className="flex-1 min-w-[180px] p-3 rounded-xl border border-white/30 bg-white/10 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-          />
-          <input
-            type="number"
-            name="price"
-            placeholder="Precio"
-            value={form.price}
-            onChange={handleChange}
-            className="flex-1 min-w-[140px] p-3 rounded-xl border border-white/30 bg-white/10 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-          />
-          <input
-            type="number"
-            name="stock"
-            placeholder="Stock"
-            value={form.stock}
-            onChange={handleChange}
-            className="flex-1 min-w-[120px] p-3 rounded-xl border border-white/30 bg-white/10 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-          />
-          <button
-            type="submit"
-            className="relative px-6 py-3 rounded-xl font-medium text-white
-                       bg-gradient-to-r from-teal-400 to-purple-500
-                       shadow-[0_4px_15px_rgba(0,0,0,0.3)]
-                       hover:scale-105 hover:shadow-[0_6px_20px_rgba(0,0,0,0.4)]
-                       transition-transform duration-300 ease-out"
-          >
-            {isEditing ? "Actualizar" : "Agregar"}
-          </button>
-        </form>
-      </div>
+      {/* 🔸 Formulario */}
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white p-4 rounded-xl shadow-md mb-6 max-w-xl mx-auto"
+      >
+        <input
+          type="text"
+          name="Nombre_producto"
+          placeholder="Nombre del producto"
+          value={form.Nombre_producto}
+          onChange={handleChange}
+          required
+          className="border p-2 w-full mb-2 rounded"
+        />
+        <input
+          type="text"
+          name="Tipo_producto"
+          placeholder="Tipo de producto"
+          value={form.Tipo_producto}
+          onChange={handleChange}
+          required
+          className="border p-2 w-full mb-2 rounded"
+        />
+        <input
+          type="number"
+          name="Precio"
+          placeholder="Precio"
+          value={form.Precio}
+          onChange={handleChange}
+          required
+          className="border p-2 w-full mb-2 rounded"
+        />
+        <input
+          type="text"
+          name="Marca"
+          placeholder="Marca"
+          value={form.Marca}
+          onChange={handleChange}
+          required
+          className="border p-2 w-full mb-2 rounded"
+        />
+        <input
+          type="date"
+          name="Fecha_fabricacion"
+          placeholder="Fecha de fabricación"
+          value={form.Fecha_fabricacion}
+          onChange={handleChange}
+          required
+          className="border p-2 w-full mb-2 rounded"
+        />
+        <input
+          type="text"
+          name="Garantia"
+          placeholder="Garantía (meses)"
+          value={form.Garantia}
+          onChange={handleChange}
+          required
+          className="border p-2 w-full mb-2 rounded"
+        />
+        <input
+          type="number"
+          name="ID_proveedor"
+          placeholder="ID del proveedor"
+          value={form.ID_proveedor}
+          onChange={handleChange}
+          required
+          className="border p-2 w-full mb-4 rounded"
+        />
+        <button
+          type="submit"
+          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full"
+        >
+          {isEditing ? "Actualizar Producto" : "Agregar Producto"}
+        </button>
+      </form>
 
-      <div style={glassStyle} className="overflow-x-auto">
-        <table className="w-full rounded-xl overflow-hidden">
-          <thead>
-            <tr className="bg-gradient-to-r from-teal-400 to-purple-500 text-white">
-              <th className="p-3">ID</th>
-              <th className="p-3">Nombre</th>
-              <th className="p-3">Precio</th>
-              <th className="p-3">Stock</th>
-              <th className="p-3">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.length > 0 ? (
-              products.map((p) => (
-                <tr key={p.id} className="hover:bg-white/20 transition text-white">
-                  <td className="p-3 text-center">{p.id}</td>
-                  <td className="p-3">{p.name}</td>
-                  <td className="p-3">${p.price}</td>
-                  <td className="p-3">{p.stock}</td>
-                  <td className="p-3 flex justify-center gap-2">
+      {/* 🔸 Tabla */}
+      {products.length === 0 ? (
+        <p className="text-center text-gray-600">No hay productos registrados</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full border border-gray-300 rounded-lg">
+            <thead className="bg-blue-100">
+              <tr>
+                <th className="border px-4 py-2">ID</th>
+                <th className="border px-4 py-2">Nombre</th>
+                <th className="border px-4 py-2">Tipo</th>
+                <th className="border px-4 py-2">Precio</th>
+                <th className="border px-4 py-2">Marca</th>
+                <th className="border px-4 py-2">Garantía</th>
+                <th className="border px-4 py-2">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {products.map((p) => (
+                <tr key={p.ID_producto}>
+                  <td className="border px-4 py-2 text-center">{p.ID_producto}</td>
+                  <td className="border px-4 py-2">{p.Nombre_producto}</td>
+                  <td className="border px-4 py-2">{p.Tipo_producto}</td>
+                  <td className="border px-4 py-2 text-center">${p.Precio}</td>
+                  <td className="border px-4 py-2">{p.Marca}</td>
+                  <td className="border px-4 py-2">{p.Garantia}</td>
+                  <td className="border px-4 py-2 text-center space-x-2">
                     <button
                       onClick={() => handleEdit(p)}
-                      className="px-4 py-2 rounded-xl border border-blue-400 text-blue-400 hover:bg-blue-500 hover:text-white transition"
+                      className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
                     >
                       Editar
                     </button>
                     <button
-                      onClick={() => handleDelete(p.id)}
-                      className="px-4 py-2 rounded-xl border border-red-400 text-red-400 hover:bg-red-500 hover:text-white transition"
+                      onClick={() => handleDelete(p.ID_producto)}
+                      className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
                     >
                       Eliminar
                     </button>
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="5" className="text-center py-4 text-white/60">
-                  No hay productos registrados
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
+
+export default ProductsAdmin;
