@@ -26,7 +26,7 @@ export default function Sidebar({ isOpen, toggle, isMobile, closeMobile }) {
       <div className="flex items-center justify-between p-4 border-b border-white/10">
         <div className="flex items-center gap-3">
           <img
-            src="/src/assets/EcoEnergixLog.png"
+            src="/src/assets/logo.png"
             alt="EcoEnergix"
             className="object-contain cursor-pointer"
             style={{ width: 40, height: 40 }}

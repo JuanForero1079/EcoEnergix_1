@@ -5,7 +5,7 @@ import {
   updateUsuario,
   deleteUsuario,
 } from "../services/usersServiceAdmin";
-import logo from "../../assets/EcoEnergixLog.png";
+import logo from "../../assets/logo.png";
 import fondo from "../../assets/camion-solar-1.jpg";
 
 export default function UsuariosAdmin() {

@@ -13,7 +13,7 @@ import {
   Home,
   LogOut,
 } from "lucide-react";
-import Logo from "../../assets/EcoEnergixLog.png";
+import Logo from "../../assets/logo.png";
 
 export default function SidebarAdmin({
   isOpen,

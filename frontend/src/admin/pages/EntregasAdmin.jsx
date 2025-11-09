@@ -6,7 +6,7 @@ import {
   deleteEntrega,
 } from "../services/entregaService";
 import camionSolar from "../../assets/camion-solar-1.jpg";
-import logo from "../../assets/EcoEnergixLog.png"; // ✅ Import directo del logo
+import logo from "../../assets/logo.png"; // ✅ Import directo del logo
 
 export default function EntregasAdmin() {
   const [entregas, setEntregas] = useState([]);

@@ -16,7 +16,7 @@ import Privacy from "./Componentes/Privacy.jsx";
 import Catalogo from "./Componentes/Catalogo.jsx";
 import PrivateRoute from "./Componentes/PrivateRoute.jsx";
 
-// ⚙️ Panel Admin
+// 🧭 Panel Admin
 import AdminLayoutAdmin from "./admin/AdminLayoutAdmin.jsx";
 import UsuariosList from "./Componentes/UsuariosList.jsx";
 import ProductosList from "./Componentes/ProductosList.jsx";
@@ -25,13 +25,14 @@ import PagosList from "./Componentes/PagosList.jsx";
 import InstalacionesList from "./Componentes/InstalacionesList.jsx";
 import ProveedoresList from "./Componentes/ProveedoresList.jsx";
 import SoporteList from "./Componentes/SoporteList.jsx";
-
-// ✅ Página de Entregas del Admin
 import EntregasAdmin from "./admin/pages/EntregasAdmin.jsx";
 
-// ---------------------------
-// 🌎 Layout público reutilizable
-// ---------------------------
+// 👤 Panel Usuario
+import UsuarioLayout from "./usuario/UsuarioLayout.jsx";
+import HomeUsuario from "./usuario/Componentes/HomeUsuario.jsx";
+import CatalogoUsuario from "./usuario/Componentes/CatalogoUsuario.jsx";
+
+// 🌍 Layout público reutilizable
 function PublicLayout({ children }) {
   return (
     <div className="relative min-h-screen flex flex-col">
@@ -48,13 +49,11 @@ function PublicLayout({ children }) {
   );
 }
 
-// ---------------------------
-// 🧭 Configuración principal de rutas
-// ---------------------------
+// ⚙️ Configuración principal de rutas
 export default function App() {
   return (
     <Routes>
-      {/* 🌿 RUTAS PÚBLICAS */}
+      {/* 🌐 RUTAS PÚBLICAS */}
       <Route
         path="/"
         element={
@@ -128,7 +127,7 @@ export default function App() {
         }
       />
 
-      {/* ⚙️ RUTAS PRIVADAS DEL ADMIN */}
+      {/* 🧩 RUTAS PRIVADAS DEL ADMIN */}
       <Route
         path="/admin/*"
         element={
@@ -137,7 +136,6 @@ export default function App() {
           </PrivateRoute>
         }
       >
-        {/* Página principal del admin */}
         <Route
           index
           element={
@@ -148,11 +146,7 @@ export default function App() {
             </div>
           }
         />
-
-        {/* 👥 Usuarios */}
         <Route path="usuarios" element={<UsuariosList />} />
-
-        {/* 🛒 Otros módulos */}
         <Route path="productos" element={<ProductosList />} />
         <Route path="compras" element={<ComprasList />} />
         <Route path="pagos" element={<PagosList />} />
@@ -162,13 +156,26 @@ export default function App() {
         <Route path="soporte" element={<SoporteList />} />
       </Route>
 
-      {/* 🚫 Ruta no encontrada */}
+      {/* 👤 RUTAS PRIVADAS DEL USUARIO */}
+      <Route
+        path="/usuario/*"
+        element={
+          <PrivateRoute allowedRoles={["Usuario"]}>
+            <UsuarioLayout />
+          </PrivateRoute>
+        }
+      >
+        <Route index element={<HomeUsuario />} />
+        <Route path="catalogo" element={<CatalogoUsuario />} />
+      </Route>
+
+      {/* 🚫 RUTA NO ENCONTRADA */}
       <Route
         path="*"
         element={
           <PublicLayout>
             <h1 className="text-3xl text-white font-bold text-center">
-              ⚠️ Ruta no encontrada
+              Ruta no encontrada
             </h1>
           </PublicLayout>
         }
