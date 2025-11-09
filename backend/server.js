@@ -19,11 +19,11 @@ const comprasRoutes = require("./routes/compras");
 const entregasRoutes = require("./routes/entrega"); 
 const instalacionesRoutes = require("./routes/instalacion");
 const pagosRoutes = require("./routes/pago");
-const productosRoutes = require("./routes/producto");
+const productosRoutes = require("./routes/productos");
 const proveedoresRoutes = require("./routes/proveedor");
 const soportesRoutes = require("./routes/soporte_tecnico");
 const usuariosRoutes = require("./routes/usuarios");
-
+  
 // ----------------------
 // Conexión de rutas (todas en plural)
 // ----------------------

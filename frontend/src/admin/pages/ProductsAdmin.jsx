@@ -31,14 +31,27 @@ function ProductsAdmin() {
   const loadProducts = async () => {
     try {
       setError(null);
+      setLoading(true);
       const data = await getProducts();
 
-      // Si el backend devuelve { productos: [...] }
-      const lista = Array.isArray(data) ? data : data.productos || [];
+      console.log("📦 Datos recibidos del backend:", data);
+
+      // 🔹 Si el backend devuelve un array (SELECT * FROM producto)
+      let lista = [];
+      if (Array.isArray(data)) {
+        lista = data;
+      } else if (data?.productos) {
+        lista = data.productos;
+      } else {
+        console.warn("⚠️ Respuesta inesperada del backend:", data);
+      }
+
       setProducts(lista);
     } catch (err) {
       console.error("❌ Error al obtener productos:", err);
-      setError(err.message || "No se pudo obtener la lista de productos.");
+      setError(
+        "No se pudo obtener la lista de productos. Verifica el backend o la conexión."
+      );
     } finally {
       setLoading(false);
     }
