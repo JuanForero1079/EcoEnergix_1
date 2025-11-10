@@ -1,7 +1,7 @@
 // server.js
 const express = require("express");
 const cors = require("cors");
-// const { verificarToken, verificarRol } = require("./middleware/auth"); // ⚠️ Comentado para entregas sin token
+// const { verificarToken, verificarRol } = require("./middleware/auth"); //  Comentado para entregas sin token
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -31,14 +31,14 @@ const usuariosRoutes = require("./routes/usuarios");
 const pedidosRoutes = require("./routes/pedidos");
 
 // Rutas específicas de usuario
-const comprasUsuarioRoutes = require("./routes/comprasUsuario"); // ✅ nueva ruta
+const comprasUsuarioRoutes = require("./routes/comprasUsuario"); //  nueva ruta
 
 // ----------------------
 // Rutas públicas
 // ----------------------
 app.use("/api/auth", authRoutes);
 
-// 🔹 Ruta pública para productos (usuarios normales)
+// Ruta pública para productos (usuarios normales)
 const publicProductosRoutes = require("./routes/publicProductos");
 app.use("/api/productos", publicProductosRoutes);
 
@@ -46,7 +46,7 @@ app.use("/api/productos", publicProductosRoutes);
 // Rutas protegidas por rol
 // ----------------------
 
-// 🟢 Solo Administrador
+// Solo Administrador
 app.use(
   "/api/admin/compras",
   /*verificarToken, verificarRol("administrador"),*/ 
@@ -84,14 +84,14 @@ app.use(
   usuariosRoutes
 );
 
-// 🟡 Cliente y Domiciliario (temporal)
+//  Cliente y Domiciliario (temporal)
 app.use(
   "/api/pedidos",
   /*verificarToken, verificarRol("cliente", "domiciliario"),*/ 
   pedidosRoutes
 );
 
-// ✅ Rutas de usuario normal
+//  Rutas de usuario normal
 app.use("/api/compras/usuario", comprasUsuarioRoutes);
 
 // ----------------------
@@ -113,9 +113,9 @@ app.use((err, req, res, next) => {
 // Inicio del servidor
 // ----------------------
 app.listen(PORT, () => {
-  console.log(`✅ Servidor escuchando en http://localhost:${PORT}`);
-  console.log("🟢 Rutas públicas: /api/auth y /api/productos");
-  console.log("🟢 Rutas admin: /api/admin/... (entregas sin token)");
-  console.log("🟢 Rutas Cliente/Domiciliario: /api/pedidos (temporal)");
-  console.log("🟢 Rutas Usuario: /api/compras/usuario");
+  console.log(` Servidor escuchando en http://localhost:${PORT}`);
+  console.log(" Rutas públicas: /api/auth y /api/productos");
+  console.log(" Rutas admin: /api/admin/... (entregas sin token)");
+  console.log(" Rutas Cliente/Domiciliario: /api/pedidos (temporal)");
+  console.log(" Rutas Usuario: /api/compras/usuario");
 });

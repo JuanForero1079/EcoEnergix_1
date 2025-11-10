@@ -32,13 +32,13 @@ export default function HomeUsuario() {
         {/* Botones de navegación del usuario */}
         <div className="flex flex-wrap justify-center gap-4 sm:gap-6 mt-6">
           <Link
-            to={`/usuario/compras/${usuario?.id || ""}`}
+            to={`/usuario/mis-compras/${usuario?.id || ""}`}
             className="px-6 py-3 bg-[#3dc692] text-white rounded-xl font-semibold shadow-md hover:bg-[#5f54b3] transition"
           >
             Mis Compras
           </Link>
           <Link
-            to={`/usuario/pagos/${usuario?.id || ""}`}
+            to={`/usuario/mis-pagos/${usuario?.id || ""}`}
             className="px-6 py-3 bg-[#5f54b3] text-white rounded-xl font-semibold shadow-md hover:bg-[#3dc692] transition"
           >
             Mis Pagos

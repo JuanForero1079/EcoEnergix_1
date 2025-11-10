@@ -106,7 +106,7 @@ export default function CatalogoUsuario() {
                     onClick={() => agregarAlCarrito(producto)}
                     className="px-4 py-2 bg-green-600 text-white rounded-full font-semibold hover:bg-green-700 transition-colors"
                   >
-                    Agregar 🛒
+                    Agregar 
                   </button>
                 </div>
               </div>
@@ -160,7 +160,7 @@ export default function CatalogoUsuario() {
                   onClick={() => agregarAlCarrito(productoSeleccionado)}
                   className="px-5 py-2 bg-green-600 text-white rounded-full font-semibold hover:bg-green-700 transition-colors"
                 >
-                  Agregar al carrito 🛒
+                  Agregar al carrito 
                 </button>
               </div>
             </motion.div>

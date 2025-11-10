@@ -35,7 +35,7 @@ export default function PerfilUsuario() {
     setUsuario(tempUsuario);
     setEditando(false);
     // alerta solo al guardar
-    alert("✅ Información actualizada correctamente");
+    alert(" Información actualizada correctamente");
   };
 
   const handleCancelar = () => {
@@ -120,7 +120,7 @@ export default function PerfilUsuario() {
 
           <div className="mt-8 flex justify-end gap-4">
             {!editando ? (
-              // <- IMPORTANTE: type="button" para evitar submit accidental
+              
               <button
                 type="button"
                 onClick={handleEditar}

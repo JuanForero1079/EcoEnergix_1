@@ -10,7 +10,7 @@ export const useCarrito = () => useContext(CarritoContext);
 export const CarritoProvider = ({ children }) => {
   const [carrito, setCarrito] = useState([]);
 
-  // 🟢 Agregar producto al carrito
+  //  Agregar producto al carrito
   const agregarAlCarrito = (producto) => {
     setCarrito((prevCarrito) => {
       // Verificar si ya existe en el carrito
@@ -28,21 +28,21 @@ export const CarritoProvider = ({ children }) => {
     });
   };
 
-  // 🔴 Eliminar producto del carrito
+  //  Eliminar producto del carrito
   const eliminarDelCarrito = (id) => {
     setCarrito((prevCarrito) => prevCarrito.filter((p) => p.id !== id));
   };
 
-  // ⚪ Vaciar carrito
+  //  Vaciar carrito
   const vaciarCarrito = () => setCarrito([]);
 
-  // 💰 Calcular total siempre como número
+  //  Calcular total siempre como número
   const total = carrito.reduce(
     (acc, item) => acc + Number(item.precio || 0) * (item.cantidad || 1),
     0
   );
 
-  // 🟡 Calcular cantidad total de productos
+  //  Calcular cantidad total de productos
   const cantidadTotal = carrito.reduce((acc, item) => acc + item.cantidad, 0);
 
   return (

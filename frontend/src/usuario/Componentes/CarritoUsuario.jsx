@@ -11,7 +11,7 @@ export default function CarritoUsuario() {
       </h1>
 
       {carrito.length === 0 ? (
-        <p className="text-center text-gray-600">Tu carrito está vacío 🛒</p>
+        <p className="text-center text-gray-600">Tu carrito está vacío </p>
       ) : (
         <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-3xl p-6">
           {carrito.map((item) => (

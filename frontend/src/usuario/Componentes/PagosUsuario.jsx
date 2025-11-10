@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import API from "../../services/api"; // Axios configurado
+import API from "../../services/api"; 
 
 export default function PagosUsuario() {
   const { userId } = useParams();

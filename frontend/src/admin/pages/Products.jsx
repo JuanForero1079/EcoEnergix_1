@@ -60,7 +60,7 @@ export default function Products() {
     <div className="p-6 space-y-6">
       {/* ENCABEZADO */}
       <div className="glass-container text-white">
-        <h2 className="text-3xl font-bold">Gestión de Productos</h2>
+        <h2 className="text-3xl font-bold">de Productos</h2>
         <p className="text-sm text-white/70">
           Administra los productos de la plataforma
         </p>

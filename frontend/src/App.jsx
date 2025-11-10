@@ -14,7 +14,6 @@ import Register from "./Componentes/Register.jsx";
 import Terms from "./Componentes/Terms.jsx";
 import Privacy from "./Componentes/Privacy.jsx";
 import Catalogo from "./Componentes/Catalogo.jsx";
-import VerifyEmail from "./Componentes/VerifyEmail.jsx";
 import PrivateRoute from "./Componentes/PrivateRoute.jsx";
 
 // Panel Admin
@@ -68,7 +67,6 @@ export default function App() {
       <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
       <Route path="/login" element={<PublicLayout><Login /></PublicLayout>} />
       <Route path="/register" element={<PublicLayout><Register /></PublicLayout>} />
-      <Route path="/verify-email" element={<PublicLayout><VerifyEmail /></PublicLayout>} />
       <Route path="/terms" element={<PublicLayout><Terms /></PublicLayout>} />
       <Route path="/privacy" element={<PublicLayout><Privacy /></PublicLayout>} />
       <Route path="/catalogo" element={<PublicLayout><Catalogo /></PublicLayout>} />
