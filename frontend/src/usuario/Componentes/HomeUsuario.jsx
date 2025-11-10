@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 
 export default function HomeUsuario() {
   // 🔹 Obtener usuario logueado desde localStorage
-  // Asegúrate de guardar al iniciar sesión: { id, nombre, correo, rol }
   const usuario = JSON.parse(localStorage.getItem("usuario"));
   const nombreUsuario = usuario?.nombre || "Usuario";
 
@@ -27,7 +26,7 @@ export default function HomeUsuario() {
         {/* Subtítulo */}
         <p className="text-lg sm:text-xl text-gray-200 max-w-3xl mx-auto drop-shadow-md">
           Aquí podrás gestionar tus compras, instalaciones, pagos y más, todo en
-          un solo lugar. 🌞
+          un solo lugar.
         </p>
 
         {/* Botones de navegación del usuario */}
