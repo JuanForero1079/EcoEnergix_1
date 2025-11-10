@@ -1,14 +1,11 @@
-import axios from "axios";
-
-// ✅ BASE URL correcta
 const API = axios.create({
-  baseURL: "http://localhost:3001/api",
+  baseURL: "http://localhost:3001/api/admin", // 🔹 cambiar a /api/admin
 });
 
 // 🔹 Obtener todos los productos
 export async function getProducts() {
   try {
-    const res = await API.get("/productos");
+    const res = await API.get("/productos"); // ahora apunta a /api/admin/productos
     console.log("✅ Productos obtenidos:", res.data);
     return res.data;
   } catch (err) {

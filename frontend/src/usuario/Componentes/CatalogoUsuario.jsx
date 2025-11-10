@@ -1,58 +1,60 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import API from "../../services/api"; // Axios configurado para apuntar al backend
 
-const productos = [
-  {
-    id: 1,
-    nombre: "Panel Solar 300W",
-    tipo: "Panel Monocristalino",
-    precio: "$690.000",
-    marca: "EcoSun",
-    descripcion: "Ideal para hogares con consumo moderado. Alta durabilidad y eficiencia.",
-    garantia: "10 años",
-    imgSrc:
-      "https://cdn.pixabay.com/photo/2016/10/29/10/16/solar-1781466_1280.jpg",
-  },
-  {
-    id: 2,
-    nombre: "Panel Solar 450W",
-    tipo: "Panel Policristalino",
-    precio: "$890.000",
-    marca: "SolarMax",
-    descripcion: "Mayor potencia para sistemas industriales o comerciales.",
-    garantia: "12 años",
-    imgSrc:
-      "https://cdn.pixabay.com/photo/2014/04/03/11/53/solar-panels-311598_1280.png",
-  },
-  {
-    id: 3,
-    nombre: "Panel Solar 600W",
-    tipo: "Alta Eficiencia",
-    precio: "$1.250.000",
-    marca: "SunPower",
-    descripcion: "Excelente rendimiento para grandes instalaciones solares.",
-    garantia: "15 años",
-    imgSrc:
-      "https://biosolarenergy.com.co/wp-content/uploads/2023/04/panel-60w.jpg",
-  },
-];
-
-// Elimina tildes y pasa a minúsculas
+// Función para normalizar texto (sin tildes y minúsculas)
 const normalizeText = (text) =>
-  text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  text?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() || "";
 
 export default function CatalogoUsuario() {
+  const [productos, setProductos] = useState([]);
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
   const [busqueda, setBusqueda] = useState("");
   const [carrito, setCarrito] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
+  // 🔹 Cargar productos desde la BD (ruta pública)
+  useEffect(() => {
+    const fetchProductos = async () => {
+      try {
+        const res = await API.get("/api/productos"); // Ruta pública
+        setProductos(res.data);
+      } catch (err) {
+        console.error("Error al cargar productos:", err);
+        setError("No se pudieron cargar los productos.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProductos();
+  }, []);
+
+  // Filtrado de productos según búsqueda
   const productosFiltrados = productos.filter((p) =>
-    normalizeText(p.nombre).includes(normalizeText(busqueda))
+    normalizeText(p.Nombre_producto || p.nombre).includes(normalizeText(busqueda))
   );
 
   const agregarAlCarrito = (producto) => {
     setCarrito([...carrito, producto]);
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen text-green-700 text-xl">
+        Cargando productos...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-screen text-red-500 text-xl">
+        {error}
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen p-6 bg-gradient-to-b from-green-100 via-white to-green-50">
@@ -61,8 +63,6 @@ export default function CatalogoUsuario() {
         <h1 className="text-3xl font-bold text-green-700 mb-4 md:mb-0">
           Catálogo de Productos
         </h1>
-
-        {/* Barra de búsqueda */}
         <input
           type="text"
           placeholder="🔍 Buscar panel solar..."
@@ -76,24 +76,24 @@ export default function CatalogoUsuario() {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
         {productosFiltrados.map((producto) => (
           <motion.div
-            key={producto.id}
+            key={producto.ID_producto}
             className="bg-white border border-gray-200 rounded-2xl shadow-lg hover:shadow-2xl transition-transform hover:-translate-y-1 overflow-hidden"
             whileHover={{ scale: 1.03 }}
           >
             <img
-              src={producto.imgSrc}
-              alt={producto.nombre}
+              src={producto.imagen || "https://via.placeholder.com/400"}
+              alt={producto.Nombre_producto}
               className="w-full h-48 object-cover"
             />
             <div className="p-5">
               <h2 className="text-lg font-bold text-gray-800 mb-2">
-                {producto.nombre}
+                {producto.Nombre_producto}
               </h2>
               <p className="text-green-600 font-bold text-xl mb-3">
-                {producto.precio}
+                {producto.Precio}
               </p>
               <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                {producto.descripcion}
+                {producto.detalles || producto.Tipo_producto}
               </p>
 
               <div className="flex justify-between">
@@ -139,34 +139,34 @@ export default function CatalogoUsuario() {
               </button>
 
               <img
-                src={productoSeleccionado.imgSrc}
-                alt={productoSeleccionado.nombre}
+                src={productoSeleccionado.imagen || "https://via.placeholder.com/400"}
+                alt={productoSeleccionado.Nombre_producto}
                 className="w-full h-64 object-contain bg-gray-50 p-4 rounded-t-3xl"
               />
 
               <div className="p-8">
                 <h2 className="text-3xl font-bold text-gray-800 mb-3">
-                  {productoSeleccionado.nombre}
+                  {productoSeleccionado.Nombre_producto}
                 </h2>
                 <p className="text-green-600 text-2xl font-bold mb-4">
-                  {productoSeleccionado.precio}
+                  {productoSeleccionado.Precio}
                 </p>
                 <p className="text-gray-600 text-lg mb-6">
-                  {productoSeleccionado.descripcion}
+                  {productoSeleccionado.detalles || productoSeleccionado.Tipo_producto}
                 </p>
 
                 <div className="bg-green-50 p-5 rounded-2xl text-gray-700 grid grid-cols-2 gap-4">
                   <p>
                     <span className="font-semibold">Tipo:</span>{" "}
-                    {productoSeleccionado.tipo}
+                    {productoSeleccionado.Tipo_producto || ""}
                   </p>
                   <p>
                     <span className="font-semibold">Marca:</span>{" "}
-                    {productoSeleccionado.marca}
+                    {productoSeleccionado.Marca || ""}
                   </p>
                   <p>
                     <span className="font-semibold">Garantía:</span>{" "}
-                    {productoSeleccionado.garantia}
+                    {productoSeleccionado.Garantia || ""}
                   </p>
                 </div>
 

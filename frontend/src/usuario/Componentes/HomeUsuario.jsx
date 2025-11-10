@@ -1,6 +1,13 @@
+// src/usuario/Componentes/HomeUsuario.jsx
 import React from "react";
+import { Link } from "react-router-dom";
 
 export default function HomeUsuario() {
+  // 🔹 Obtener usuario logueado desde localStorage
+  // Asegúrate de guardar al iniciar sesión: { id, nombre, correo, rol }
+  const usuario = JSON.parse(localStorage.getItem("usuario"));
+  const nombreUsuario = usuario?.nombre || "Usuario";
+
   return (
     <section className="relative w-full min-h-screen flex flex-col items-center justify-center text-center px-4 sm:px-6 lg:px-8">
       {/* Fondo oscuro semitransparente encima del slider */}
@@ -12,7 +19,7 @@ export default function HomeUsuario() {
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white drop-shadow-lg leading-tight">
           ¡Hola,{" "}
           <span className="bg-gradient-to-r from-[#3dc692] via-[#5f54b3] to-[#4375b2] bg-clip-text text-transparent">
-            usuario EcoEnergix
+            {nombreUsuario}
           </span>
           !
         </h1>
@@ -25,24 +32,24 @@ export default function HomeUsuario() {
 
         {/* Botones de navegación del usuario */}
         <div className="flex flex-wrap justify-center gap-4 sm:gap-6 mt-6">
-          <a
-            href="/usuario/compras"
+          <Link
+            to={`/usuario/compras/${usuario?.id || ""}`}
             className="px-6 py-3 bg-[#3dc692] text-white rounded-xl font-semibold shadow-md hover:bg-[#5f54b3] transition"
           >
             Mis Compras
-          </a>
-          <a
-            href="/usuario/pagos"
+          </Link>
+          <Link
+            to={`/usuario/pagos/${usuario?.id || ""}`}
             className="px-6 py-3 bg-[#5f54b3] text-white rounded-xl font-semibold shadow-md hover:bg-[#3dc692] transition"
           >
             Mis Pagos
-          </a>
-          <a
-            href="/usuario/soporte"
+          </Link>
+          <Link
+            to={`/usuario/soporte/${usuario?.id || ""}`}
             className="px-6 py-3 bg-[#4375b2] text-white rounded-xl font-semibold shadow-md hover:bg-[#3dc692] transition"
           >
             Soporte Técnico
-          </a>
+          </Link>
         </div>
 
         {/* Tarjetas de información */}
@@ -52,8 +59,7 @@ export default function HomeUsuario() {
               Energía Activa
             </h3>
             <p className="text-gray-200 text-sm">
-              Consulta tu consumo energético y rendimiento de tus paneles
-              solares.
+              Consulta tu consumo energético y rendimiento de tus paneles solares.
             </p>
           </div>
 
@@ -62,8 +68,7 @@ export default function HomeUsuario() {
               Historial
             </h3>
             <p className="text-gray-200 text-sm">
-              Revisa tus pedidos, pagos e instalaciones realizadas con
-              EcoEnergix.
+              Revisa tus pedidos, pagos e instalaciones realizadas con EcoEnergix.
             </p>
           </div>
 
@@ -72,8 +77,7 @@ export default function HomeUsuario() {
               Perfil
             </h3>
             <p className="text-gray-200 text-sm">
-              Edita tu información personal, cambia tu contraseña y gestiona tu
-              cuenta.
+              Edita tu información personal, cambia tu contraseña y gestiona tu cuenta.
             </p>
           </div>
         </div>

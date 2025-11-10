@@ -1,7 +1,9 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import API from "../services/api"; // Asegúrate de que apunte a tu API
 
 export default function Register() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -12,6 +14,9 @@ export default function Register() {
     privacy: false,
   });
 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData({
@@ -20,8 +25,9 @@ export default function Register() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
 
     // Validación
     if (
@@ -31,28 +37,37 @@ export default function Register() {
       !formData.documentType ||
       !formData.documentNumber
     ) {
-      alert("Por favor, completa todos los campos antes de registrarte.");
+      setError("Por favor, completa todos los campos antes de registrarte.");
       return;
     }
 
     if (!formData.terms || !formData.privacy) {
-      alert(
-        "Debes aceptar los Términos y Condiciones y la Política de Privacidad.",
+      setError(
+        "Debes aceptar los Términos y Condiciones y la Política de Privacidad."
       );
       return;
     }
 
-    alert(`Registro con: ${formData.name} - ${formData.email}`);
+    setLoading(true);
 
-    setFormData({
-      name: "",
-      email: "",
-      password: "",
-      documentType: "",
-      documentNumber: "",
-      terms: false,
-      privacy: false,
-    });
+    try {
+      const res = await API.post("/api/auth/register", {
+        Nombre: formData.name,
+        Correo_electronico: formData.email,
+        Contraseña: formData.password,
+        Tipo_documento: formData.documentType,
+        Numero_documento: formData.documentNumber,
+      });
+
+      // Registro exitoso, redirigir al login
+      alert(res.data.message);
+      navigate("/login");
+    } catch (err) {
+      console.error("Error al registrar:", err.response || err);
+      setError(err.response?.data?.message || "Error al registrar usuario");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -64,6 +79,11 @@ export default function Register() {
         <p className="text-base text-center text-white/80 mb-6">
           Regístrate y empieza a ahorrar con energía solar
         </p>
+
+        {error && (
+          <p className="text-red-500 text-center mb-4 font-medium">{error}</p>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Nombre */}
           <div>
@@ -71,10 +91,9 @@ export default function Register() {
             <input
               type="text"
               name="name"
-              required
-              placeholder="Ingresa tu nombre"
               value={formData.name}
               onChange={handleChange}
+              placeholder="Ingresa tu nombre"
               className="w-full px-4 py-2 rounded-lg bg-white/30 text-white placeholder-white/70 focus:ring-2 focus:ring-[#5f54b3] outline-none"
             />
           </div>
@@ -85,10 +104,9 @@ export default function Register() {
             <input
               type="email"
               name="email"
-              required
-              placeholder="Ingresa tu correo"
               value={formData.email}
               onChange={handleChange}
+              placeholder="Ingresa tu correo"
               className="w-full px-4 py-2 rounded-lg bg-white/30 text-white placeholder-white/70 focus:ring-2 focus:ring-[#3dc692] outline-none"
             />
           </div>
@@ -99,10 +117,9 @@ export default function Register() {
             <input
               type="password"
               name="password"
-              required
-              placeholder="Crea una contraseña"
               value={formData.password}
               onChange={handleChange}
+              placeholder="Crea una contraseña"
               className="w-full px-4 py-2 rounded-lg bg-white/30 text-white placeholder-white/70 focus:ring-2 focus:ring-[#5f54b3] outline-none"
             />
           </div>
@@ -116,28 +133,20 @@ export default function Register() {
                 value={formData.documentType}
                 onChange={handleChange}
                 className="w-1/3 px-2 py-2 rounded-lg bg-white/30 text-white focus:ring-2 focus:ring-[#3dc692] outline-none"
-                required
               >
                 <option value="" disabled hidden>
                   Tipo
                 </option>
-                <option value="CC" className="bg-[#4375b2]/80 text-white">
-                  Cédula
-                </option>
-                <option value="TI" className="bg-[#4375b2]/80 text-white">
-                  Tarjeta Identidad
-                </option>
-                <option value="CE" className="bg-[#4375b2]/80 text-white">
-                  Cédula Extranjería
-                </option>
+                <option value="CC">Cédula</option>
+                <option value="TI">Tarjeta Identidad</option>
+                <option value="CE">Cédula Extranjería</option>
               </select>
               <input
                 type="text"
                 name="documentNumber"
-                required
-                placeholder="Número"
                 value={formData.documentNumber}
                 onChange={handleChange}
+                placeholder="Número"
                 className="w-2/3 px-3 py-2 rounded-lg bg-white/30 text-white placeholder-white/70 focus:ring-2 focus:ring-[#5f54b3] outline-none"
               />
             </div>
@@ -167,10 +176,7 @@ export default function Register() {
                 className="mr-2"
               />
               Acepto la{" "}
-              <Link
-                to="/privacy"
-                className="ml-1 text-[#3dc692] hover:underline"
-              >
+              <Link to="/privacy" className="ml-1 text-[#3dc692] hover:underline">
                 Política de Privacidad
               </Link>
             </label>
@@ -179,9 +185,10 @@ export default function Register() {
           {/* Botón */}
           <button
             type="submit"
-            className="w-full bg-gradient-to-r bg-[#5f54b3] text-white py-2 rounded-lg hover:bg-[#3dc692] transition"
+            disabled={loading}
+            className="w-full bg-gradient-to-r bg-[#5f54b3] text-white py-2 rounded-lg hover:bg-[#3dc692] transition disabled:opacity-50"
           >
-            Registrarme
+            {loading ? "Registrando..." : "Registrarme"}
           </button>
         </form>
 

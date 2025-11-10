@@ -1,8 +1,11 @@
+// routes/compras.js
 const express = require("express");
 const router = express.Router();
 const DB = require("../db/connection");
 
+// ----------------------
 // READ: obtener todas las compras
+// ----------------------
 router.get("/", (req, res) => {
   DB.query("SELECT * FROM compras", (err, result) => {
     if (err)
@@ -13,7 +16,9 @@ router.get("/", (req, res) => {
   });
 });
 
+// ----------------------
 // READ: obtener una compra por ID
+// ----------------------
 router.get("/:id", (req, res) => {
   const { id } = req.params;
   DB.query("SELECT * FROM compras WHERE ID_compra = ?", [id], (err, result) => {
@@ -27,11 +32,26 @@ router.get("/:id", (req, res) => {
   });
 });
 
+// ----------------------
+// READ: obtener todas las compras de un usuario
+// ----------------------
+router.get("/usuario/:userId", (req, res) => {
+  const { userId } = req.params;
+  DB.query("SELECT * FROM compras WHERE ID_usuario = ?", [userId], (err, result) => {
+    if (err)
+      return res
+        .status(500)
+        .json({ error: "Error al obtener las compras del usuario", details: err });
+    res.json(result);
+  });
+});
+
+// ----------------------
 // CREATE: agregar una compra
+// ----------------------
 router.post("/", (req, res) => {
   const { ID_usuario, Fecha_compra, Monto_total, Estado } = req.body;
 
-  // Validación básica
   if (!ID_usuario || !Fecha_compra || !Monto_total || !Estado) {
     return res
       .status(400)
@@ -58,16 +78,17 @@ router.post("/", (req, res) => {
       res
         .status(201)
         .json({ message: "Compra creada exitosamente!", compra: nuevaCompra });
-    },
+    }
   );
 });
 
+// ----------------------
 // UPDATE: actualizar una compra
+// ----------------------
 router.put("/:id", (req, res) => {
   const { id } = req.params;
   const { Fecha_compra, Monto_total, Estado } = req.body;
 
-  // Validación básica
   if (!Fecha_compra || !Monto_total || !Estado) {
     return res
       .status(400)
@@ -94,11 +115,13 @@ router.put("/:id", (req, res) => {
         message: "Compra actualizada exitosamente!",
         compra: compraActualizada,
       });
-    },
+    }
   );
 });
 
+// ----------------------
 // DELETE: eliminar una compra
+// ----------------------
 router.delete("/:id", (req, res) => {
   const { id } = req.params;
 
