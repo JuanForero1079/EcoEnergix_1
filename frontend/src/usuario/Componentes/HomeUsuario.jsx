@@ -20,19 +20,19 @@ export default function HomeUsuario() {
         {/* Subtítulo */}
         <p className="text-lg sm:text-xl text-gray-200 max-w-3xl mx-auto drop-shadow-md">
           Aquí podrás gestionar tus compras, instalaciones, pagos y más, todo en
-          un solo lugar. 🌞
+          un solo lugar. 
         </p>
 
         {/* Botones de navegación del usuario */}
         <div className="flex flex-wrap justify-center gap-4 sm:gap-6 mt-6">
           <a
-            href="/usuario/compras"
+            href="/usuario/mis-compras"
             className="px-6 py-3 bg-[#3dc692] text-white rounded-xl font-semibold shadow-md hover:bg-[#5f54b3] transition"
           >
             Mis Compras
           </a>
           <a
-            href="/usuario/pagos"
+            href="/usuario/mis-pagos"
             className="px-6 py-3 bg-[#5f54b3] text-white rounded-xl font-semibold shadow-md hover:bg-[#3dc692] transition"
           >
             Mis Pagos

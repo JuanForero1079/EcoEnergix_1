@@ -1,7 +1,7 @@
 // src/App.jsx
 import { Routes, Route } from "react-router-dom";
 
-// 🌿 Componentes públicos
+//  Componentes públicos
 import FondoSlider from "./Componentes/FondoSlider.jsx";
 import Navbar from "./Componentes/Navbar.jsx";
 import Hero from "./Componentes/Hero.jsx";
@@ -16,7 +16,7 @@ import Privacy from "./Componentes/Privacy.jsx";
 import Catalogo from "./Componentes/Catalogo.jsx";
 import PrivateRoute from "./Componentes/PrivateRoute.jsx";
 
-// 🧭 Panel Admin
+//  Panel Admin
 import AdminLayoutAdmin from "./admin/AdminLayoutAdmin.jsx";
 import UsuariosList from "./Componentes/UsuariosList.jsx";
 import ProductosList from "./Componentes/ProductosList.jsx";
@@ -27,15 +27,22 @@ import ProveedoresList from "./Componentes/ProveedoresList.jsx";
 import SoporteList from "./Componentes/SoporteList.jsx";
 import EntregasAdmin from "./admin/pages/EntregasAdmin.jsx";
 
-// 👤 Panel Usuario
+//  Panel Usuario
 import UsuarioLayout from "./usuario/UsuarioLayout.jsx";
 import HomeUsuario from "./usuario/Componentes/HomeUsuario.jsx";
 import CatalogoUsuario from "./usuario/Componentes/CatalogoUsuario.jsx";
+import CarritoUsuario from "./usuario/Componentes/CarritoUsuario.jsx";
+import SeguimientoPedidos from "./usuario/Componentes/SeguimientoPedidos";
+import ProcederPago from "./usuario/Componentes/ProcederPago";
+import PerfilUsuario from "./usuario/Componentes/PerfilUsuario";
+import MisCompras from "./usuario/Componentes/MisCompras";
+import MisPagos from "./usuario/Componentes/MisPagos";
+import SoporteTecnico from "./usuario/Componentes/SoporteTecnico";
 
-// 🏍 Panel Domiciliario
+//  Panel Domiciliario
 import DomiciliarioLayout from "./domiciliario/DomiciliarioLayout.jsx";
 
-// 🌍 Layout público reutilizable
+//  Layout público reutilizable
 function PublicLayout({ children }) {
   return (
     <div className="relative min-h-screen flex flex-col">
@@ -53,7 +60,7 @@ function PublicLayout({ children }) {
 export default function App() {
   return (
     <Routes>
-      {/* 🌐 RUTAS PÚBLICAS */}
+      {/*  RUTAS PÚBLICAS */}
       <Route path="/" element={<PublicLayout><Hero /></PublicLayout>} />
       <Route path="/services" element={<PublicLayout><Services /></PublicLayout>} />
       <Route path="/about" element={<PublicLayout><About /></PublicLayout>} />
@@ -64,7 +71,7 @@ export default function App() {
       <Route path="/privacy" element={<PublicLayout><Privacy /></PublicLayout>} />
       <Route path="/catalogo" element={<PublicLayout><Catalogo /></PublicLayout>} />
 
-      {/* 🧩 RUTAS PRIVADAS DEL ADMIN */}
+      {/*  RUTAS PRIVADAS DEL ADMIN */}
       <Route
         path="/admin/*"
         element={
@@ -84,7 +91,7 @@ export default function App() {
         <Route path="soporte" element={<SoporteList />} />
       </Route>
 
-      {/* 🏍 RUTAS PRIVADAS DEL DOMICILIARIO */}
+      {/*  RUTAS PRIVADAS DEL DOMICILIARIO */}
       <Route
         path="/domiciliario/*"
         element={
@@ -96,7 +103,7 @@ export default function App() {
         <Route index element={<h1 className="text-3xl text-white font-bold text-center">Bienvenido, Domiciliario</h1>} />
       </Route>
 
-      {/* 👤 RUTAS PRIVADAS DEL USUARIO */}
+      {/*  RUTAS PRIVADAS DEL USUARIO */}
       <Route
         path="/usuario/*"
         element={
@@ -107,9 +114,16 @@ export default function App() {
       >
         <Route index element={<HomeUsuario />} />
         <Route path="catalogo" element={<CatalogoUsuario />} />
+        <Route path="carrito" element={<CarritoUsuario />} />
+        <Route path="seguimiento" element={<SeguimientoPedidos />} />
+        <Route path="pago" element={<ProcederPago />} />
+        <Route path="perfil" element={<PerfilUsuario />} />
+        <Route path="mis-compras" element={<MisCompras />} />
+        <Route path="mis-pagos" element={<MisPagos />} />
+        <Route path="soporte" element={<SoporteTecnico />} />
       </Route>
 
-      {/* 🚫 RUTA NO ENCONTRADA */}
+      {/*  RUTA NO ENCONTRADA */}
       <Route path="*" element={<PublicLayout><h1 className="text-3xl text-white font-bold text-center">Ruta no encontrada</h1></PublicLayout>} />
     </Routes>
   );
