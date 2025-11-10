@@ -25,8 +25,7 @@ export default function Login() {
     }
 
     try {
-      // 🔹 Ruta corregida con prefijo /api/auth/login
-      const response = await fetch("http://192.168.1.1:3001/api/auth/login", {
+      const response = await fetch("http://localhost:3001/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -42,33 +41,31 @@ export default function Login() {
 
       const { usuario, token } = data;
 
-      if (!usuario || !usuario.Rol_usuario || !token) {
+      if (!usuario || !usuario.rol || !token) {
         alert("Datos de sesión incompletos.");
         return;
       }
 
-      // 🔹 Normalizamos el rol (sin espacios y en minúsculas)
-      const rolNormalizado = usuario.Rol_usuario.toLowerCase().trim();
+      // 🔹 Normalizamos el rol
+      const rolNormalizado = usuario.rol.toLowerCase().trim();
 
-      // 🔹 Guardamos datos consistentes en localStorage
+      // 🔹 Guardamos en localStorage
       localStorage.setItem(
         "user",
         JSON.stringify({
-          id: usuario.ID_usuario,
-          nombre: usuario.Nombre_usuario,
-          correo: usuario.Correo_electronico,
-          rol: rolNormalizado, // clave uniforme
+          id: usuario.id,
+          nombre: usuario.nombre,
+          correo: usuario.correo,
+          rol: rolNormalizado,
         })
       );
-
       localStorage.setItem("token", token);
 
       // 🔹 Redirección según rol
-      if (rolNormalizado === "administrador") {
-        navigate("/admin");
-      } else {
-        alert("Solo los administradores pueden acceder a esta vista.");
-      }
+      if (rolNormalizado === "administrador") navigate("/admin");
+      else if (rolNormalizado === "usuario" || rolNormalizado === "cliente") navigate("/usuario");
+      else if (rolNormalizado === "domiciliario") navigate("/domiciliario");
+      else alert("Rol desconocido");
     } catch (error) {
       console.error("Error durante el login:", error);
       alert("Ocurrió un error al intentar iniciar sesión.");
@@ -84,9 +81,7 @@ export default function Login() {
 
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div>
-            <label className="block text-white mb-2 text-sm sm:text-base">
-              Correo
-            </label>
+            <label className="block text-white mb-2 text-sm sm:text-base">Correo</label>
             <input
               type="email"
               name="correo"
@@ -99,9 +94,7 @@ export default function Login() {
           </div>
 
           <div>
-            <label className="block text-white mb-2 text-sm sm:text-base">
-              Contraseña
-            </label>
+            <label className="block text-white mb-2 text-sm sm:text-base">Contraseña</label>
             <input
               type="password"
               name="contraseña"
@@ -122,10 +115,7 @@ export default function Login() {
         </form>
 
         <div className="mt-4 flex flex-col items-center text-sm sm:text-base text-white/90 space-y-2">
-          <Link
-            to="/forgot-password"
-            className="hover:underline hover:text-[#3dc692]"
-          >
+          <Link to="/forgot-password" className="hover:underline hover:text-[#3dc692]">
             ¿Olvidaste tu contraseña?
           </Link>
           <p>

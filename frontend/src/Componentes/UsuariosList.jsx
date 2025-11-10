@@ -1,13 +1,13 @@
 // src/Componentes/UsuariosList.jsx
 import React, { useEffect, useState } from "react";
-import API from "../services/api";
+// 🔹 Importamos el API del admin
+import API from "../admin/services/api";
 
 function UsuariosList() {
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Formulario para crear/editar
   const [formData, setFormData] = useState({
     ID_usuario: null,
     Nombre: "",
@@ -24,10 +24,10 @@ function UsuariosList() {
     fetchUsuarios();
   }, []);
 
-  // 🔹 Obtener usuarios
+  // 🔹 Obtener usuarios desde la API del admin
   const fetchUsuarios = async () => {
     try {
-      const res = await API.get("/api/usuarios");
+      const res = await API.get("/admin/usuarios"); // ✅ ruta correcta
       setUsuarios(res.data);
     } catch (err) {
       console.error("❌ Error al obtener usuarios:", err);
@@ -37,22 +37,19 @@ function UsuariosList() {
     }
   };
 
-  // 🔹 Manejar cambios en el formulario
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // 🔹 Crear o editar usuario
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
       if (editMode) {
-        await API.put(`/api/usuarios/${formData.ID_usuario}`, formData);
+        await API.put(`/admin/usuarios/${formData.ID_usuario}`, formData);
         alert("✅ Usuario actualizado correctamente");
       } else {
-        await API.post("/api/usuarios", formData);
+        await API.post("/admin/usuarios", formData);
         alert("✅ Usuario creado correctamente");
       }
       setFormData({
@@ -73,11 +70,10 @@ function UsuariosList() {
     }
   };
 
-  // 🔹 Eliminar usuario
   const handleDelete = async (id) => {
     if (!window.confirm("¿Seguro que deseas eliminar este usuario?")) return;
     try {
-      await API.delete(`/api/usuarios/${id}`);
+      await API.delete(`/admin/usuarios/${id}`);
       alert("🗑️ Usuario eliminado correctamente");
       fetchUsuarios();
     } catch (err) {
@@ -86,7 +82,6 @@ function UsuariosList() {
     }
   };
 
-  // 🔹 Cargar datos al editar
   const handleEdit = (usuario) => {
     setFormData(usuario);
     setEditMode(true);
@@ -109,72 +104,15 @@ function UsuariosList() {
       <h2 className="text-2xl font-bold mb-4">👥 Gestión de Usuarios</h2>
 
       {/* 🧾 Formulario */}
-      <form
-        onSubmit={handleSubmit}
-        className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"
-      >
-        <input
-          type="text"
-          name="Nombre"
-          placeholder="Nombre"
-          value={formData.Nombre}
-          onChange={handleChange}
-          className="p-2 rounded bg-slate-700 text-white"
-          required
-        />
-        <input
-          type="email"
-          name="Correo_electronico"
-          placeholder="Correo electrónico"
-          value={formData.Correo_electronico}
-          onChange={handleChange}
-          className="p-2 rounded bg-slate-700 text-white"
-          required
-        />
-        <input
-          type="text"
-          name="Rol_usuario"
-          placeholder="Rol (Administrador / Cliente)"
-          value={formData.Rol_usuario}
-          onChange={handleChange}
-          className="p-2 rounded bg-slate-700 text-white"
-        />
-        <input
-          type="text"
-          name="Tipo_documento"
-          placeholder="Tipo documento"
-          value={formData.Tipo_documento}
-          onChange={handleChange}
-          className="p-2 rounded bg-slate-700 text-white"
-        />
-        <input
-          type="text"
-          name="Numero_documento"
-          placeholder="Número documento"
-          value={formData.Numero_documento}
-          onChange={handleChange}
-          className="p-2 rounded bg-slate-700 text-white"
-        />
-        <input
-          type="text"
-          name="Foto_usuario"
-          placeholder="Foto (URL)"
-          value={formData.Foto_usuario}
-          onChange={handleChange}
-          className="p-2 rounded bg-slate-700 text-white"
-        />
-        <input
-          type="text"
-          name="Estado_usuario"
-          placeholder="Estado"
-          value={formData.Estado_usuario}
-          onChange={handleChange}
-          className="p-2 rounded bg-slate-700 text-white"
-        />
-        <button
-          type="submit"
-          className="col-span-1 md:col-span-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded transition"
-        >
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <input type="text" name="Nombre" placeholder="Nombre" value={formData.Nombre} onChange={handleChange} className="p-2 rounded bg-slate-700 text-white" required />
+        <input type="email" name="Correo_electronico" placeholder="Correo electrónico" value={formData.Correo_electronico} onChange={handleChange} className="p-2 rounded bg-slate-700 text-white" required />
+        <input type="text" name="Rol_usuario" placeholder="Rol (Administrador / Cliente)" value={formData.Rol_usuario} onChange={handleChange} className="p-2 rounded bg-slate-700 text-white" />
+        <input type="text" name="Tipo_documento" placeholder="Tipo documento" value={formData.Tipo_documento} onChange={handleChange} className="p-2 rounded bg-slate-700 text-white" />
+        <input type="text" name="Numero_documento" placeholder="Número documento" value={formData.Numero_documento} onChange={handleChange} className="p-2 rounded bg-slate-700 text-white" />
+        <input type="text" name="Foto_usuario" placeholder="Foto (URL)" value={formData.Foto_usuario} onChange={handleChange} className="p-2 rounded bg-slate-700 text-white" />
+        <input type="text" name="Estado_usuario" placeholder="Estado" value={formData.Estado_usuario} onChange={handleChange} className="p-2 rounded bg-slate-700 text-white" />
+        <button type="submit" className="col-span-1 md:col-span-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded transition">
           {editMode ? "💾 Guardar Cambios" : "➕ Agregar Usuario"}
         </button>
       </form>
@@ -200,41 +138,18 @@ function UsuariosList() {
             </thead>
             <tbody>
               {usuarios.map((u) => (
-                <tr
-                  key={u.ID_usuario}
-                  className="border-b border-slate-700 hover:bg-slate-800"
-                >
+                <tr key={u.ID_usuario} className="border-b border-slate-700 hover:bg-slate-800">
                   <td className="py-2 px-4">{u.ID_usuario}</td>
                   <td className="py-2 px-4">{u.Nombre}</td>
                   <td className="py-2 px-4">{u.Correo_electronico}</td>
                   <td className="py-2 px-4">{u.Rol_usuario}</td>
                   <td className="py-2 px-4">{u.Tipo_documento}</td>
                   <td className="py-2 px-4">{u.Numero_documento}</td>
-                  <td className="py-2 px-4">
-                    {u.Foto_usuario ? (
-                      <img
-                        src={u.Foto_usuario}
-                        alt={u.Nombre}
-                        className="w-10 h-10 rounded-full object-cover"
-                      />
-                    ) : (
-                      "—"
-                    )}
-                  </td>
+                  <td className="py-2 px-4">{u.Foto_usuario ? <img src={u.Foto_usuario} alt={u.Nombre} className="w-10 h-10 rounded-full object-cover" /> : "—"}</td>
                   <td className="py-2 px-4">{u.Estado_usuario}</td>
                   <td className="py-2 px-4 text-center">
-                    <button
-                      onClick={() => handleEdit(u)}
-                      className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-1 px-3 rounded mr-2"
-                    >
-                      ✏️
-                    </button>
-                    <button
-                      onClick={() => handleDelete(u.ID_usuario)}
-                      className="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded"
-                    >
-                      🗑️
-                    </button>
+                    <button onClick={() => handleEdit(u)} className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-1 px-3 rounded mr-2">✏️</button>
+                    <button onClick={() => handleDelete(u.ID_usuario)} className="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded">🗑️</button>
                   </td>
                 </tr>
               ))}

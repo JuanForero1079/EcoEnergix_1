@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 const DB = require("../db/connection");
 const router = express.Router();
 
-const JWT_SECRET = "clave_secreta_super_segura"; // ⚠️ Usa variable de entorno en producción
+const JWT_SECRET = "clave_secreta_super_segura"; // ⚠️ En producción usar variable de entorno
 
 // ----------------------
 // 🔹 Ruta POST /login
@@ -29,6 +29,7 @@ router.post("/login", (req, res) => {
 
     const user = results[0];
 
+    // 🔹 Comparación simple de contraseña
     if (contraseña !== user.Contraseña) {
       return res.status(401).json({ message: "Contraseña incorrecta" });
     }
@@ -38,20 +39,24 @@ router.post("/login", (req, res) => {
       ? user.Rol_usuario.toLowerCase().trim()
       : "cliente";
 
-    // Datos que se incluirán en el token
+    // Datos para token
     const payload = {
       id: user.ID_usuario,
       correo: user.Correo_electronico,
-      rol: rolNormalizado, // 🔹 normalizado
+      rol: rolNormalizado,
     };
 
-    // Generamos token
+    // Generamos token JWT
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "4h" });
 
-    // Enviamos respuesta
     res.json({
       token,
-      usuario: { ...user, Rol_usuario: rolNormalizado }, // 🔹 también lo normalizamos en la respuesta
+      usuario: {
+        id: user.ID_usuario,
+        nombre: user.Nombre,
+        correo: user.Correo_electronico,
+        rol: rolNormalizado,
+      },
     });
   });
 });

@@ -2,6 +2,7 @@ import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
 
 const PrivateRoute = ({ children, allowedRoles = [] }) => {
+  // 🔹 Obtenemos el usuario y token de localStorage
   const user = JSON.parse(localStorage.getItem("user"));
   const token = localStorage.getItem("token");
   const location = useLocation();
@@ -11,7 +12,7 @@ const PrivateRoute = ({ children, allowedRoles = [] }) => {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
-  // 🧩 Normaliza el rol del usuario y los roles permitidos
+  // 🧩 Normalizamos el rol del usuario y los roles permitidos
   const userRol = user.rol?.toLowerCase().trim();
   const rolesPermitidos = allowedRoles.map((r) => r.toLowerCase().trim());
 

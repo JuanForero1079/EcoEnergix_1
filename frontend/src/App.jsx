@@ -32,6 +32,9 @@ import UsuarioLayout from "./usuario/UsuarioLayout.jsx";
 import HomeUsuario from "./usuario/Componentes/HomeUsuario.jsx";
 import CatalogoUsuario from "./usuario/Componentes/CatalogoUsuario.jsx";
 
+// 🏍 Panel Domiciliario
+import DomiciliarioLayout from "./domiciliario/DomiciliarioLayout.jsx";
+
 // 🌍 Layout público reutilizable
 function PublicLayout({ children }) {
   return (
@@ -39,113 +42,38 @@ function PublicLayout({ children }) {
       <FondoSlider />
       <div className="absolute inset-0 bg-black/50" />
       <Navbar />
-
       <main className="pt-16 flex-grow relative z-10 w-full flex flex-col items-center justify-center min-h-screen">
         {children}
       </main>
-
       <Footer />
     </div>
   );
 }
 
-// ⚙️ Configuración principal de rutas
 export default function App() {
   return (
     <Routes>
       {/* 🌐 RUTAS PÚBLICAS */}
-      <Route
-        path="/"
-        element={
-          <PublicLayout>
-            <Hero />
-          </PublicLayout>
-        }
-      />
-      <Route
-        path="/services"
-        element={
-          <PublicLayout>
-            <Services />
-          </PublicLayout>
-        }
-      />
-      <Route
-        path="/about"
-        element={
-          <PublicLayout>
-            <About />
-          </PublicLayout>
-        }
-      />
-      <Route
-        path="/contact"
-        element={
-          <PublicLayout>
-            <Contact />
-          </PublicLayout>
-        }
-      />
-      <Route
-        path="/login"
-        element={
-          <PublicLayout>
-            <Login />
-          </PublicLayout>
-        }
-      />
-      <Route
-        path="/register"
-        element={
-          <PublicLayout>
-            <Register />
-          </PublicLayout>
-        }
-      />
-      <Route
-        path="/terms"
-        element={
-          <PublicLayout>
-            <Terms />
-          </PublicLayout>
-        }
-      />
-      <Route
-        path="/privacy"
-        element={
-          <PublicLayout>
-            <Privacy />
-          </PublicLayout>
-        }
-      />
-      <Route
-        path="/catalogo"
-        element={
-          <PublicLayout>
-            <Catalogo />
-          </PublicLayout>
-        }
-      />
+      <Route path="/" element={<PublicLayout><Hero /></PublicLayout>} />
+      <Route path="/services" element={<PublicLayout><Services /></PublicLayout>} />
+      <Route path="/about" element={<PublicLayout><About /></PublicLayout>} />
+      <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
+      <Route path="/login" element={<PublicLayout><Login /></PublicLayout>} />
+      <Route path="/register" element={<PublicLayout><Register /></PublicLayout>} />
+      <Route path="/terms" element={<PublicLayout><Terms /></PublicLayout>} />
+      <Route path="/privacy" element={<PublicLayout><Privacy /></PublicLayout>} />
+      <Route path="/catalogo" element={<PublicLayout><Catalogo /></PublicLayout>} />
 
       {/* 🧩 RUTAS PRIVADAS DEL ADMIN */}
       <Route
         path="/admin/*"
         element={
-          <PrivateRoute allowedRoles={["Administrador"]}>
+          <PrivateRoute allowedRoles={["administrador"]}>
             <AdminLayoutAdmin />
           </PrivateRoute>
         }
       >
-        <Route
-          index
-          element={
-            <div className="flex justify-center items-center h-full">
-              <h1 className="text-3xl font-bold text-white">
-                Bienvenido al Panel de Administración
-              </h1>
-            </div>
-          }
-        />
+        <Route index element={<div className="flex justify-center items-center h-full"><h1 className="text-3xl font-bold text-white">Bienvenido al Panel de Administración</h1></div>} />
         <Route path="usuarios" element={<UsuariosList />} />
         <Route path="productos" element={<ProductosList />} />
         <Route path="compras" element={<ComprasList />} />
@@ -156,11 +84,23 @@ export default function App() {
         <Route path="soporte" element={<SoporteList />} />
       </Route>
 
+      {/* 🏍 RUTAS PRIVADAS DEL DOMICILIARIO */}
+      <Route
+        path="/domiciliario/*"
+        element={
+          <PrivateRoute allowedRoles={["domiciliario"]}>
+            <DomiciliarioLayout />
+          </PrivateRoute>
+        }
+      >
+        <Route index element={<h1 className="text-3xl text-white font-bold text-center">Bienvenido, Domiciliario</h1>} />
+      </Route>
+
       {/* 👤 RUTAS PRIVADAS DEL USUARIO */}
       <Route
         path="/usuario/*"
         element={
-          <PrivateRoute allowedRoles={["Usuario"]}>
+          <PrivateRoute allowedRoles={["usuario", "cliente"]}>
             <UsuarioLayout />
           </PrivateRoute>
         }
@@ -170,16 +110,7 @@ export default function App() {
       </Route>
 
       {/* 🚫 RUTA NO ENCONTRADA */}
-      <Route
-        path="*"
-        element={
-          <PublicLayout>
-            <h1 className="text-3xl text-white font-bold text-center">
-              Ruta no encontrada
-            </h1>
-          </PublicLayout>
-        }
-      />
+      <Route path="*" element={<PublicLayout><h1 className="text-3xl text-white font-bold text-center">Ruta no encontrada</h1></PublicLayout>} />
     </Routes>
   );
 }
