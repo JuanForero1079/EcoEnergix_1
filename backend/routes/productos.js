@@ -1,13 +1,13 @@
-// routes/productos.js
+
 const express = require("express");
 const router = express.Router();
 const DB = require("../db/connection");
 
-// ✅ GET: obtener todos los productos
+//   GET: obtener todos los productos
 router.get("/", (req, res) => {
   DB.query("SELECT * FROM producto", (err, result) => {
     if (err) {
-      console.error("❌ [GET /api/productos] Error:", err.message);
+      console.error("  [GET /api/productos] Error:", err.message);
       return res
         .status(500)
         .json({ error: "Error al obtener los productos", details: err });
@@ -16,7 +16,7 @@ router.get("/", (req, res) => {
   });
 });
 
-// ✅ GET: obtener un producto por ID
+//   GET: obtener un producto por ID
 router.get("/:id", (req, res) => {
   const { id } = req.params;
   DB.query(
@@ -24,7 +24,7 @@ router.get("/:id", (req, res) => {
     [id],
     (err, result) => {
       if (err) {
-        console.error("❌ [GET /api/productos/:id] Error:", err.message);
+        console.error("  [GET /api/productos/:id] Error:", err.message);
         return res
           .status(500)
           .json({ error: "Error al buscar el producto", details: err });
@@ -36,7 +36,7 @@ router.get("/:id", (req, res) => {
   );
 });
 
-// ✅ POST: crear un nuevo producto
+//   POST: crear un nuevo producto
 router.post("/", (req, res) => {
   const {
     Nombre_producto,
@@ -81,14 +81,14 @@ router.post("/", (req, res) => {
     ],
     (err, result) => {
       if (err) {
-        console.error("❌ [POST /api/productos] Error:", err.message);
+        console.error("  [POST /api/productos] Error:", err.message);
         return res
           .status(500)
           .json({ error: "Error al crear el producto", details: err });
       }
 
       res.status(201).json({
-        message: "✅ Producto creado exitosamente",
+        message: "  Producto creado exitosamente",
         producto: {
           ID_producto: result.insertId,
           Nombre_producto,
@@ -104,7 +104,7 @@ router.post("/", (req, res) => {
   );
 });
 
-// ✅ PUT: actualizar producto existente
+//   PUT: actualizar producto existente
 router.put("/:id", (req, res) => {
   const { id } = req.params;
   const {
@@ -152,7 +152,7 @@ router.put("/:id", (req, res) => {
     ],
     (err, result) => {
       if (err) {
-        console.error("❌ [PUT /api/productos/:id] Error:", err.message);
+        console.error("  [PUT /api/productos/:id] Error:", err.message);
         return res
           .status(500)
           .json({ error: "Error al actualizar el producto", details: err });
@@ -162,7 +162,7 @@ router.put("/:id", (req, res) => {
         return res.status(404).json({ message: "Producto no encontrado" });
 
       res.status(200).json({
-        message: "✅ Producto actualizado exitosamente",
+        message: "  Producto actualizado exitosamente",
         producto: {
           ID_producto: id,
           Nombre_producto,
@@ -178,7 +178,7 @@ router.put("/:id", (req, res) => {
   );
 });
 
-// ✅ DELETE: eliminar producto
+//   DELETE: eliminar producto
 router.delete("/:id", (req, res) => {
   const { id } = req.params;
 
@@ -187,7 +187,7 @@ router.delete("/:id", (req, res) => {
     [id],
     (err, result) => {
       if (err) {
-        console.error("❌ [DELETE /api/productos/:id] Error:", err.message);
+        console.error("  [DELETE /api/productos/:id] Error:", err.message);
         return res
           .status(500)
           .json({ error: "Error al eliminar el producto", details: err });
@@ -201,7 +201,7 @@ router.delete("/:id", (req, res) => {
 
       res
         .status(200)
-        .json({ message: "✅ Producto eliminado exitosamente", id });
+        .json({ message: "  Producto eliminado exitosamente", id });
     }
   );
 });

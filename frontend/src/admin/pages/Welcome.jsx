@@ -1,4 +1,4 @@
-// src/admin/pages/Welcome.jsx
+
 export default function Welcome() {
   return (
     <div className="text-center">

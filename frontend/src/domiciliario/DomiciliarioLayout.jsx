@@ -1,4 +1,4 @@
-// src/domiciliario/DomiciliarioLayout.jsx
+
 import { Outlet, Link } from "react-router-dom";
 
 export default function DomiciliarioLayout() {

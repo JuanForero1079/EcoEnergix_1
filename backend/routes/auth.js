@@ -4,10 +4,10 @@ const jwt = require("jsonwebtoken");
 const DB = require("../db/connection");
 const router = express.Router();
 
-const JWT_SECRET = "clave_secreta_super_segura"; // ⚠️ En producción usar variable de entorno
+const JWT_SECRET = "clave_secreta_super_segura"; //   En producción usar variable de entorno
 
 // ----------------------
-// 🔹 Ruta POST /register
+//   Ruta POST /register
 // ----------------------
 router.post("/register", (req, res) => {
   const { Nombre, Correo_electronico, Contraseña, Tipo_documento, Numero_documento } = req.body;
@@ -49,7 +49,7 @@ router.post("/register", (req, res) => {
 });
 
 // ----------------------
-// 🔹 Ruta POST /login
+//   Ruta POST /login
 // ----------------------
 router.post("/login", (req, res) => {
   const { correo, contraseña } = req.body;

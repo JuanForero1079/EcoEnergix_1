@@ -1,7 +1,7 @@
-// src/usuario/Componentes/CatalogoUsuario.jsx
+
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import API from "../../services/api"; // Axios configurado para apuntar al backend
+import API from "../../services/api"; 
 import { useCarrito } from "../context/CarritoContext";
 
 // Función para normalizar texto (sin tildes y minúsculas)
@@ -17,7 +17,7 @@ export default function CatalogoUsuario() {
 
   const { agregarAlCarrito } = useCarrito();
 
-  // 🔹 Cargar productos desde la BD
+  //  Cargar productos desde la BD
   useEffect(() => {
     const fetchProductos = async () => {
       try {
@@ -58,6 +58,7 @@ export default function CatalogoUsuario() {
       <h1 className="text-4xl font-bold text-green-700 text-center mb-8">
         Catálogo de Productos
       </h1>
+      <div className="absolute inset-0 bg-black/60 -z-10" />
 
       {/* Buscador */}
       <div className="max-w-md mx-auto mb-10">

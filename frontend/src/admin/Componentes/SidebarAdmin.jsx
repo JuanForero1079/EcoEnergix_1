@@ -1,4 +1,4 @@
-// ✅ SidebarAdmin.jsx (versión ajustada visualmente segura)
+//   SidebarAdmin.jsx (versión ajustada visualmente segura)
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {

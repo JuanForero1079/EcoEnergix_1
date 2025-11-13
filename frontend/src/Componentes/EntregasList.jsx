@@ -1,6 +1,6 @@
-// src/Componentes/EntregasList.jsx
+
 import React, { useEffect, useState } from "react";
-// 🔹 Importamos el API del admin
+//  Importamos el API del admin
 import API from "../admin/services/api";
 
 function EntregasList() {
@@ -12,13 +12,13 @@ function EntregasList() {
     fetchEntregas();
   }, []);
 
-  // 🔹 Obtener entregas desde la API del admin
+  // Obtener entregas desde la API del admin
   const fetchEntregas = async () => {
     try {
-      const res = await API.get("/admin/entregas"); // ✅ Ruta correcta
+      const res = await API.get("/admin/entregas"); //  Ruta correcta
       setEntregas(res.data);
     } catch (err) {
-      console.error("❌ Error al cargar entregas:", err);
+      console.error(" Error al cargar entregas:", err);
       setError("No se pudo conectar con el servidor.");
     } finally {
       setLoading(false);
@@ -30,7 +30,7 @@ function EntregasList() {
 
   return (
     <div className="p-6 bg-slate-800/60 backdrop-blur-md rounded-2xl shadow-lg border border-slate-700 text-white">
-      <h2 className="text-2xl font-bold mb-4">📦 Lista de Entregas</h2>
+      <h2 className="text-2xl font-bold mb-4">  Lista de Entregas</h2>
       {entregas.length === 0 ? (
         <p>No hay entregas registradas.</p>
       ) : (

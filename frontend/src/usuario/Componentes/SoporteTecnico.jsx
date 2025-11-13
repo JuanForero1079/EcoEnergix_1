@@ -5,7 +5,7 @@ export default function SoporteTecnico() {
 
   const enviarSoporte = (e) => {
     e.preventDefault();
-    alert("Tu solicitud ha sido enviada al soporte técnico. ✅");
+    alert("Tu solicitud ha sido enviada al soporte técnico. ");
     setMensaje("");
   };
 

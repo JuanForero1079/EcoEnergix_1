@@ -15,7 +15,7 @@ function ComprasList() {
   });
   const [editMode, setEditMode] = useState(false);
 
-  // 🔹 Obtener compras
+  //   Obtener compras
   const fetchCompras = async () => {
     try {
       setLoading(true);
@@ -23,7 +23,7 @@ function ComprasList() {
       const res = await API.get("/api/admin/compras");
       setCompras(res.data);
     } catch (err) {
-      console.error("❌ Error al obtener compras:", err);
+      console.error(" Error al obtener compras:", err);
       setError("No se pudo obtener la lista de compras. Verifica el backend.");
     } finally {
       setLoading(false);
@@ -34,7 +34,7 @@ function ComprasList() {
     fetchCompras();
   }, []);
 
-  // 🔹 Manejo de formulario
+  //   Manejo de formulario
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -45,16 +45,16 @@ function ComprasList() {
     try {
       if (editMode) {
         await API.put(`/api/admin/compras/${formData.ID_compra}`, formData);
-        alert("✅ Compra actualizada correctamente");
+        alert("  Compra actualizada correctamente");
       } else {
         await API.post("/api/admin/compras", formData);
-        alert("✅ Compra creada correctamente");
+        alert("  Compra creada correctamente");
       }
       setFormData({ ID_compra: null, ID_usuario: "", Fecha_compra: "", Monto_total: "", Estado: "" });
       setEditMode(false);
       fetchCompras();
     } catch (err) {
-      console.error("❌ Error al guardar compra:", err);
+      console.error(" Error al guardar compra:", err);
       alert("Error al guardar compra.");
     }
   };
@@ -74,10 +74,10 @@ function ComprasList() {
     if (!window.confirm("¿Seguro que deseas eliminar esta compra?")) return;
     try {
       await API.delete(`/api/admin/compras/${id}`);
-      alert("🗑️ Compra eliminada correctamente");
+      alert("  Compra eliminada correctamente");
       fetchCompras();
     } catch (err) {
-      console.error("❌ Error al eliminar compra:", err);
+      console.error(" Error al eliminar compra:", err);
       alert("No se pudo eliminar la compra.");
     }
   };
@@ -131,7 +131,7 @@ function ComprasList() {
           type="submit"
           className="col-span-1 md:col-span-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded"
         >
-          {editMode ? "💾 Guardar Cambios" : "➕ Agregar Compra"}
+          {editMode ? " Guardar Cambios" : " Agregar Compra"}
         </button>
       </form>
 
@@ -164,13 +164,13 @@ function ComprasList() {
                       onClick={() => handleEdit(c)}
                       className="bg-yellow-500 hover:bg-yellow-600 text-black px-3 py-1 rounded"
                     >
-                      ✏️
+                       
                     </button>
                     <button
                       onClick={() => handleDelete(c.ID_compra)}
                       className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
                     >
-                      🗑️
+                      
                     </button>
                   </td>
                 </tr>

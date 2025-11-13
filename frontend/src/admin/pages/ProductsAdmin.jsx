@@ -1,4 +1,4 @@
-// src/admin/pages/ProductsAdmin.jsx
+
 import React, { useEffect, useState } from "react";
 import {
   getProducts,
@@ -7,7 +7,7 @@ import {
   deleteProduct,
 } from "../services/productsServiceAdmin";
 
-// 💡 Componente principal
+//  Componente principal
 function ProductsAdmin() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,7 +27,7 @@ function ProductsAdmin() {
 
   const [isEditing, setIsEditing] = useState(false);
 
-  // 🔹 Cargar productos al iniciar
+  //   Cargar productos al iniciar
   useEffect(() => {
     loadProducts();
   }, []);
@@ -42,23 +42,23 @@ function ProductsAdmin() {
       } else if (data?.productos) {
         setProducts(data.productos);
       } else {
-        console.warn("⚠️ Respuesta inesperada:", data);
+        console.warn("  Respuesta inesperada:", data);
         setProducts([]);
       }
     } catch (err) {
-      console.error("❌ Error al obtener productos:", err);
+      console.error("  Error al obtener productos:", err);
       setError("No se pudo obtener la lista de productos. Verifica el backend.");
     } finally {
       setLoading(false);
     }
   };
 
-  // 🔹 Manejo de cambios en el formulario
+  //   Manejo de cambios en el formulario
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // 🔹 Validaciones antes de enviar
+  //   Validaciones antes de enviar
   const validateForm = () => {
     const { Nombre_producto, Tipo_producto, Precio, Marca, Fecha_fabricacion, Garantia, ID_proveedor } = form;
     if (!Nombre_producto || !Tipo_producto || !Precio || !Marca || !Fecha_fabricacion || !Garantia || !ID_proveedor) {
@@ -72,7 +72,7 @@ function ProductsAdmin() {
     return true;
   };
 
-  // 🔹 Enviar formulario
+  //   Enviar formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -88,12 +88,12 @@ function ProductsAdmin() {
       resetForm();
       loadProducts();
     } catch (err) {
-      console.error("❌ Error al guardar producto:", err);
+      console.error("  Error al guardar producto:", err);
       setMessage({ type: "error", text: "Error al guardar el producto. Verifica los datos." });
     }
   };
 
-  // 🔹 Resetear formulario
+  //   Resetear formulario
   const resetForm = () => {
     setForm({
       ID_producto: null,
@@ -108,7 +108,7 @@ function ProductsAdmin() {
     setIsEditing(false);
   };
 
-  // 🔹 Editar producto
+  //   Editar producto
   const handleEdit = (p) => {
     setForm({
       ID_producto: p.ID_producto,
@@ -124,7 +124,7 @@ function ProductsAdmin() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // 🔹 Eliminar producto
+  //   Eliminar producto
   const handleDelete = async (id) => {
     if (!window.confirm("¿Seguro que deseas eliminar este producto?")) return;
     try {
@@ -132,7 +132,7 @@ function ProductsAdmin() {
       setMessage({ type: "success", text: "Producto eliminado correctamente" });
       loadProducts();
     } catch (err) {
-      console.error("❌ Error al eliminar producto:", err);
+      console.error("  Error al eliminar producto:", err);
       setMessage({ type: "error", text: "Error al eliminar el producto" });
     }
   };

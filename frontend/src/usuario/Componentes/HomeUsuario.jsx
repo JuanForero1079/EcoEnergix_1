@@ -3,7 +3,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 export default function HomeUsuario() {
-  // 🔹 Obtener usuario logueado desde localStorage
+  //  Obtener usuario logueado desde localStorage
   const usuario = JSON.parse(localStorage.getItem("usuario"));
   const nombreUsuario = usuario?.nombre || "Usuario";
 

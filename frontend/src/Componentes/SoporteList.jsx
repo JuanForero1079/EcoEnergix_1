@@ -50,10 +50,10 @@ function SoportesList() {
     try {
       if (editMode) {
         await updateSoporte(editId, formData);
-        alert("✅ Soporte actualizado correctamente");
+        alert(" Soporte actualizado correctamente");
       } else {
         await createSoporte(formData);
-        alert("✅ Soporte creado correctamente");
+        alert("Soporte creado correctamente");
       }
       setFormData({
         Fecha_solicitud: "",
@@ -69,7 +69,7 @@ function SoportesList() {
       fetchSoportes();
     } catch (err) {
       console.error("Error al guardar soporte:", err);
-      alert("❌ Error al guardar soporte.");
+      alert("Error al guardar soporte.");
     }
   };
 
@@ -92,11 +92,11 @@ function SoportesList() {
       return;
     try {
       await deleteSoporte(id);
-      alert("🗑️ Soporte eliminado correctamente");
+      alert("  Soporte eliminado correctamente");
       fetchSoportes();
     } catch (err) {
       console.error("Error al eliminar soporte:", err);
-      alert("❌ No se pudo eliminar la solicitud.");
+      alert(" No se pudo eliminar la solicitud.");
     }
   };
 
@@ -105,7 +105,7 @@ function SoportesList() {
 
   return (
     <div className="p-6 bg-slate-800/60 rounded-2xl shadow-lg border border-slate-700 text-white">
-      <h2 className="text-2xl font-bold mb-4">🛠️ Soporte Técnico</h2>
+      <h2 className="text-2xl font-bold mb-4"> Soporte Técnico</h2>
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <input type="date" name="Fecha_solicitud" value={formData.Fecha_solicitud} onChange={handleChange} className="p-2 rounded bg-slate-700 text-white" required />
@@ -116,7 +116,7 @@ function SoportesList() {
         <input type="number" name="ID_instalacion" placeholder="ID Instalación" value={formData.ID_instalacion} onChange={handleChange} className="p-2 rounded bg-slate-700 text-white" required />
         <input type="number" name="ID_domiciliario" placeholder="ID Domiciliario" value={formData.ID_domiciliario} onChange={handleChange} className="p-2 rounded bg-slate-700 text-white" required />
         <button type="submit" className="col-span-1 md:col-span-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded">
-          {editMode ? "💾 Guardar Cambios" : "➕ Agregar Soporte"}
+          {editMode ? " Guardar Cambios" : " Agregar Soporte"}
         </button>
       </form>
 
@@ -150,8 +150,8 @@ function SoportesList() {
                   <td className="py-2 px-4">{s.ID_instalacion}</td>
                   <td className="py-2 px-4">{s.ID_domiciliario}</td>
                   <td className="py-2 px-4 text-center flex justify-center gap-2">
-                    <button onClick={() => handleEdit(s)} className="bg-yellow-500 hover:bg-yellow-600 text-black px-3 py-1 rounded">✏️</button>
-                    <button onClick={() => handleDelete(s.ID_soporte)} className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded">🗑️</button>
+                    <button onClick={() => handleEdit(s)} className="bg-yellow-500 hover:bg-yellow-600 text-black px-3 py-1 rounded"></button>
+                    <button onClick={() => handleDelete(s.ID_soporte)} className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"></button>
                   </td>
                 </tr>
               ))}

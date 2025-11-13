@@ -6,7 +6,7 @@ const DB = require("../db/connection");
 router.get("/:userId", (req, res) => {
   const { userId } = req.params;
 
-  // 🔹 Si quieres mostrar también el nombre del producto, usa JOIN con productos
+  //   Si quieres mostrar también el nombre del producto, usa JOIN con productos
   const query = `
     SELECT c.ID_compra, c.ID_usuario, c.Fecha_compra, c.Monto_total, c.Estado,
            p.nombre_producto, c.cantidad

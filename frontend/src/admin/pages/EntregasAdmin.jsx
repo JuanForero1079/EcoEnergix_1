@@ -6,7 +6,7 @@ import {
   deleteEntrega,
 } from "../services/entregaService";
 import camionSolar from "../../assets/camion-solar-1.jpg";
-import logo from "../../assets/logo.png"; // ✅ Import directo del logo
+import logo from "../../assets/logo.png"; //   Import directo del logo
 
 export default function EntregasAdmin() {
   const [entregas, setEntregas] = useState([]);
@@ -19,7 +19,7 @@ export default function EntregasAdmin() {
   });
   const [isEditing, setIsEditing] = useState(false);
 
-  // 🧭 Cargar entregas al iniciar
+  //  Cargar entregas al iniciar
   useEffect(() => {
     fetchEntregas();
   }, []);
@@ -27,29 +27,29 @@ export default function EntregasAdmin() {
   const fetchEntregas = async () => {
     try {
       const data = await getEntregas();
-      console.log("📦 Datos recibidos desde backend:", data);
+      console.log("  Datos recibidos desde backend:", data);
       if (Array.isArray(data)) {
         setEntregas(data);
       } else {
-        console.warn("⚠️ La respuesta no es un array:", data);
+        console.warn("  La respuesta no es un array:", data);
       }
     } catch (err) {
-      console.error("❌ Error al cargar entregas:", err);
+      console.error("  Error al cargar entregas:", err);
     }
   };
 
-  // 📝 Manejo de formulario
+  //   Manejo de formulario
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // 💾 Crear o actualizar
+  //   Crear o actualizar
   const handleSubmit = async (e) => {
     e.preventDefault();
     const { Fecha_entrega, ID_usuario, ID_producto, Cantidad } = form;
 
     if (!Fecha_entrega || !ID_usuario || !ID_producto || !Cantidad)
-      return alert("⚠️ Todos los campos son obligatorios");
+      return alert("  Todos los campos son obligatorios");
 
     try {
       if (isEditing) {
@@ -67,28 +67,28 @@ export default function EntregasAdmin() {
       });
       fetchEntregas();
     } catch (err) {
-      console.error("❌ Error al guardar entrega:", err);
+      console.error("  Error al guardar entrega:", err);
     }
   };
 
-  // ✏️ Editar
+  //   Editar
   const handleEdit = (entrega) => {
     setForm(entrega);
     setIsEditing(true);
   };
 
-  // 🗑️ Eliminar
+  //   Eliminar
   const handleDelete = async (id) => {
     if (!window.confirm("¿Seguro que deseas eliminar esta entrega?")) return;
     try {
       await deleteEntrega(id);
       fetchEntregas();
     } catch (err) {
-      console.error("❌ Error al eliminar entrega:", err);
+      console.error("  Error al eliminar entrega:", err);
     }
   };
 
-  // 💎 Estilo vidrio
+  //   Estilo vidrio
   const glassStyle = {
     backdropFilter: "blur(10px)",
     border: "1px solid rgba(255, 255, 255, 0.12)",

@@ -1,9 +1,9 @@
 import API from "../../services/api";
 
-// ✅ Ajustar ruta con /api/admin
+//   Ajustar ruta con /api/admin
 export const getEntregas = async () => {
   const res = await API.get("/api/admin/entregas"); // ⚡ CORREGIDO
-  console.log("📦 Datos de entregas:", res.data);
+  console.log("  Datos de entregas:", res.data);
   return res.data;
 };
 

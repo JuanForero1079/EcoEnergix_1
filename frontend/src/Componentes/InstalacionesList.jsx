@@ -1,4 +1,4 @@
-// src/Componentes/InstalacionesList.jsx
+
 import React, { useEffect, useState } from "react";
 import {
   getInstalaciones,
@@ -23,7 +23,7 @@ function InstalacionesList() {
   });
   const [editMode, setEditMode] = useState(false);
 
-  // 🔹 Obtener instalaciones
+  //   Obtener instalaciones
   const fetchInstalaciones = async () => {
     try {
       setLoading(true);
@@ -42,7 +42,7 @@ function InstalacionesList() {
     fetchInstalaciones();
   }, []);
 
-  // 🔹 Manejo de formulario
+  //  Manejo de formulario
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -53,10 +53,10 @@ function InstalacionesList() {
     try {
       if (editMode) {
         await updateInstalacion(formData.ID_instalacion, formData);
-        alert("✅ Instalación actualizada correctamente");
+        alert(" Instalación actualizada correctamente");
       } else {
         await createInstalacion(formData);
-        alert("✅ Instalación creada correctamente");
+        alert(" Instalación creada correctamente");
       }
       setFormData({
         ID_instalacion: null,
@@ -71,7 +71,7 @@ function InstalacionesList() {
       fetchInstalaciones();
     } catch (err) {
       console.error("Error al guardar instalación:", err);
-      alert("❌ Error al guardar instalación.");
+      alert(" Error al guardar instalación.");
     }
   };
 
@@ -92,11 +92,11 @@ function InstalacionesList() {
     if (!window.confirm("¿Seguro que deseas eliminar esta instalación?")) return;
     try {
       await deleteInstalacion(id);
-      alert("🗑️ Instalación eliminada correctamente");
+      alert("  Instalación eliminada correctamente");
       fetchInstalaciones();
     } catch (err) {
       console.error("Error al eliminar instalación:", err);
-      alert("❌ No se pudo eliminar la instalación.");
+      alert(" No se pudo eliminar la instalación.");
     }
   };
 
@@ -116,7 +116,7 @@ function InstalacionesList() {
         <input type="number" name="ID_usuario" placeholder="ID Usuario" value={formData.ID_usuario} onChange={handleChange} className="p-2 rounded bg-slate-700 text-white" required />
         <input type="number" name="ID_producto" placeholder="ID Producto" value={formData.ID_producto} onChange={handleChange} className="p-2 rounded bg-slate-700 text-white" required />
         <button type="submit" className="col-span-1 md:col-span-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded">
-          {editMode ? "💾 Guardar Cambios" : "➕ Agregar Instalación"}
+          {editMode ? " Guardar Cambios" : "Agregar Instalación"}
         </button>
       </form>
 
@@ -149,8 +149,8 @@ function InstalacionesList() {
                   <td className="py-2 px-4">{inst.ID_usuario}</td>
                   <td className="py-2 px-4">{inst.ID_producto}</td>
                   <td className="py-2 px-4 text-center flex justify-center gap-2">
-                    <button onClick={() => handleEdit(inst)} className="bg-yellow-500 hover:bg-yellow-600 text-black px-3 py-1 rounded">✏️</button>
-                    <button onClick={() => handleDelete(inst.ID_instalacion)} className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded">🗑️</button>
+                    <button onClick={() => handleEdit(inst)} className="bg-yellow-500 hover:bg-yellow-600 text-black px-3 py-1 rounded"> </button>
+                    <button onClick={() => handleDelete(inst.ID_instalacion)} className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"> </button>
                   </td>
                 </tr>
               ))}

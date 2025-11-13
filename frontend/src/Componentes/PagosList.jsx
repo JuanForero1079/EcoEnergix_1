@@ -22,7 +22,7 @@ function PagosList() {
 
   const [editMode, setEditMode] = useState(false);
 
-  // 🔹 Obtener pagos
+  //  Obtener pagos
   const fetchPagos = async () => {
     try {
       setLoading(true);
@@ -41,7 +41,7 @@ function PagosList() {
     fetchPagos();
   }, []);
 
-  // 🔹 Manejo de formulario
+  //  Manejo de formulario
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -52,10 +52,10 @@ function PagosList() {
     try {
       if (editMode) {
         await updatePago(formData.ID_pago, formData);
-        alert("✅ Pago actualizado correctamente");
+        alert("  Pago actualizado correctamente");
       } else {
         await createPago(formData);
-        alert("✅ Pago creado correctamente");
+        alert("  Pago creado correctamente");
       }
       setFormData({
         ID_pago: null,
@@ -69,7 +69,7 @@ function PagosList() {
       fetchPagos();
     } catch (err) {
       console.error("Error al guardar pago:", err);
-      alert("❌ Error al guardar el pago.");
+      alert(" Error al guardar el pago.");
     }
   };
 
@@ -93,7 +93,7 @@ function PagosList() {
       fetchPagos();
     } catch (err) {
       console.error("Error al eliminar pago:", err);
-      alert("❌ No se pudo eliminar el pago");
+      alert(" No se pudo eliminar el pago");
     }
   };
 
@@ -112,7 +112,7 @@ function PagosList() {
         <input type="text" name="Metodo_pago" placeholder="Método de pago" value={formData.Metodo_pago} onChange={handleChange} className="p-2 rounded bg-slate-700 text-white" required />
         <input type="text" name="Estado_pago" placeholder="Estado" value={formData.Estado_pago} onChange={handleChange} className="p-2 rounded bg-slate-700 text-white" required />
         <button type="submit" className="col-span-1 md:col-span-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded">
-          {editMode ? "💾 Guardar Cambios" : "➕ Agregar Pago"}
+          {editMode ? " Guardar Cambios" : " Agregar Pago"}
         </button>
       </form>
 
@@ -143,8 +143,8 @@ function PagosList() {
                   <td className="py-2 px-4">{pago.Metodo_pago}</td>
                   <td className="py-2 px-4">{pago.Estado_pago}</td>
                   <td className="py-2 px-4 text-center flex justify-center gap-2">
-                    <button onClick={() => handleEdit(pago)} className="bg-yellow-500 hover:bg-yellow-600 text-black px-3 py-1 rounded">✏️</button>
-                    <button onClick={() => handleDelete(pago.ID_pago)} className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded">🗑️</button>
+                    <button onClick={() => handleEdit(pago)} className="bg-yellow-500 hover:bg-yellow-600 text-black px-3 py-1 rounded"></button>
+                    <button onClick={() => handleDelete(pago.ID_pago)} className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"></button>
                   </td>
                 </tr>
               ))}

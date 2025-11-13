@@ -46,10 +46,10 @@ export default function Login() {
         return;
       }
 
-      // 🔹 Normalizamos el rol
+      // Normalizamos el rol
       const rolNormalizado = usuario.rol.toLowerCase().trim();
 
-      // 🔹 Guardamos en localStorage
+      //  Guardamos en localStorage
       localStorage.setItem(
         "user",
         JSON.stringify({
@@ -61,7 +61,7 @@ export default function Login() {
       );
       localStorage.setItem("token", token);
 
-      // 🔹 Redirección según rol
+      // Redirección según rol
       if (rolNormalizado === "administrador") navigate("/admin");
       else if (rolNormalizado === "usuario" || rolNormalizado === "cliente") navigate("/usuario");
       else if (rolNormalizado === "domiciliario") navigate("/domiciliario");

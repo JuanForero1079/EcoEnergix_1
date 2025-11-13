@@ -24,7 +24,7 @@ export default function AdminLayoutAdmin() {
 
   const handleLogout = () => {
     localStorage.removeItem("user");
-    alert("✅ Sesión cerrada correctamente");
+    alert("  Sesión cerrada correctamente");
     navigate("/");
   };
 

@@ -23,7 +23,7 @@ function ProveedoresList() {
 
   const [editMode, setEditMode] = useState(false);
 
-  // 🔹 Obtener proveedores
+  //  Obtener proveedores
   const fetchProveedores = async () => {
     try {
       setLoading(true);
@@ -42,7 +42,7 @@ function ProveedoresList() {
     fetchProveedores();
   }, []);
 
-  // 🔹 Manejo de formulario
+  //  Manejo de formulario
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -53,10 +53,10 @@ function ProveedoresList() {
     try {
       if (editMode) {
         await updateProveedor(formData.ID_proveedor, formData);
-        alert("✅ Proveedor actualizado correctamente");
+        alert(" Proveedor actualizado correctamente");
       } else {
         await createProveedor(formData);
-        alert("✅ Proveedor creado correctamente");
+        alert(" Proveedor creado correctamente");
       }
       setFormData({
         ID_proveedor: null,
@@ -70,7 +70,7 @@ function ProveedoresList() {
       fetchProveedores();
     } catch (err) {
       console.error("Error al guardar proveedor:", err);
-      alert("❌ Error al guardar proveedor.");
+      alert(" Error al guardar proveedor.");
     }
   };
 
@@ -90,11 +90,11 @@ function ProveedoresList() {
     if (!window.confirm("¿Seguro que deseas eliminar este proveedor?")) return;
     try {
       await deleteProveedor(id);
-      alert("🗑️ Proveedor eliminado correctamente");
+      alert("Proveedor eliminado correctamente");
       fetchProveedores();
     } catch (err) {
       console.error("Error al eliminar proveedor:", err);
-      alert("❌ No se pudo eliminar el proveedor.");
+      alert(" No se pudo eliminar el proveedor.");
     }
   };
 
@@ -156,7 +156,7 @@ function ProveedoresList() {
           type="submit"
           className="col-span-1 md:col-span-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded"
         >
-          {editMode ? "💾 Guardar Cambios" : "➕ Agregar Proveedor"}
+          {editMode ? " Guardar Cambios" : " Agregar Proveedor"}
         </button>
       </form>
 
@@ -191,13 +191,13 @@ function ProveedoresList() {
                       onClick={() => handleEdit(prov)}
                       className="bg-yellow-500 hover:bg-yellow-600 text-black px-3 py-1 rounded"
                     >
-                      ✏️
+                    
                     </button>
                     <button
                       onClick={() => handleDelete(prov.ID_proveedor)}
                       className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
                     >
-                      🗑️
+                      
                     </button>
                   </td>
                 </tr>

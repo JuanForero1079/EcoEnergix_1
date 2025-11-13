@@ -22,7 +22,7 @@ export default function UsuariosAdmin() {
   });
   const [isEditing, setIsEditing] = useState(false);
 
-  // 🔹 Cargar usuarios al iniciar
+  //   Cargar usuarios al iniciar
   useEffect(() => {
     fetchUsuarios();
   }, []);
@@ -31,9 +31,9 @@ export default function UsuariosAdmin() {
     try {
       const data = await getUsuarios();
       if (Array.isArray(data)) setUsuarios(data);
-      else console.warn("⚠️ Respuesta inesperada:", data);
+      else console.warn("  Respuesta inesperada:", data);
     } catch (err) {
-      console.error("❌ Error al cargar usuarios:", err);
+      console.error("  Error al cargar usuarios:", err);
     }
   };
 
@@ -46,7 +46,7 @@ export default function UsuariosAdmin() {
     const { Nombre, Correo_electronico, Rol_usuario } = form;
 
     if (!Nombre || !Correo_electronico || !Rol_usuario)
-      return alert("⚠️ Nombre, correo y rol son obligatorios");
+      return alert("  Nombre, correo y rol son obligatorios");
 
     try {
       if (isEditing) {
@@ -67,7 +67,7 @@ export default function UsuariosAdmin() {
       });
       fetchUsuarios();
     } catch (err) {
-      console.error("❌ Error al guardar usuario:", err);
+      console.error("  Error al guardar usuario:", err);
     }
   };
 
@@ -82,11 +82,11 @@ export default function UsuariosAdmin() {
       await deleteUsuario(ID_usuario);
       fetchUsuarios();
     } catch (err) {
-      console.error("❌ Error al eliminar usuario:", err);
+      console.error("  Error al eliminar usuario:", err);
     }
   };
 
-  // 💎 Estilo glass
+  //   Estilo glass
   const glassStyle = {
     background: "rgba(255, 255, 255, 0.08)",
     backdropFilter: "blur(10px)",

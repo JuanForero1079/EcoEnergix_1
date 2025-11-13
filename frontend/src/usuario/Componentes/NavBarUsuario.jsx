@@ -45,7 +45,7 @@ export default function NavBarUsuario() {
 
           {/* Ícono del carrito */}
           <Link to="/usuario/carrito" className="relative flex items-center">
-            {/* 👇 IMPORTANTE: aquí NO usar llaves extra ni concatenar texto */}
+            
             <FaShoppingCart
               size={22}
               className="text-green-600 hover:text-green-700 transition"
