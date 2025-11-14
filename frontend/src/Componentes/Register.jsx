@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import API from "../services/api"; // Asegúrate de que apunte a tu API
+import API from "../services/api";
 
 export default function Register() {
   const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -16,6 +17,7 @@ export default function Register() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -28,8 +30,9 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
 
-    // Validación
+    // Validaciones
     if (
       !formData.name ||
       !formData.email ||
@@ -59,9 +62,14 @@ export default function Register() {
         Numero_documento: formData.documentNumber,
       });
 
-      // Registro exitoso, redirigir al login
-      alert(res.data.message);
-      navigate("/login");
+      // Mensaje bonito de éxito
+      setSuccess(
+        res.data.message ||
+          "¡Registro exitoso! Se ha enviado un correo de verificación."
+      );
+
+      // Redirigir después de 3 segundos
+      setTimeout(() => navigate("/login"), 3000);
     } catch (err) {
       console.error("Error al registrar:", err.response || err);
       setError(err.response?.data?.message || "Error al registrar usuario");
@@ -82,6 +90,15 @@ export default function Register() {
 
         {error && (
           <p className="text-red-500 text-center mb-4 font-medium">{error}</p>
+        )}
+
+        {success && (
+          <p className="text-green-400 text-center mb-4 font-medium">
+            {success} <br />
+            <span className="text-sm text-white/70">
+              Redirigiendo al inicio de sesión...
+            </span>
+          </p>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -176,7 +193,10 @@ export default function Register() {
                 className="mr-2"
               />
               Acepto la{" "}
-              <Link to="/privacy" className="ml-1 text-[#3dc692] hover:underline">
+              <Link
+                to="/privacy"
+                className="ml-1 text-[#3dc692] hover:underline"
+              >
                 Política de Privacidad
               </Link>
             </label>

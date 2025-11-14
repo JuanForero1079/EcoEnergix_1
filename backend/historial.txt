@@ -3,5 +3,5 @@
   3  yarn add cors
   4  npm install jsonwebtoken
   5  npm install mysql2
-  6  node ./server.js
-  7  npm install nodemailer
+  6  npm install nodemailer dotenv
+  7  node ./server.js

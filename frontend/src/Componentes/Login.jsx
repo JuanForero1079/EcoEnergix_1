@@ -39,17 +39,35 @@ export default function Login() {
         return;
       }
 
-      const { usuario, token } = data;
-
-      if (!usuario || !usuario.rol || !token) {
-        alert("Datos de sesión incompletos.");
+      // ------------------------------
+      // 1. Validar verificación de correo
+      // ------------------------------
+      if (data.usuario?.verificado === 0) {
+        alert("Debes verificar tu correo antes de iniciar sesión.");
         return;
       }
 
-      // Normalizamos el rol
-      const rolNormalizado = usuario.rol.toLowerCase().trim();
+      // ------------------------------
+      // 2. Validar rol (solo clientes entran)
+      // ------------------------------
+      const rolNormalizado = data.usuario.rol?.toLowerCase().trim();
 
-      //  Guardamos en localStorage
+      if (rolNormalizado !== "cliente") {
+        alert("Solo los usuarios con rol Cliente pueden iniciar sesión.");
+        return;
+      }
+
+      // ------------------------------
+      // 3. Validar token y usuario
+      // ------------------------------
+      const { usuario, token } = data;
+
+      if (!usuario || !token) {
+        alert("Error: datos de sesión incompletos.");
+        return;
+      }
+
+      // Guardar usuario + token
       localStorage.setItem(
         "user",
         JSON.stringify({
@@ -59,13 +77,12 @@ export default function Login() {
           rol: rolNormalizado,
         })
       );
+
       localStorage.setItem("token", token);
 
-      // Redirección según rol
-      if (rolNormalizado === "administrador") navigate("/admin");
-      else if (rolNormalizado === "usuario" || rolNormalizado === "cliente") navigate("/usuario");
-      else if (rolNormalizado === "domiciliario") navigate("/domiciliario");
-      else alert("Rol desconocido");
+      // Redirigir al área cliente/usuario
+      navigate("/usuario");
+
     } catch (error) {
       console.error("Error durante el login:", error);
       alert("Ocurrió un error al intentar iniciar sesión.");
