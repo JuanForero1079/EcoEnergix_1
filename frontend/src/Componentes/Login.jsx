@@ -39,27 +39,6 @@ export default function Login() {
         return;
       }
 
-      // ------------------------------
-      // 1. Validar verificación de correo
-      // ------------------------------
-      if (data.usuario?.verificado === 0) {
-        alert("Debes verificar tu correo antes de iniciar sesión.");
-        return;
-      }
-
-      // ------------------------------
-      // 2. Validar rol (solo clientes entran)
-      // ------------------------------
-      const rolNormalizado = data.usuario.rol?.toLowerCase().trim();
-
-      if (rolNormalizado !== "cliente") {
-        alert("Solo los usuarios con rol Cliente pueden iniciar sesión.");
-        return;
-      }
-
-      // ------------------------------
-      // 3. Validar token y usuario
-      // ------------------------------
       const { usuario, token } = data;
 
       if (!usuario || !token) {
@@ -67,21 +46,22 @@ export default function Login() {
         return;
       }
 
-      // Guardar usuario + token
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          id: usuario.id,
-          nombre: usuario.nombre,
-          correo: usuario.correo,
-          rol: rolNormalizado,
-        })
-      );
+      const rol = usuario.rol?.toLowerCase().trim();
 
+      // Guardar token y usuario
       localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(usuario));
 
-      // Redirigir al área cliente/usuario
-      navigate("/usuario");
+      // Redirigir según el rol
+      if (rol === "cliente") {
+        navigate("/usuario");
+      } else if (rol === "administrador") {
+        navigate("/admin");
+      } else if (rol === "domiciliario") {
+        navigate("/domiciliario");
+      } else {
+        alert("Rol no permitido en la aplicación.");
+      }
 
     } catch (error) {
       console.error("Error durante el login:", error);

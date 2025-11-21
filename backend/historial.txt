@@ -4,4 +4,5 @@
   4  npm install jsonwebtoken
   5  npm install mysql2
   6  npm install nodemailer dotenv
-  7  node ./server.js
+  7  yarn add bcrypt
+  8  node ./server.js
