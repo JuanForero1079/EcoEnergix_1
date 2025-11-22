@@ -1,7 +1,7 @@
 // server.js
 const express = require("express");
 const cors = require("cors");
-// const { verificarToken, verificarRol } = require("./middleware/auth"); //  Comentado para entregas sin token
+// const { verificarToken, verificarRol } = require("./middleware/auth"); // Comentado para entregas sin token
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -31,15 +31,15 @@ const usuariosRoutes = require("./routes/usuarios");
 const pedidosRoutes = require("./routes/pedidos");
 
 // Rutas específicas de usuario
-const comprasUsuarioRoutes = require("./routes/comprasUsuario"); //  nueva ruta
+const comprasUsuarioRoutes = require("./routes/comprasUsuario");
+
+// Ruta pública para productos
+const publicProductosRoutes = require("./routes/publicProductos");
 
 // ----------------------
 // Rutas públicas
 // ----------------------
 app.use("/api/auth", authRoutes);
-
-// Ruta pública para productos (usuarios normales)
-const publicProductosRoutes = require("./routes/publicProductos");
 app.use("/api/productos", publicProductosRoutes);
 
 // ----------------------
@@ -47,51 +47,19 @@ app.use("/api/productos", publicProductosRoutes);
 // ----------------------
 
 // Solo Administrador
-app.use(
-  "/api/admin/compras",
-  /*verificarToken, verificarRol("administrador"),*/ 
-  comprasRoutes
-);
-app.use("/api/admin/entregas", entregasRoutes); // ⚡ Sin token ni rol
-app.use(
-  "/api/admin/instalaciones",
-  /*verificarToken, verificarRol("administrador"),*/ 
-  instalacionesRoutes
-);
-app.use(
-  "/api/admin/pagos",
-  /*verificarToken, verificarRol("administrador"),*/ 
-  pagosRoutes
-);
-app.use(
-  "/api/admin/productos",
-  /*verificarToken, verificarRol("administrador"),*/ 
-  productosRoutes
-);
-app.use(
-  "/api/admin/proveedores",
-  /*verificarToken, verificarRol("administrador"),*/ 
-  proveedoresRoutes
-);
-app.use(
-  "/api/admin/soportes",
-  /*verificarToken, verificarRol("administrador"),*/ 
-  soportesRoutes
-);
-app.use(
-  "/api/admin/usuarios",
-  /*verificarToken, verificarRol("administrador"),*/ 
-  usuariosRoutes
-);
+app.use("/api/admin/compras", /*verificarToken, verificarRol("administrador"),*/ comprasRoutes);
+app.use("/api/admin/entregas", entregasRoutes); //  Sin token ni rol
+app.use("/api/admin/instalaciones", /*verificarToken, verificarRol("administrador"),*/ instalacionesRoutes);
+app.use("/api/admin/pagos", /*verificarToken, verificarRol("administrador"),*/ pagosRoutes);
+app.use("/api/admin/productos", /*verificarToken, verificarRol("administrador"),*/ productosRoutes);
+app.use("/api/admin/proveedores", /*verificarToken, verificarRol("administrador"),*/ proveedoresRoutes);
+app.use("/api/admin/soportes", /*verificarToken, verificarRol("administrador"),*/ soportesRoutes);
+app.use("/api/admin/usuarios", /*verificarToken, verificarRol("administrador"),*/ usuariosRoutes);
 
-//  Cliente y Domiciliario (temporal)
-app.use(
-  "/api/pedidos",
-  /*verificarToken, verificarRol("cliente", "domiciliario"),*/ 
-  pedidosRoutes
-);
+// Cliente y Domiciliario (temporal)
+app.use("/api/pedidos", /*verificarToken, verificarRol("cliente", "domiciliario"),*/ pedidosRoutes);
 
-//  Rutas de usuario normal
+// Rutas de usuario normal
 app.use("/api/compras/usuario", comprasUsuarioRoutes);
 
 // ----------------------
@@ -106,16 +74,19 @@ app.use((req, res, next) => {
 // ----------------------
 app.use((err, req, res, next) => {
   console.error("Error interno:", err.stack);
-  res.status(500).json({ message: "Error interno del servidor" });
+  // Si el error viene de AppError, respeta el status y el mensaje
+  res.status(err.statusCode || 500).json({
+    message: err.message || "Error interno del servidor",
+  });
 });
 
 // ----------------------
 // Inicio del servidor
 // ----------------------
 app.listen(PORT, () => {
-  console.log(` Servidor escuchando en http://localhost:${PORT}`);
-  console.log(" Rutas públicas: /api/auth y /api/productos");
-  console.log(" Rutas admin: /api/admin/... (entregas sin token)");
-  console.log(" Rutas Cliente/Domiciliario: /api/pedidos (temporal)");
-  console.log(" Rutas Usuario: /api/compras/usuario");
+  console.log(`Servidor escuchando en http://localhost:${PORT}`);
+  console.log("Rutas públicas: /api/auth y /api/productos");
+  console.log("Rutas admin: /api/admin/... (entregas sin token)");
+  console.log("Rutas Cliente/Domiciliario: /api/pedidos (temporal)");
+  console.log("Rutas Usuario: /api/compras/usuario");
 });
