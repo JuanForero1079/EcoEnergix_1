@@ -1,4 +1,3 @@
-
 import { Routes, Route } from "react-router-dom";
 
 // Componentes públicos
@@ -26,6 +25,7 @@ import InstalacionesList from "./Componentes/InstalacionesList.jsx";
 import ProveedoresList from "./Componentes/ProveedoresList.jsx";
 import SoporteList from "./Componentes/SoporteList.jsx";
 import EntregasAdmin from "./admin/pages/EntregasAdmin.jsx";
+import ReportesAdmin from "./admin/pages/ReportesAdmin.jsx";
 
 // Panel Usuario
 import UsuarioLayout from "./usuario/UsuarioLayout.jsx";
@@ -42,7 +42,10 @@ import SoporteTecnico from "./usuario/Componentes/SoporteTecnico.jsx";
 // Panel Domiciliario
 import DomiciliarioLayout from "./domiciliario/DomiciliarioLayout.jsx";
 
+
+// ---------------------------
 // Layout público reutilizable
+// ---------------------------
 function PublicLayout({ children }) {
   return (
     <div className="relative min-h-screen flex flex-col">
@@ -57,10 +60,15 @@ function PublicLayout({ children }) {
   );
 }
 
+
+// ---------------------------
+// RUTAS PRINCIPALES
+// ---------------------------
 export default function App() {
   return (
     <Routes>
-      {/* RUTAS PÚBLICAS */}
+
+      {/* ---------- PÚBLICAS ---------- */}
       <Route path="/" element={<PublicLayout><Hero /></PublicLayout>} />
       <Route path="/services" element={<PublicLayout><Services /></PublicLayout>} />
       <Route path="/about" element={<PublicLayout><About /></PublicLayout>} />
@@ -71,7 +79,8 @@ export default function App() {
       <Route path="/privacy" element={<PublicLayout><Privacy /></PublicLayout>} />
       <Route path="/catalogo" element={<PublicLayout><Catalogo /></PublicLayout>} />
 
-      {/* RUTAS PRIVADAS DEL ADMIN */}
+
+      {/* ---------- ADMIN ---------- */}
       <Route
         path="/admin/*"
         element={
@@ -80,11 +89,17 @@ export default function App() {
           </PrivateRoute>
         }
       >
-        <Route index element={
-          <div className="flex justify-center items-center h-full">
-            <h1 className="text-3xl font-bold text-white">Bienvenido al Panel de Administración</h1>
-          </div>
-        } />
+        <Route
+          index
+          element={
+            <div className="flex justify-center items-center h-full">
+              <h1 className="text-3xl font-bold text-white">
+                Bienvenido al Panel de Administración
+              </h1>
+            </div>
+          }
+        />
+
         <Route path="usuarios" element={<UsuariosList />} />
         <Route path="productos" element={<ProductosList />} />
         <Route path="compras" element={<ComprasList />} />
@@ -93,9 +108,11 @@ export default function App() {
         <Route path="instalaciones" element={<InstalacionesList />} />
         <Route path="proveedores" element={<ProveedoresList />} />
         <Route path="soporte" element={<SoporteList />} />
+        <Route path="reportes" element={<ReportesAdmin />} /> {/* NUEVO */}
       </Route>
 
-      {/* RUTAS PRIVADAS DEL DOMICILIARIO */}
+
+      {/* ---------- DOMICILIARIO ---------- */}
       <Route
         path="/domiciliario/*"
         element={
@@ -104,12 +121,18 @@ export default function App() {
           </PrivateRoute>
         }
       >
-        <Route index element={
-          <h1 className="text-3xl text-white font-bold text-center">Bienvenido, Domiciliario</h1>
-        } />
+        <Route
+          index
+          element={
+            <h1 className="text-3xl text-white font-bold text-center">
+              Bienvenido, Domiciliario
+            </h1>
+          }
+        />
       </Route>
 
-      {/* RUTAS PRIVADAS DEL USUARIO */}
+
+      {/* ---------- USUARIO ---------- */}
       <Route
         path="/usuario/*"
         element={
@@ -129,12 +152,18 @@ export default function App() {
         <Route path="soporte" element={<SoporteTecnico />} />
       </Route>
 
-      {/* RUTA NO ENCONTRADA */}
-      <Route path="*" element={
-        <PublicLayout>
-          <h1 className="text-3xl text-white font-bold text-center">Ruta no encontrada</h1>
-        </PublicLayout>
-      } />
+
+      {/* ---------- NOT FOUND ---------- */}
+      <Route
+        path="*"
+        element={
+          <PublicLayout>
+            <h1 className="text-3xl text-white font-bold text-center">
+              Ruta no encontrada
+            </h1>
+          </PublicLayout>
+        }
+      />
     </Routes>
   );
 }

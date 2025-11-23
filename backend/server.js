@@ -19,7 +19,7 @@ const authRoutes = require("./routes/auth");
 
 // Admin
 const comprasRoutes = require("./routes/compras");
-const entregasRoutes = require("./routes/entrega"); 
+const entregasRoutes = require("./routes/entrega");
 const instalacionesRoutes = require("./routes/instalacion");
 const pagosRoutes = require("./routes/pago");
 const productosRoutes = require("./routes/productos");
@@ -36,6 +36,9 @@ const comprasUsuarioRoutes = require("./routes/comprasUsuario");
 // Ruta pública para productos
 const publicProductosRoutes = require("./routes/publicProductos");
 
+// NUEVA RUTA PARA REPORTES
+const reportesRoutes = require("./routes/reportes");
+
 // ----------------------
 // Rutas públicas
 // ----------------------
@@ -43,21 +46,24 @@ app.use("/api/auth", authRoutes);
 app.use("/api/productos", publicProductosRoutes);
 
 // ----------------------
-// Rutas protegidas por rol
+// Rutas protegidas por rol (temporalmente sin token)
 // ----------------------
 
 // Solo Administrador
-app.use("/api/admin/compras", /*verificarToken, verificarRol("administrador"),*/ comprasRoutes);
-app.use("/api/admin/entregas", entregasRoutes); //  Sin token ni rol
-app.use("/api/admin/instalaciones", /*verificarToken, verificarRol("administrador"),*/ instalacionesRoutes);
-app.use("/api/admin/pagos", /*verificarToken, verificarRol("administrador"),*/ pagosRoutes);
-app.use("/api/admin/productos", /*verificarToken, verificarRol("administrador"),*/ productosRoutes);
-app.use("/api/admin/proveedores", /*verificarToken, verificarRol("administrador"),*/ proveedoresRoutes);
-app.use("/api/admin/soportes", /*verificarToken, verificarRol("administrador"),*/ soportesRoutes);
-app.use("/api/admin/usuarios", /*verificarToken, verificarRol("administrador"),*/ usuariosRoutes);
+app.use("/api/admin/compras", comprasRoutes);
+app.use("/api/admin/entregas", entregasRoutes); 
+app.use("/api/admin/instalaciones", instalacionesRoutes);
+app.use("/api/admin/pagos", pagosRoutes);
+app.use("/api/admin/productos", productosRoutes);
+app.use("/api/admin/proveedores", proveedoresRoutes);
+app.use("/api/admin/soportes", soportesRoutes);
+app.use("/api/admin/usuarios", usuariosRoutes);
+
+// Reportes admin
+app.use("/api/admin/reportes", reportesRoutes);
 
 // Cliente y Domiciliario (temporal)
-app.use("/api/pedidos", /*verificarToken, verificarRol("cliente", "domiciliario"),*/ pedidosRoutes);
+app.use("/api/pedidos", pedidosRoutes);
 
 // Rutas de usuario normal
 app.use("/api/compras/usuario", comprasUsuarioRoutes);
@@ -74,7 +80,6 @@ app.use((req, res, next) => {
 // ----------------------
 app.use((err, req, res, next) => {
   console.error("Error interno:", err.stack);
-  // Si el error viene de AppError, respeta el status y el mensaje
   res.status(err.statusCode || 500).json({
     message: err.message || "Error interno del servidor",
   });
@@ -89,4 +94,5 @@ app.listen(PORT, () => {
   console.log("Rutas admin: /api/admin/... (entregas sin token)");
   console.log("Rutas Cliente/Domiciliario: /api/pedidos (temporal)");
   console.log("Rutas Usuario: /api/compras/usuario");
+  console.log("Reportes: /api/admin/reportes");
 });
