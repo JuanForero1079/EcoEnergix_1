@@ -1,12 +1,59 @@
+// src/routes/comprasUsuario.js
 const express = require("express");
 const router = express.Router();
 const DB = require("../db/connection");
 
-// Obtener todas las compras de un usuario
+/**
+ * @swagger
+ * tags:
+ *   name: Compras Usuario
+ *   description: Endpoints para obtener compras de un usuario específico
+ */
+
+/**
+ * @swagger
+ * /api/compras/usuario/{userId}:
+ *   get:
+ *     summary: Obtener todas las compras de un usuario
+ *     tags: [Compras Usuario]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del usuario
+ *     responses:
+ *       200:
+ *         description: Lista de compras del usuario
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   ID_compra:
+ *                     type: integer
+ *                   ID_usuario:
+ *                     type: integer
+ *                   Fecha_compra:
+ *                     type: string
+ *                     format: date
+ *                   Monto_total:
+ *                     type: number
+ *                   Estado:
+ *                     type: string
+ *                   nombre_producto:
+ *                     type: string
+ *                   cantidad:
+ *                     type: integer
+ *       500:
+ *         description: Error del servidor
+ */
 router.get("/:userId", (req, res) => {
   const { userId } = req.params;
 
-  //   Si quieres mostrar también el nombre del producto, usa JOIN con productos
   const query = `
     SELECT c.ID_compra, c.ID_usuario, c.Fecha_compra, c.Monto_total, c.Estado,
            p.nombre_producto, c.cantidad

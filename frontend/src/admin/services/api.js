@@ -1,8 +1,7 @@
 import axios from "axios";
 
-const API = axios.create({
-  baseURL: "http://localhost:3001/api", // 👈 tu backend
+const APIAdmin = axios.create({
+  baseURL: "http://localhost:3001/api/admin",
 });
 
-export default API;
-
+export default APIAdmin;

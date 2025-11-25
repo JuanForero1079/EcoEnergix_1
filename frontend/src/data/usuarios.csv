@@ -1,0 +1,11 @@
+ID_usuario,Nombre,Correo_electronico,Rol_usuario,Tipo_documento,Numero_documento,Foto_usuario,Estado_usuario
+1,Juan Pérez,juan.perez@email.com,Administrador,CC,12345678,https://randomuser.me/api/portraits/men/1.jpg,activo
+2,Ana Gómez,ana.gomez@email.com,Cliente,CC,87654321,https://randomuser.me/api/portraits/women/2.jpg,activo
+3,Luis Torres,luis.torres@email.com,Domiciliario,CC,11223344,,inactivo
+4,María López,maria.lopez@email.com,Cliente,CC,44332211,https://randomuser.me/api/portraits/women/4.jpg,activo
+5,Carlos Ramírez,carlos.ramirez@email.com,Administrador,CC,55667788,https://randomuser.me/api/portraits/men/5.jpg,activo
+6,Sofía Martínez,sofia.martinez@email.com,Cliente,CC,99887766,https://randomuser.me/api/portraits/women/6.jpg,activo
+7,Andrés Díaz,andres.diaz@email.com,Domiciliario,CC,66778899,,activo
+8,Valentina Rojas,valentina.rojas@email.com,Cliente,CC,33445566,https://randomuser.me/api/portraits/women/8.jpg,inactivo
+9,Pedro Morales,pedro.morales@email.com,Domiciliario,CC,77889900,,activo
+10,Laura Sánchez,laura.sanchez@email.com,Administrador,CC,22334455,https://randomuser.me/api/portraits/women/10.jpg,activo

@@ -2,7 +2,65 @@ const express = require("express");
 const router = express.Router();
 const DB = require("../db/connection");
 
-// Reporte parametrizado
+/**
+ * @swagger
+ * tags:
+ *   name: Reportes
+ *   description: Endpoints para generar reportes parametrizados
+ */
+
+/**
+ * @swagger
+ * /api/reportes:
+ *   get:
+ *     summary: Obtener reporte de compras parametrizado
+ *     tags: [Reportes]
+ *     parameters:
+ *       - in: query
+ *         name: fechaInicio
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Fecha inicial para filtrar las compras
+ *       - in: query
+ *         name: fechaFin
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Fecha final para filtrar las compras
+ *       - in: query
+ *         name: estado
+ *         schema:
+ *           type: string
+ *         description: Estado de la compra (ej. 'pendiente', 'pagado')
+ *       - in: query
+ *         name: tipo
+ *         schema:
+ *           type: string
+ *           enum: [mayores, menores]
+ *         description: Filtra por monto total de la compra
+ *     responses:
+ *       200:
+ *         description: Lista de compras según los filtros aplicados
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   fecha_compra:
+ *                     type: string
+ *                     format: date
+ *                   estado:
+ *                     type: string
+ *                   total:
+ *                     type: number
+ *                   cliente:
+ *                     type: string
+ */
 router.get("/", (req, res) => {
   let { fechaInicio, fechaFin, estado, tipo } = req.query;
 

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import API from "../services/api";
+import { exportTableToPDF } from "../utils/exportPDF";
 
 function ComprasList() {
   const [compras, setCompras] = useState([]);
@@ -15,7 +16,13 @@ function ComprasList() {
   });
   const [editMode, setEditMode] = useState(false);
 
-  //   Obtener compras
+  // Búsqueda y filtros
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterEstado, setFilterEstado] = useState("");
+  const [filterFechaInicio, setFilterFechaInicio] = useState("");
+  const [filterFechaFin, setFilterFechaFin] = useState("");
+
+  // Obtener compras
   const fetchCompras = async () => {
     try {
       setLoading(true);
@@ -23,7 +30,7 @@ function ComprasList() {
       const res = await API.get("/api/admin/compras");
       setCompras(res.data);
     } catch (err) {
-      console.error(" Error al obtener compras:", err);
+      console.error("Error al obtener compras:", err);
       setError("No se pudo obtener la lista de compras. Verifica el backend.");
     } finally {
       setLoading(false);
@@ -34,7 +41,7 @@ function ComprasList() {
     fetchCompras();
   }, []);
 
-  //   Manejo de formulario
+  // Manejo de formulario
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -45,16 +52,22 @@ function ComprasList() {
     try {
       if (editMode) {
         await API.put(`/api/admin/compras/${formData.ID_compra}`, formData);
-        alert("  Compra actualizada correctamente");
+        alert("Compra actualizada correctamente");
       } else {
         await API.post("/api/admin/compras", formData);
-        alert("  Compra creada correctamente");
+        alert("Compra creada correctamente");
       }
-      setFormData({ ID_compra: null, ID_usuario: "", Fecha_compra: "", Monto_total: "", Estado: "" });
+      setFormData({
+        ID_compra: null,
+        ID_usuario: "",
+        Fecha_compra: "",
+        Monto_total: "",
+        Estado: "",
+      });
       setEditMode(false);
       fetchCompras();
     } catch (err) {
-      console.error(" Error al guardar compra:", err);
+      console.error("Error al guardar compra:", err);
       alert("Error al guardar compra.");
     }
   };
@@ -74,12 +87,43 @@ function ComprasList() {
     if (!window.confirm("¿Seguro que deseas eliminar esta compra?")) return;
     try {
       await API.delete(`/api/admin/compras/${id}`);
-      alert("  Compra eliminada correctamente");
+      alert("Compra eliminada correctamente");
       fetchCompras();
     } catch (err) {
-      console.error(" Error al eliminar compra:", err);
+      console.error("Error al eliminar compra:", err);
       alert("No se pudo eliminar la compra.");
     }
+  };
+
+  // Filtrar compras por búsqueda, estado y rango de fechas
+  const filteredCompras = compras.filter((c) => {
+    const matchesSearch =
+      String(c.ID_usuario).includes(searchTerm) ||
+      String(c.ID_compra).includes(searchTerm);
+
+    const matchesEstado = filterEstado
+      ? c.Estado.toLowerCase() === filterEstado.toLowerCase()
+      : true;
+
+    const fechaCompra = new Date(c.Fecha_compra);
+    const matchesFecha =
+      (!filterFechaInicio || fechaCompra >= new Date(filterFechaInicio)) &&
+      (!filterFechaFin || fechaCompra <= new Date(filterFechaFin));
+
+    return matchesSearch && matchesEstado && matchesFecha;
+  });
+
+  // Exportar PDF
+  const handleExportPDF = () => {
+    const columns = ["ID Compra", "ID Usuario", "Fecha", "Monto Total", "Estado"];
+    const rows = filteredCompras.map((c) => [
+      c.ID_compra,
+      c.ID_usuario,
+      new Date(c.Fecha_compra).toLocaleDateString(),
+      Number(c.Monto_total).toLocaleString(),
+      c.Estado,
+    ]);
+    exportTableToPDF("Compras Registradas", columns, rows);
   };
 
   if (loading) return <p className="text-white p-4">Cargando compras...</p>;
@@ -87,10 +131,13 @@ function ComprasList() {
 
   return (
     <div className="p-6 bg-slate-800/60 rounded-2xl shadow-lg border border-slate-700 text-white">
-      <h2 className="text-2xl font-bold mb-4">🛒 Gestión de Compras</h2>
+      <h2 className="text-2xl font-bold mb-4">Gestión de Compras</h2>
 
       {/* Formulario */}
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <form
+        onSubmit={handleSubmit}
+        className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"
+      >
         <input
           type="number"
           name="ID_usuario"
@@ -129,14 +176,55 @@ function ComprasList() {
         />
         <button
           type="submit"
-          className="col-span-1 md:col-span-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded"
+          className="col-span-1 md:col-span-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded"
         >
-          {editMode ? " Guardar Cambios" : " Agregar Compra"}
+          {editMode ? "Guardar Cambios" : "Agregar Compra"}
         </button>
       </form>
 
+      {/* Filtros y exportar */}
+      <div className="flex flex-col md:flex-row items-center gap-4 mb-4">
+        <input
+          type="text"
+          placeholder="Buscar compras..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="p-2 rounded bg-slate-700 text-white"
+        />
+        <select
+          value={filterEstado}
+          onChange={(e) => setFilterEstado(e.target.value)}
+          className="p-2 rounded bg-slate-700 text-white"
+        >
+          <option value="">Todos los estados</option>
+          <option value="pendiente">Pendiente</option>
+          <option value="pagado">Pagado</option>
+          <option value="cancelado">Cancelado</option>
+        </select>
+        <input
+          type="date"
+          value={filterFechaInicio}
+          onChange={(e) => setFilterFechaInicio(e.target.value)}
+          className="p-2 rounded bg-slate-700 text-white"
+          placeholder="Fecha inicio"
+        />
+        <input
+          type="date"
+          value={filterFechaFin}
+          onChange={(e) => setFilterFechaFin(e.target.value)}
+          className="p-2 rounded bg-slate-700 text-white"
+          placeholder="Fecha fin"
+        />
+        <button
+          onClick={handleExportPDF}
+          className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Exportar PDF
+        </button>
+      </div>
+
       {/* Tabla de compras */}
-      {compras.length === 0 ? (
+      {filteredCompras.length === 0 ? (
         <p>No hay compras registradas.</p>
       ) : (
         <div className="overflow-x-auto">
@@ -152,25 +240,32 @@ function ComprasList() {
               </tr>
             </thead>
             <tbody>
-              {compras.map((c) => (
-                <tr key={c.ID_compra} className="border-b border-slate-700 hover:bg-slate-800">
+              {filteredCompras.map((c) => (
+                <tr
+                  key={c.ID_compra}
+                  className="border-b border-slate-700 hover:bg-slate-800"
+                >
                   <td className="py-2 px-4">{c.ID_compra}</td>
                   <td className="py-2 px-4">{c.ID_usuario}</td>
-                  <td className="py-2 px-4">{new Date(c.Fecha_compra).toLocaleDateString()}</td>
-                  <td className="py-2 px-4 text-center">${Number(c.Monto_total).toLocaleString()}</td>
+                  <td className="py-2 px-4">
+                    {new Date(c.Fecha_compra).toLocaleDateString()}
+                  </td>
+                  <td className="py-2 px-4 text-center">
+                    ${Number(c.Monto_total).toLocaleString()}
+                  </td>
                   <td className="py-2 px-4">{c.Estado}</td>
                   <td className="py-2 px-4 text-center flex justify-center gap-2">
                     <button
                       onClick={() => handleEdit(c)}
                       className="bg-yellow-500 hover:bg-yellow-600 text-black px-3 py-1 rounded"
                     >
-                       
+                      Editar
                     </button>
                     <button
                       onClick={() => handleDelete(c.ID_compra)}
                       className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
                     >
-                      
+                      Eliminar
                     </button>
                   </td>
                 </tr>

@@ -24,8 +24,7 @@ import PagosList from "./Componentes/PagosList.jsx";
 import InstalacionesList from "./Componentes/InstalacionesList.jsx";
 import ProveedoresList from "./Componentes/ProveedoresList.jsx";
 import SoporteList from "./Componentes/SoporteList.jsx";
-import EntregasAdmin from "./admin/pages/EntregasAdmin.jsx";
-import ReportesAdmin from "./admin/pages/ReportesAdmin.jsx";
+import EntregasList from "./Componentes/EntregasList.jsx";
 
 // Panel Usuario
 import UsuarioLayout from "./usuario/UsuarioLayout.jsx";
@@ -104,11 +103,10 @@ export default function App() {
         <Route path="productos" element={<ProductosList />} />
         <Route path="compras" element={<ComprasList />} />
         <Route path="pagos" element={<PagosList />} />
-        <Route path="entregas" element={<EntregasAdmin />} />
+        <Route path="entregas" element={<EntregasList />} />
         <Route path="instalaciones" element={<InstalacionesList />} />
         <Route path="proveedores" element={<ProveedoresList />} />
         <Route path="soporte" element={<SoporteList />} />
-        <Route path="reportes" element={<ReportesAdmin />} /> {/* NUEVO */}
       </Route>
 
 

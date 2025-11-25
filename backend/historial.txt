@@ -1,9 +1,11 @@
-  1  yarn
-  2  yarn add express
-  3  yarn add cors
-  4  npm install jsonwebtoken
-  5  npm install mysql2
-  6  npm install nodemailer dotenv
-  7  yarn add bcrypt
-  8  node scripts/hashPasswords.js (opcional solo si la BD no tien las contraseñas Hasheadas)
-  9  node ./server.js
+  1   yarn
+  2   yarn add express
+  3   yarn add cors
+  4   npm install jsonwebtoken
+  5   npm install mysql2
+  6   npm install nodemailer dotenv
+  7   yarn add bcrypt
+  8   node scripts/hashPasswords.js (solo si la BD no tien las contraseñas Hasheadas)
+  9   npm install multer csv-parser
+  10  npm install swagger-jsdoc swagger-ui-express
+  11  node ./server.js

@@ -12,7 +12,6 @@ import {
   Wrench,
   Home,
   LogOut,
-  BarChart, // <-- NUEVO
 } from "lucide-react";
 import Logo from "../../assets/logo.png";
 
@@ -36,9 +35,6 @@ export default function SidebarAdmin({
     { to: "/admin/pagos", label: "Pagos", Icon: DollarSign },
     { to: "/admin/proveedores", label: "Proveedores", Icon: ClipboardList },
     { to: "/admin/soporte", label: "Soporte Técnico", Icon: Wrench },
-
-    // 👇 AGREGADO: MÓDULO DE REPORTES
-    { to: "/admin/reportes", label: "Reportes", Icon: BarChart },
   ];
 
   const handleLogout = () => {
@@ -57,11 +53,12 @@ export default function SidebarAdmin({
           "linear-gradient(to bottom, rgba(91,33,182,0.9), rgba(37,99,235,0.9), rgba(13,148,136,0.9))",
       }}
     >
+      {/* Fondo blur semitransparente sin invadir el resto del layout */}
       <div className="absolute inset-0 backdrop-blur-xl bg-white/10 z-0" />
 
-      {/* Contenido del Sidebar */}
+      {/* Contenido del Sidebar */}     
       <div className="relative z-10 flex flex-col justify-between h-full">
-        {/* Header */}
+        {/* Header con logo */}
         <div className="flex items-center justify-between p-4 border-b border-white/20">
           <div className="flex items-center gap-3">
             <img
@@ -80,7 +77,7 @@ export default function SidebarAdmin({
           </div>
         </div>
 
-        {/* Menú */}
+        {/* Menú principal */}
         <nav className="flex-1 flex items-center justify-center">
           <ul className="space-y-2 w-full px-4">
             {menuItems.map(({ to, label, Icon }) => {
@@ -119,7 +116,6 @@ export default function SidebarAdmin({
             <LogOut size={22} />
             {isOpen && <span>Cerrar sesión</span>}
           </button>
-
           {isOpen ? (
             <div className="text-sm text-white/80">© 2025 EcoEnergix</div>
           ) : (
