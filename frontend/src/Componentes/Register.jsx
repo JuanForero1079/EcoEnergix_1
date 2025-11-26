@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import API from "../services/api";
+import API from "../services/api"; // <-- Axios con interceptors
 
 export default function Register() {
   const navigate = useNavigate();
@@ -32,7 +32,7 @@ export default function Register() {
     setError("");
     setSuccess("");
 
-    // Validaciones
+    // Validaciones básicas
     if (
       !formData.name ||
       !formData.email ||
@@ -54,7 +54,8 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const res = await API.post("/api/auth/register", {
+      // Llamada a la API usando Axios
+      const { data } = await API.post("/auth/register", {
         Nombre: formData.name,
         Correo_electronico: formData.email,
         Contraseña: formData.password,
@@ -62,10 +63,9 @@ export default function Register() {
         Numero_documento: formData.documentNumber,
       });
 
-      // Mensaje bonito de éxito
+      // Mensaje de éxito
       setSuccess(
-        res.data.message ||
-          "¡Registro exitoso! Se ha enviado un correo de verificación."
+        data.message || "¡Registro exitoso! Se ha enviado un correo de verificación."
       );
 
       // Redirigir después de 3 segundos
@@ -79,7 +79,7 @@ export default function Register() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-17 sm:py-10">
+    <div className="flex min-h-screen items-center justify-center px-4 py-10 sm:py-12">
       <div className="w-full max-w-md p-6 sm:p-8 rounded-2xl shadow-2xl bg-white/20 backdrop-blur-lg border border-white/30">
         <h2 className="text-3xl font-bold text-center text-white mb-4">
           Crear Cuenta
@@ -88,10 +88,7 @@ export default function Register() {
           Regístrate y empieza a ahorrar con energía solar
         </p>
 
-        {error && (
-          <p className="text-red-500 text-center mb-4 font-medium">{error}</p>
-        )}
-
+        {error && <p className="text-red-500 text-center mb-4 font-medium">{error}</p>}
         {success && (
           <p className="text-green-400 text-center mb-4 font-medium">
             {success} <br />
@@ -151,9 +148,7 @@ export default function Register() {
                 onChange={handleChange}
                 className="w-1/3 px-2 py-2 rounded-lg bg-white/30 text-white focus:ring-2 focus:ring-[#3dc692] outline-none"
               >
-                <option value="" disabled hidden>
-                  Tipo
-                </option>
+                <option value="" disabled hidden>Tipo</option>
                 <option value="CC">Cédula</option>
                 <option value="TI">Tarjeta Identidad</option>
                 <option value="CE">Cédula Extranjería</option>
@@ -169,7 +164,7 @@ export default function Register() {
             </div>
           </div>
 
-          {/* Terminos y Politica */}
+          {/* Términos y política */}
           <div className="space-y-2">
             <label className="flex items-center text-white text-sm">
               <input
@@ -180,9 +175,7 @@ export default function Register() {
                 className="mr-2"
               />
               Estoy de acuerdo con los{" "}
-              <Link to="/terms" className="ml-1 text-[#3dc692] hover:underline">
-                Términos y Condiciones
-              </Link>
+              <Link to="/terms" className="ml-1 text-[#3dc692] hover:underline">Términos y Condiciones</Link>
             </label>
             <label className="flex items-center text-white text-sm">
               <input
@@ -193,20 +186,14 @@ export default function Register() {
                 className="mr-2"
               />
               Acepto la{" "}
-              <Link
-                to="/privacy"
-                className="ml-1 text-[#3dc692] hover:underline"
-              >
-                Política de Privacidad
-              </Link>
+              <Link to="/privacy" className="ml-1 text-[#3dc692] hover:underline">Política de Privacidad</Link>
             </label>
           </div>
 
-          {/* Botón */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r bg-[#5f54b3] text-white py-2 rounded-lg hover:bg-[#3dc692] transition disabled:opacity-50"
+            className="w-full bg-[#5f54b3] text-white py-2 rounded-lg hover:bg-[#3dc692] transition disabled:opacity-50"
           >
             {loading ? "Registrando..." : "Registrarme"}
           </button>
@@ -214,9 +201,7 @@ export default function Register() {
 
         <p className="text-sm text-white text-center mt-4">
           ¿Ya tienes cuenta?{" "}
-          <Link to="/login" className="text-[#3dc692] hover:underline">
-            Inicia sesión
-          </Link>
+          <Link to="/login" className="text-[#3dc692] hover:underline">Inicia sesión</Link>
         </p>
       </div>
     </div>

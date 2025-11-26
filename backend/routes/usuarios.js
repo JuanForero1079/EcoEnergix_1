@@ -1,295 +1,153 @@
 const express = require("express");
 const router = express.Router();
 const DB = require("../db/connection");
+const { verificarToken, verificarRol } = require("../middleware/auth");
+const { hashPassword } = require("../utils/password");
 
-/**
- * @swagger
- * tags:
- *   name: Usuarios
- *   description: Endpoints para gestionar usuarios
- */
-
-/**
- * @swagger
- * /api/admin/usuarios:
- *   get:
- *     summary: Obtener todos los usuarios
- *     tags: [Usuarios]
- *     responses:
- *       200:
- *         description: Lista de usuarios
- */
-router.get("/", (req, res) => {
+// =====================
+// GET todos los usuarios
+// =====================
+router.get("/", verificarToken, verificarRol("admin"), (req, res) => {
   const sql = `
-    SELECT 
-      ID_usuario, 
-      Nombre, 
-      Correo_electronico, 
-      Rol_usuario, 
-      Tipo_documento, 
-      Numero_documento, 
-      Foto_usuario, 
-      Estado_usuario
+    SELECT ID_usuario, Nombre, Correo_electronico, Rol_usuario, Tipo_documento, Numero_documento, Foto_usuario, Estado_usuario
     FROM usuarios
   `;
-
   DB.query(sql, (err, result) => {
     if (err) return res.status(500).json({ success: false, message: "Error al obtener los usuarios" });
     res.json({ success: true, data: result });
   });
 });
 
-/**
- * @swagger
- * /api/admin/usuarios/{id}:
- *   get:
- *     summary: Obtener un usuario por ID
- *     tags: [Usuarios]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: ID del usuario
- *     responses:
- *       200:
- *         description: Usuario encontrado
- *       404:
- *         description: Usuario no encontrado
- */
-router.get("/:id", (req, res) => {
+// =====================
+// GET usuario por ID
+// =====================
+router.get("/:id", verificarToken, verificarRol("admin"), (req, res) => {
   const { id } = req.params;
-
   DB.query("SELECT * FROM usuarios WHERE ID_usuario = ?", [id], (err, result) => {
     if (err) return res.status(500).json({ success: false, message: "Error al obtener usuario" });
     if (result.length === 0) return res.status(404).json({ success: false, message: "Usuario no encontrado" });
-
     res.json({ success: true, data: result[0] });
   });
 });
 
-/**
- * @swagger
- * /api/admin/usuarios:
- *   post:
- *     summary: Crear un usuario
- *     tags: [Usuarios]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - Nombre
- *               - Correo_electronico
- *               - Rol_usuario
- *             properties:
- *               Nombre:
- *                 type: string
- *               Correo_electronico:
- *                 type: string
- *               Rol_usuario:
- *                 type: string
- *               Tipo_documento:
- *                 type: string
- *               Numero_documento:
- *                 type: string
- *               Foto_usuario:
- *                 type: string
- *               Estado_usuario:
- *                 type: string
- *     responses:
- *       201:
- *         description: Usuario creado exitosamente
- *       400:
- *         description: Datos incompletos
- */
-router.post("/", (req, res) => {
-  const { Nombre, Correo_electronico, Rol_usuario, Tipo_documento, Numero_documento, Foto_usuario, Estado_usuario } = req.body;
+// =====================
+// POST crear usuario con hash de contraseña
+// =====================
+router.post("/", verificarToken, verificarRol("admin"), async (req, res) => {
+  try {
+    let { Nombre, Correo_electronico, Rol_usuario, Contraseña, Tipo_documento, Numero_documento, Foto_usuario, Estado_usuario } = req.body;
 
-  if (!Nombre || !Correo_electronico || !Rol_usuario) return res.status(400).json({ success: false, message: "Nombre, correo y rol son obligatorios" });
+    if (!Nombre || !Correo_electronico || !Rol_usuario || !Contraseña) 
+      return res.status(400).json({ success: false, message: "Nombre, correo, rol y contraseña son obligatorios" });
 
-  const sql = `
-    INSERT INTO usuarios 
-      (Nombre, Correo_electronico, Rol_usuario, Tipo_documento, Numero_documento, Foto_usuario, Estado_usuario)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `;
+    // Hash de la contraseña
+    Contraseña = await hashPassword(Contraseña);
 
-  DB.query(sql, [Nombre, Correo_electronico, Rol_usuario, Tipo_documento || null, Numero_documento || null, Foto_usuario || null, Estado_usuario || "activo"], (err, result) => {
-    if (err) return res.status(500).json({ success: false, message: "Error al crear usuario" });
+    const sql = `
+      INSERT INTO usuarios (Nombre, Correo_electronico, Rol_usuario, Contraseña, Tipo_documento, Numero_documento, Foto_usuario, Estado_usuario)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `;
 
-    res.status(201).json({
-      success: true,
-      message: "Usuario creado exitosamente",
-      data: { ID_usuario: result.insertId, Nombre, Correo_electronico, Rol_usuario, Tipo_documento, Numero_documento, Foto_usuario, Estado_usuario }
+    DB.query(sql, [Nombre, Correo_electronico, Rol_usuario, Contraseña, Tipo_documento || null, Numero_documento || null, Foto_usuario || null, Estado_usuario || "activo"], 
+      (err, result) => {
+        if (err) return res.status(500).json({ success: false, message: "Error al crear usuario" });
+        res.status(201).json({
+          success: true,
+          message: "Usuario creado exitosamente",
+          data: { ID_usuario: result.insertId, Nombre, Correo_electronico, Rol_usuario, Tipo_documento, Numero_documento, Foto_usuario, Estado_usuario }
+        });
     });
-  });
+
+  } catch(err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
 });
 
-/**
- * @swagger
- * /api/admin/usuarios/{id}:
- *   put:
- *     summary: Actualizar un usuario
- *     tags: [Usuarios]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: ID del usuario a actualizar
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - Nombre
- *               - Correo_electronico
- *               - Rol_usuario
- *             properties:
- *               Nombre:
- *                 type: string
- *               Correo_electronico:
- *                 type: string
- *               Rol_usuario:
- *                 type: string
- *               Tipo_documento:
- *                 type: string
- *               Numero_documento:
- *                 type: string
- *               Foto_usuario:
- *                 type: string
- *               Estado_usuario:
- *                 type: string
- *     responses:
- *       200:
- *         description: Usuario actualizado correctamente
- *       400:
- *         description: Datos incompletos
- *       404:
- *         description: Usuario no encontrado
- */
-router.put("/:id", (req, res) => {
+// =====================
+// PUT actualizar usuario (opcional cambiar contraseña)
+// =====================
+router.put("/:id", verificarToken, verificarRol("admin"), async (req, res) => {
   const { id } = req.params;
-  const { Nombre, Correo_electronico, Rol_usuario, Tipo_documento, Numero_documento, Foto_usuario, Estado_usuario } = req.body;
+  let { Nombre, Correo_electronico, Rol_usuario, Contraseña, Tipo_documento, Numero_documento, Foto_usuario, Estado_usuario } = req.body;
 
-  if (!Nombre || !Correo_electronico || !Rol_usuario) return res.status(400).json({ success: false, message: "Nombre, correo y rol son obligatorios" });
+  if (!Nombre || !Correo_electronico || !Rol_usuario) 
+    return res.status(400).json({ success: false, message: "Nombre, correo y rol son obligatorios" });
 
-  const sql = `
-    UPDATE usuarios SET 
-      Nombre = ?, 
-      Correo_electronico = ?, 
-      Rol_usuario = ?, 
-      Tipo_documento = ?, 
-      Numero_documento = ?, 
-      Foto_usuario = ?, 
-      Estado_usuario = ?
-    WHERE ID_usuario = ?
-  `;
+  try {
+    let sql, params;
 
-  DB.query(sql, [Nombre, Correo_electronico, Rol_usuario, Tipo_documento || null, Numero_documento || null, Foto_usuario || null, Estado_usuario || "activo", id], (err, result) => {
-    if (err) return res.status(500).json({ success: false, message: "Error al actualizar usuario" });
-    if (result.affectedRows === 0) return res.status(404).json({ success: false, message: "Usuario no encontrado" });
+    if (Contraseña) {
+      // Hash de la nueva contraseña
+      Contraseña = await hashPassword(Contraseña);
+      sql = `
+        UPDATE usuarios 
+        SET Nombre = ?, Correo_electronico = ?, Rol_usuario = ?, Contraseña = ?, Tipo_documento = ?, Numero_documento = ?, Foto_usuario = ?, Estado_usuario = ?
+        WHERE ID_usuario = ?
+      `;
+      params = [Nombre, Correo_electronico, Rol_usuario, Contraseña, Tipo_documento || null, Numero_documento || null, Foto_usuario || null, Estado_usuario || "activo", id];
+    } else {
+      sql = `
+        UPDATE usuarios 
+        SET Nombre = ?, Correo_electronico = ?, Rol_usuario = ?, Tipo_documento = ?, Numero_documento = ?, Foto_usuario = ?, Estado_usuario = ?
+        WHERE ID_usuario = ?
+      `;
+      params = [Nombre, Correo_electronico, Rol_usuario, Tipo_documento || null, Numero_documento || null, Foto_usuario || null, Estado_usuario || "activo", id];
+    }
 
-    res.json({ success: true, message: "Usuario actualizado correctamente" });
-  });
+    DB.query(sql, params, (err, result) => {
+      if (err) return res.status(500).json({ success: false, message: "Error al actualizar usuario" });
+      if (result.affectedRows === 0) return res.status(404).json({ success: false, message: "Usuario no encontrado" });
+      res.json({ success: true, message: "Usuario actualizado correctamente" });
+    });
+
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
 });
 
-/**
- * @swagger
- * /api/admin/usuarios/{id}:
- *   delete:
- *     summary: Eliminar un usuario
- *     tags: [Usuarios]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: ID del usuario a eliminar
- *     responses:
- *       200:
- *         description: Usuario eliminado correctamente
- *       404:
- *         description: Usuario no encontrado
- */
-router.delete("/:id", (req, res) => {
+// =====================
+// DELETE usuario
+// =====================
+router.delete("/:id", verificarToken, verificarRol("admin"), (req, res) => {
   const { id } = req.params;
-
   DB.query("DELETE FROM usuarios WHERE ID_usuario = ?", [id], (err, result) => {
     if (err) return res.status(500).json({ success: false, message: "Error al eliminar usuario" });
     if (result.affectedRows === 0) return res.status(404).json({ success: false, message: "Usuario no encontrado" });
-
     res.json({ success: true, message: "Usuario eliminado correctamente" });
   });
 });
 
-/**
- * @swagger
- * /api/admin/usuarios/bulk:
- *   post:
- *     summary: Carga masiva de usuarios
- *     tags: [Usuarios]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: array
- *             items:
- *               type: object
- *               required:
- *                 - Nombre
- *                 - Correo_electronico
- *                 - Rol_usuario
- *               properties:
- *                 Nombre:
- *                   type: string
- *                 Correo_electronico:
- *                   type: string
- *                 Rol_usuario:
- *                   type: string
- *                 Tipo_documento:
- *                   type: string
- *                 Numero_documento:
- *                   type: string
- *                 Foto_usuario:
- *                   type: string
- *                 Estado_usuario:
- *                   type: string
- *     responses:
- *       201:
- *         description: Usuarios agregados correctamente
- *       400:
- *         description: Datos incompletos o formato incorrecto
- */
-router.post("/bulk", (req, res) => {
+// =====================
+// POST carga masiva de usuarios con hash
+// =====================
+router.post("/bulk", verificarToken, verificarRol("admin"), async (req, res) => {
   const usuarios = req.body;
-
-  if (!Array.isArray(usuarios) || usuarios.length === 0) return res.status(400).json({ success: false, message: "Se requiere un array de usuarios" });
+  if (!Array.isArray(usuarios) || usuarios.length === 0) 
+    return res.status(400).json({ success: false, message: "Se requiere un array de usuarios" });
 
   try {
-    const values = usuarios.map(u => {
-      if (!u.Nombre || !u.Correo_electronico || !u.Rol_usuario) throw new Error("Cada usuario debe tener Nombre, Correo y Rol");
-      return [u.Nombre, u.Correo_electronico, u.Rol_usuario, u.Tipo_documento || null, u.Numero_documento || null, u.Foto_usuario || null, u.Estado_usuario || "activo"];
-    });
+    const values = [];
+    for (const u of usuarios) {
+      if (!u.Nombre || !u.Correo_electronico || !u.Rol_usuario || !u.Contraseña) 
+        throw new Error("Cada usuario debe tener Nombre, Correo, Rol y Contraseña");
+      
+      const hashed = await hashPassword(u.Contraseña);
+      values.push([
+        u.Nombre, u.Correo_electronico, u.Rol_usuario, hashed,
+        u.Tipo_documento || null, u.Numero_documento || null,
+        u.Foto_usuario || null, u.Estado_usuario || "activo"
+      ]);
+    }
 
     const sql = `
-      INSERT INTO usuarios 
-        (Nombre, Correo_electronico, Rol_usuario, Tipo_documento, Numero_documento, Foto_usuario, Estado_usuario)
+      INSERT INTO usuarios (Nombre, Correo_electronico, Rol_usuario, Contraseña, Tipo_documento, Numero_documento, Foto_usuario, Estado_usuario)
       VALUES ?
     `;
-
     DB.query(sql, [values], (err, result) => {
       if (err) return res.status(500).json({ success: false, message: "Error al insertar usuarios" });
       res.status(201).json({ success: true, message: `Se agregaron ${result.affectedRows} usuarios correctamente` });
     });
+
   } catch (err) {
     return res.status(400).json({ success: false, message: err.message });
   }

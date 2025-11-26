@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const DB = require("../db/connection");
+const { verificarToken, verificarRol } = require("../middleware/auth");
 
 /**
  * @swagger
@@ -15,11 +16,15 @@ const DB = require("../db/connection");
  *   get:
  *     summary: Obtener todos los proveedores
  *     tags: [Proveedores]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Lista de proveedores
+ *       500:
+ *         description: Error del servidor
  */
-router.get("/", (req, res) => {
+router.get("/", verificarToken, verificarRol("admin"), (req, res) => {
   DB.query(
     "SELECT ID_proveedor, Nombre_empresa, Dirección, Teléfono, Correo_electronico, ID_usuario FROM proveedor",
     (err, result) => {
@@ -35,6 +40,8 @@ router.get("/", (req, res) => {
  *   get:
  *     summary: Obtener un proveedor por ID
  *     tags: [Proveedores]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -46,8 +53,10 @@ router.get("/", (req, res) => {
  *         description: Proveedor encontrado
  *       404:
  *         description: Proveedor no encontrado
+ *       500:
+ *         description: Error del servidor
  */
-router.get("/:id", (req, res) => {
+router.get("/:id", verificarToken, verificarRol("admin"), (req, res) => {
   const { id } = req.params;
   DB.query(
     "SELECT ID_proveedor, Nombre_empresa, Dirección, Teléfono, Correo_electronico, ID_usuario FROM proveedor WHERE ID_proveedor = ?",
@@ -66,6 +75,8 @@ router.get("/:id", (req, res) => {
  *   post:
  *     summary: Crear un nuevo proveedor
  *     tags: [Proveedores]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -92,8 +103,12 @@ router.get("/:id", (req, res) => {
  *     responses:
  *       201:
  *         description: Proveedor creado exitosamente
+ *       400:
+ *         description: Faltan campos obligatorios
+ *       500:
+ *         description: Error del servidor
  */
-router.post("/", (req, res) => {
+router.post("/", verificarToken, verificarRol("admin"), (req, res) => {
   const { Nombre_empresa, Dirección, Teléfono, Correo_electronico, ID_usuario } = req.body;
   if (!Nombre_empresa || !Dirección || !Teléfono || !Correo_electronico || !ID_usuario) {
     return res.status(400).json({ message: "Todos los campos son obligatorios" });
@@ -115,6 +130,8 @@ router.post("/", (req, res) => {
  *   put:
  *     summary: Actualizar un proveedor existente
  *     tags: [Proveedores]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -147,10 +164,12 @@ router.post("/", (req, res) => {
  *     responses:
  *       200:
  *         description: Proveedor actualizado
- *       404:
- *         description: Proveedor no encontrado
+ *       400:
+ *         description: Faltan campos obligatorios
+ *       500:
+ *         description: Error del servidor
  */
-router.put("/:id", (req, res) => {
+router.put("/:id", verificarToken, verificarRol("admin"), (req, res) => {
   const { id } = req.params;
   const { Nombre_empresa, Dirección, Teléfono, Correo_electronico, ID_usuario } = req.body;
   if (!Nombre_empresa || !Dirección || !Teléfono || !Correo_electronico || !ID_usuario) {
@@ -173,6 +192,8 @@ router.put("/:id", (req, res) => {
  *   delete:
  *     summary: Eliminar un proveedor
  *     tags: [Proveedores]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -184,8 +205,10 @@ router.put("/:id", (req, res) => {
  *         description: Proveedor eliminado exitosamente
  *       404:
  *         description: Proveedor no encontrado
+ *       500:
+ *         description: Error del servidor
  */
-router.delete("/:id", (req, res) => {
+router.delete("/:id", verificarToken, verificarRol("admin"), (req, res) => {
   const { id } = req.params;
   DB.query("DELETE FROM proveedor WHERE ID_proveedor = ?", [id], (err, result) => {
     if (err) return res.status(500).json({ error: "Error al eliminar el proveedor", details: err });
@@ -200,6 +223,8 @@ router.delete("/:id", (req, res) => {
  *   post:
  *     summary: Carga masiva de proveedores
  *     tags: [Proveedores]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -229,7 +254,7 @@ router.delete("/:id", (req, res) => {
  *       201:
  *         description: Proveedores cargados correctamente
  */
-router.post("/bulk", (req, res) => {
+router.post("/bulk", verificarToken, verificarRol("admin"), (req, res) => {
   const proveedores = req.body;
   if (!Array.isArray(proveedores) || proveedores.length === 0) return res.status(400).json({ message: "Se requiere un array de proveedores" });
 

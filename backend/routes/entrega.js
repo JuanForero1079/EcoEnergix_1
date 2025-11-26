@@ -1,52 +1,104 @@
 const express = require("express");
 const router = express.Router();
 const DB = require("../db/connection");
+const { verificarToken, verificarRol } = require("../middleware/auth");
 
-// ---------------------------------------------------
-// GET: Obtener todas las entregas
-// ---------------------------------------------------
-router.get("/", (req, res) => {
-  DB.query("SELECT * FROM entrega", (err, result) => {
-    if (err) {
-      return res.status(500).json({
-        error: "Error al obtener entregas",
-        details: err
-      });
-    }
-    res.json(result);
-  });
-});
+// ==================================================
+// GET: Obtener entregas según rol
+// ==================================================
+router.get(
+  "/",
+  verificarToken,
+  verificarRol("Administrador", "Cliente", "Domiciliario"),
+  (req, res) => {
+    const rol = req.user.rol;
+    const userId = req.user.id;
 
-// ---------------------------------------------------
-// GET: Obtener entrega por ID
-// ---------------------------------------------------
-router.get("/:id", (req, res) => {
-  const { id } = req.params;
+    let query = "SELECT * FROM entrega";
+    let params = [];
 
-  DB.query("SELECT * FROM entrega WHERE ID_entrega = ?", [id], (err, result) => {
-    if (err) {
-      return res.status(500).json({
-        error: "Error al buscar la entrega",
-        details: err
-      });
-    }
-    if (result.length === 0) {
-      return res.status(404).json({ message: "Entrega no encontrada" });
+    // CLIENTE -> solo sus entregas
+    if (rol === "Cliente") {
+      query += " WHERE ID_usuario = ?";
+      params.push(userId);
     }
 
-    res.json(result[0]);
-  });
-});
+    // DOMICILIARIO -> también solo entregas asignadas a él
+    if (rol === "Domiciliario") {
+      query += " WHERE ID_usuario = ?";
+      params.push(userId);
+    }
 
-// ---------------------------------------------------
-// POST: Crear entrega
-// ---------------------------------------------------
-router.post("/", (req, res) => {
+    DB.query(query, params, (err, result) => {
+      if (err) {
+        return res.status(500).json({
+          error: "Error al obtener entregas",
+          details: err,
+        });
+      }
+      res.json(result);
+    });
+  }
+);
+
+// ==================================================
+// GET: Obtener entrega por ID (con validación por rol)
+// ==================================================
+router.get(
+  "/:id",
+  verificarToken,
+  verificarRol("Administrador", "Cliente", "Domiciliario"),
+  (req, res) => {
+    const { id } = req.params;
+    const rol = req.user.rol;
+    const userId = req.user.id;
+
+    DB.query(
+      "SELECT * FROM entrega WHERE ID_entrega = ?",
+      [id],
+      (err, result) => {
+        if (err) {
+          return res.status(500).json({
+            error: "Error al buscar la entrega",
+            details: err,
+          });
+        }
+
+        if (result.length === 0) {
+          return res.status(404).json({ message: "Entrega no encontrada" });
+        }
+
+        const entrega = result[0];
+
+        // CLIENTE -> solo su entrega
+        if (rol === "Cliente" && entrega.ID_usuario !== userId) {
+          return res.status(403).json({
+            message: "No tienes permiso para ver esta entrega",
+          });
+        }
+
+        // DOMICILIARIO -> solo si está asignada a él
+        if (rol === "Domiciliario" && entrega.ID_usuario !== userId) {
+          return res.status(403).json({
+            message: "No tienes permiso para ver esta entrega",
+          });
+        }
+
+        res.json(entrega);
+      }
+    );
+  }
+);
+
+// ==================================================
+// POST: Crear entrega (solo ADMIN)
+// ==================================================
+router.post("/", verificarToken, verificarRol("Administrador"), (req, res) => {
   const { Fecha_entrega, ID_usuario, ID_producto, Cantidad } = req.body;
 
   if (!Fecha_entrega || !ID_usuario || !ID_producto || !Cantidad) {
     return res.status(400).json({
-      message: "Todos los campos son obligatorios"
+      message: "Todos los campos son obligatorios",
     });
   }
 
@@ -57,7 +109,7 @@ router.post("/", (req, res) => {
       if (err) {
         return res.status(500).json({
           error: "Error al crear la entrega",
-          details: err
+          details: err,
         });
       }
 
@@ -68,40 +120,40 @@ router.post("/", (req, res) => {
           Fecha_entrega,
           ID_usuario,
           ID_producto,
-          Cantidad
-        }
+          Cantidad,
+        },
       });
     }
   );
 });
 
-// ---------------------------------------------------
-// PUT: Actualizar entrega
-// ---------------------------------------------------
-router.put("/:id", (req, res) => {
+// ==================================================
+// PUT: Actualizar entrega (solo ADMIN)
+// ==================================================
+router.put("/:id", verificarToken, verificarRol("Administrador"), (req, res) => {
   const { id } = req.params;
-  const { Fecha_entrega, Cantidad } = req.body;
+  const { Fecha_entrega, Cantidad, ID_usuario } = req.body;
 
   if (!Fecha_entrega || !Cantidad) {
     return res.status(400).json({
-      message: "Fecha_entrega y Cantidad son obligatorios"
+      message: "Fecha_entrega y Cantidad son obligatorios",
     });
   }
 
   DB.query(
-    "UPDATE entrega SET Fecha_entrega = ?, Cantidad = ? WHERE ID_entrega = ?",
-    [Fecha_entrega, Cantidad, id],
+    "UPDATE entrega SET Fecha_entrega = ?, Cantidad = ?, ID_usuario = ? WHERE ID_entrega = ?",
+    [Fecha_entrega, Cantidad, ID_usuario, id],
     (err, result) => {
       if (err) {
         return res.status(500).json({
           error: "Error al actualizar la entrega",
-          details: err
+          details: err,
         });
       }
 
       if (result.affectedRows === 0) {
         return res.status(404).json({
-          message: "Entrega no encontrada para actualizar"
+          message: "Entrega no encontrada para actualizar",
         });
       }
 
@@ -110,38 +162,44 @@ router.put("/:id", (req, res) => {
         entrega: {
           ID_entrega: id,
           Fecha_entrega,
-          Cantidad
-        }
+          Cantidad,
+          ID_usuario,
+        },
       });
     }
   );
 });
 
-// ---------------------------------------------------
-// DELETE: Eliminar entrega
-// ---------------------------------------------------
-router.delete("/:id", (req, res) => {
-  const { id } = req.params;
+// ==================================================
+// DELETE: Eliminar entrega (solo ADMIN)
+// ==================================================
+router.delete(
+  "/:id",
+  verificarToken,
+  verificarRol("Administrador"),
+  (req, res) => {
+    const { id } = req.params;
 
-  DB.query("DELETE FROM entrega WHERE ID_entrega = ?", [id], (err, result) => {
-    if (err) {
-      return res.status(500).json({
-        error: "Error al eliminar la entrega",
-        details: err
+    DB.query("DELETE FROM entrega WHERE ID_entrega = ?", [id], (err, result) => {
+      if (err) {
+        return res.status(500).json({
+          error: "Error al eliminar la entrega",
+          details: err,
+        });
+      }
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({
+          message: "Entrega no encontrada para eliminar",
+        });
+      }
+
+      res.json({
+        message: "Entrega eliminada exitosamente",
+        id,
       });
-    }
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({
-        message: "Entrega no encontrada para eliminar"
-      });
-    }
-
-    res.json({
-      message: "Entrega eliminada exitosamente",
-      id
     });
-  });
-});
+  }
+);
 
 module.exports = router;

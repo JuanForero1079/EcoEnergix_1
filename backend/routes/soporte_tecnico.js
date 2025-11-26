@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const DB = require("../db/connection");
+const { verificarToken, verificarRol } = require("../middleware/auth");
 
 /**
  * @swagger
@@ -11,83 +12,97 @@ const DB = require("../db/connection");
 
 /**
  * @swagger
- * /api/admin/soportes:
+ * /api/soportes:
  *   get:
- *     summary: Obtener todos los soportes técnicos
+ *     summary: Obtener todos los soportes según rol
  *     tags: [Soportes]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Lista de soportes técnicos
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   ID_soporte:
- *                     type: integer
- *                   Fecha_solicitud:
- *                     type: string
- *                     format: date
- *                   Descripcion_problema:
- *                     type: string
- *                   Fecha_resolucion:
- *                     type: string
- *                     format: date
- *                   ID_usuarioFK:
- *                     type: integer
- *                   ID_producto:
- *                     type: integer
- *                   ID_instalacion:
- *                     type: integer
- *                   ID_domiciliario:
- *                     type: integer
+ *         description: Lista de soportes según permisos
+ *       401:
+ *         description: Usuario no autenticado
+ *       403:
+ *         description: Rol no autorizado
+ *       500:
+ *         description: Error del servidor
  */
-router.get("/", (req, res) => {
-  DB.query("SELECT * FROM soporte_tecnico", (err, result) => {
-    if (err)
-      return res.status(500).json({ error: "Error al obtener soportes técnicos", details: err });
+router.get("/", verificarToken, (req, res) => {
+  const { ID_usuario, rol } = req.user;
+
+  let query = "SELECT * FROM soporte_tecnico";
+  let params = [];
+
+  if (rol === "Cliente") {
+    query += " WHERE ID_usuarioFK = ?";
+    params.push(ID_usuario);
+  } else if (rol === "Domiciliario") {
+    query += " WHERE ID_domiciliario = ?";
+    params.push(ID_usuario);
+  } else if (rol !== "Administrador") {
+    return res.status(403).json({ message: "Rol no autorizado" });
+  }
+
+  DB.query(query, params, (err, result) => {
+    if (err) return res.status(500).json({ error: "Error al obtener soportes", details: err });
     res.json(result);
   });
 });
 
 /**
  * @swagger
- * /api/admin/soportes/{id}:
+ * /api/soportes/{id}:
  *   get:
- *     summary: Obtener un soporte técnico por ID
+ *     summary: Obtener un soporte por ID
  *     tags: [Soportes]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: integer
- *         description: ID del soporte técnico
  *     responses:
  *       200:
- *         description: Soporte técnico encontrado
+ *         description: Soporte encontrado
  *       404:
- *         description: Soporte técnico no encontrado
+ *         description: Soporte no encontrado
+ *       403:
+ *         description: Rol no autorizado
+ *       500:
+ *         description: Error del servidor
  */
-router.get("/:id", (req, res) => {
+router.get("/:id", verificarToken, (req, res) => {
   const { id } = req.params;
+  const { ID_usuario, rol } = req.user;
+
   DB.query("SELECT * FROM soporte_tecnico WHERE ID_soporte = ?", [id], (err, result) => {
-    if (err)
-      return res.status(500).json({ error: "Error al buscar el soporte técnico", details: err });
-    if (result.length === 0)
-      return res.status(404).json({ message: "Soporte técnico no encontrado" });
-    res.json(result[0]);
+    if (err) return res.status(500).json({ error: "Error al buscar soporte", details: err });
+    if (result.length === 0) return res.status(404).json({ message: "Soporte no encontrado" });
+
+    const soporte = result[0];
+
+    if (
+      (rol === "Cliente" && soporte.ID_usuarioFK !== ID_usuario) ||
+      (rol === "Domiciliario" && soporte.ID_domiciliario !== ID_usuario)
+    ) {
+      return res.status(403).json({ message: "No tienes permiso para ver este soporte" });
+    }
+
+    res.json(soporte);
   });
 });
 
 /**
  * @swagger
- * /api/admin/soportes:
+ * /api/soportes:
  *   post:
- *     summary: Crear un nuevo soporte técnico
+ *     summary: Crear un nuevo soporte
  *     tags: [Soportes]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -120,11 +135,13 @@ router.get("/:id", (req, res) => {
  *                 type: integer
  *     responses:
  *       201:
- *         description: Soporte técnico creado exitosamente
+ *         description: Soporte creado exitosamente
  *       400:
- *         description: Campos obligatorios incompletos
+ *         description: Faltan campos obligatorios
+ *       500:
+ *         description: Error del servidor
  */
-router.post("/", (req, res) => {
+router.post("/", verificarToken, (req, res) => {
   const { Fecha_solicitud, Descripcion_problema, Fecha_resolucion, ID_usuarioFK, ID_producto, ID_instalacion, ID_domiciliario } = req.body;
 
   if (!Fecha_solicitud || !Descripcion_problema || !ID_usuarioFK || !ID_producto || !ID_instalacion || !ID_domiciliario) {
@@ -133,30 +150,29 @@ router.post("/", (req, res) => {
 
   DB.query(
     "INSERT INTO soporte_tecnico (Fecha_solicitud, Descripcion_problema, Fecha_resolucion, ID_usuarioFK, ID_producto, ID_instalacion, ID_domiciliario) VALUES (?, ?, ?, ?, ?, ?, ?)",
-    [Fecha_solicitud, Descripcion_problema, Fecha_resolucion, ID_usuarioFK, ID_producto, ID_instalacion, ID_domiciliario],
+    [Fecha_solicitud, Descripcion_problema, Fecha_resolucion || null, ID_usuarioFK, ID_producto, ID_instalacion, ID_domiciliario],
     (err, result) => {
-      if (err)
-        return res.status(500).json({ error: "Error al crear el soporte técnico", details: err });
-
+      if (err) return res.status(500).json({ error: "Error al crear soporte", details: err });
       const nuevoSoporte = { ID_soporte: result.insertId, Fecha_solicitud, Descripcion_problema, Fecha_resolucion, ID_usuarioFK, ID_producto, ID_instalacion, ID_domiciliario };
-      res.status(201).json({ message: "Soporte técnico creado exitosamente!", soporte: nuevoSoporte });
+      res.status(201).json({ message: "Soporte creado exitosamente", soporte: nuevoSoporte });
     }
   );
 });
 
 /**
  * @swagger
- * /api/admin/soportes/{id}:
+ * /api/soportes/{id}:
  *   put:
- *     summary: Actualizar un soporte técnico
+ *     summary: Actualizar un soporte existente
  *     tags: [Soportes]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: integer
- *         description: ID del soporte técnico a actualizar
  *     requestBody:
  *       required: true
  *       content:
@@ -170,74 +186,83 @@ router.post("/", (req, res) => {
  *               - ID_producto
  *               - ID_instalacion
  *               - ID_domiciliario
- *             properties:
- *               Fecha_solicitud:
- *                 type: string
- *                 format: date
- *               Descripcion_problema:
- *                 type: string
- *               Fecha_resolucion:
- *                 type: string
- *                 format: date
- *               ID_usuarioFK:
- *                 type: integer
- *               ID_producto:
- *                 type: integer
- *               ID_instalacion:
- *                 type: integer
- *               ID_domiciliario:
- *                 type: integer
  *     responses:
  *       200:
- *         description: Soporte técnico actualizado exitosamente
+ *         description: Soporte actualizado exitosamente
  *       400:
- *         description: Campos obligatorios incompletos
+ *         description: Faltan campos obligatorios
+ *       403:
+ *         description: Rol no autorizado
+ *       500:
+ *         description: Error del servidor
  */
-router.put("/:id", (req, res) => {
+router.put("/:id", verificarToken, (req, res) => {
   const { id } = req.params;
   const { Fecha_solicitud, Descripcion_problema, Fecha_resolucion, ID_usuarioFK, ID_producto, ID_instalacion, ID_domiciliario } = req.body;
+  const { rol, ID_usuario } = req.user;
 
   if (!Fecha_solicitud || !Descripcion_problema || !ID_usuarioFK || !ID_producto || !ID_instalacion || !ID_domiciliario) {
     return res.status(400).json({ message: "Todos los campos son obligatorios para actualizar" });
   }
 
+  // Validar que cliente o domiciliario solo puedan actualizar sus soportes
+  if (rol === "Cliente" && ID_usuarioFK !== ID_usuario) {
+    return res.status(403).json({ message: "No tienes permiso para actualizar este soporte" });
+  }
+  if (rol === "Domiciliario" && ID_domiciliario !== ID_usuario) {
+    return res.status(403).json({ message: "No tienes permiso para actualizar este soporte" });
+  }
+
   DB.query(
     "UPDATE soporte_tecnico SET Fecha_solicitud = ?, Descripcion_problema = ?, Fecha_resolucion = ?, ID_usuarioFK = ?, ID_producto = ?, ID_instalacion = ?, ID_domiciliario = ? WHERE ID_soporte = ?",
-    [Fecha_solicitud, Descripcion_problema, Fecha_resolucion, ID_usuarioFK, ID_producto, ID_instalacion, ID_domiciliario, id],
-    (err) => {
-      if (err) return res.status(500).json({ error: "Error al actualizar el soporte técnico", details: err });
-      const soporteActualizado = { ID_soporte: id, Fecha_solicitud, Descripcion_problema, Fecha_resolucion, ID_usuarioFK, ID_producto, ID_instalacion, ID_domiciliario };
-      res.json({ message: "Soporte técnico actualizado exitosamente!", soporte: soporteActualizado });
+    [Fecha_solicitud, Descripcion_problema, Fecha_resolucion || null, ID_usuarioFK, ID_producto, ID_instalacion, ID_domiciliario, id],
+    (err, result) => {
+      if (err) return res.status(500).json({ error: "Error al actualizar soporte", details: err });
+      res.json({ message: "Soporte actualizado exitosamente", soporte: { ID_soporte: id, Fecha_solicitud, Descripcion_problema, Fecha_resolucion, ID_usuarioFK, ID_producto, ID_instalacion, ID_domiciliario } });
     }
   );
 });
 
 /**
  * @swagger
- * /api/admin/soportes/{id}:
+ * /api/soportes/{id}:
  *   delete:
- *     summary: Eliminar un soporte técnico
+ *     summary: Eliminar un soporte
  *     tags: [Soportes]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: integer
- *         description: ID del soporte técnico a eliminar
  *     responses:
  *       200:
- *         description: Soporte técnico eliminado exitosamente
+ *         description: Soporte eliminado exitosamente
+ *       403:
+ *         description: Rol no autorizado
  *       404:
- *         description: Soporte técnico no encontrado
+ *         description: Soporte no encontrado
+ *       500:
+ *         description: Error del servidor
  */
-router.delete("/:id", (req, res) => {
+router.delete("/:id", verificarToken, (req, res) => {
   const { id } = req.params;
+  const { rol, ID_usuario } = req.user;
 
-  DB.query("DELETE FROM soporte_tecnico WHERE ID_soporte = ?", [id], (err, result) => {
-    if (err) return res.status(500).json({ error: "Error al eliminar el soporte técnico", details: err });
-    if (result.affectedRows === 0) return res.status(404).json({ message: "Soporte técnico no encontrado para eliminar" });
-    res.json({ message: "Soporte técnico eliminado exitosamente!", id });
+  // Validar permisos según rol
+  let query = "DELETE FROM soporte_tecnico WHERE ID_soporte = ?";
+  let params = [id];
+
+  if (rol === "Cliente") query += " AND ID_usuarioFK = ?";
+  if (rol === "Domiciliario") query += " AND ID_domiciliario = ?";
+  if (rol === "Cliente" || rol === "Domiciliario") params.push(ID_usuario);
+
+  DB.query(query, params, (err, result) => {
+    if (err) return res.status(500).json({ error: "Error al eliminar soporte", details: err });
+    if (result.affectedRows === 0) return res.status(404).json({ message: "Soporte no encontrado o no tienes permiso para eliminar" });
+    res.json({ message: "Soporte eliminado exitosamente", id });
   });
 });
 

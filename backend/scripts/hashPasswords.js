@@ -1,36 +1,28 @@
-// scripts/hashPasswords.js
-const DB = require("../db/connection"); // Ajusta la ruta según tu proyecto
-const { hashPassword } = require("../utils/password"); // Tu módulo de hash
+const { hashPassword } = require("../utils/password");
 
-(async () => {
+router.post("/", verificarToken, verificarRol("admin"), async (req, res) => {
   try {
-    // Obtener todos los usuarios
-    DB.query("SELECT ID_usuario, Contraseña FROM usuarios", async (err, users) => {
-      if (err) throw err;
+    let { Nombre, Correo_electronico, Rol_usuario, Contraseña, Tipo_documento, Numero_documento, Foto_usuario, Estado_usuario } = req.body;
+    if (!Nombre || !Correo_electronico || !Rol_usuario || !Contraseña) 
+      return res.status(400).json({ success: false, message: "Nombre, correo, rol y contraseña son obligatorios" });
 
-      for (const user of users) {
-        const { ID_usuario, Contraseña } = user;
+    Contraseña = await hashPassword(Contraseña);
 
-        // Saltar si ya está hasheada
-        if (!Contraseña.startsWith("$2b$")) {
-          const hashed = await hashPassword(Contraseña);
-          DB.query(
-            "UPDATE usuarios SET Contraseña = ? WHERE ID_usuario = ?",
-            [hashed, ID_usuario],
-            (err2) => {
-              if (err2) console.error(`Error actualizando usuario ${ID_usuario}:`, err2);
-              else console.log(`Usuario ${ID_usuario} actualizado correctamente.`);
-            }
-          );
-        } else {
-          console.log(`Usuario ${ID_usuario} ya tiene contraseña hasheada.`);
-        }
-      }
+    const sql = `
+      INSERT INTO usuarios (Nombre, Correo_electronico, Rol_usuario, Contraseña, Tipo_documento, Numero_documento, Foto_usuario, Estado_usuario)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    DB.query(sql, [Nombre, Correo_electronico, Rol_usuario, Contraseña, Tipo_documento || null, Numero_documento || null, Foto_usuario || null, Estado_usuario || "activo"], 
+      (err, result) => {
+        if (err) return res.status(500).json({ success: false, message: "Error al crear usuario" });
+        res.status(201).json({
+          success: true,
+          message: "Usuario creado exitosamente",
+          data: { ID_usuario: result.insertId, Nombre, Correo_electronico, Rol_usuario, Tipo_documento, Numero_documento, Foto_usuario, Estado_usuario }
+        });
     });
-  } catch (error) {
-    console.error("Error al hashear contraseñas:", error);
-  } finally {
-    // Cerrar conexión si tu DB lo requiere
-    // DB.end();
+  } catch(err) {
+    res.status(500).json({ success: false, message: err.message });
   }
-})();
+});

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import API from "../services/api"; // <-- instancia de Axios con interceptors
 
 export default function Login() {
   const [formData, setFormData] = useState({
@@ -25,47 +26,37 @@ export default function Login() {
     }
 
     try {
-      const response = await fetch("http://localhost:3001/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+      // Enviar campos exactos que espera el backend
+      const { data } = await API.post("/api/auth/login", {
+        Correo_electronico: formData.correo,
+        Contraseña: formData.contraseña,
       });
 
-      const data = await response.json();
       console.log("Datos login backend:", data);
 
-      if (!response.ok) {
-        alert(data.message || "Error en el inicio de sesión.");
-        return;
-      }
+      const { usuario, accessToken, refreshToken } = data;
 
-      const { usuario, token } = data;
-
-      if (!usuario || !token) {
+      if (!usuario || !accessToken || !refreshToken) {
         alert("Error: datos de sesión incompletos.");
         return;
       }
 
       const rol = usuario.rol?.toLowerCase().trim();
 
-      // Guardar token y usuario
-      localStorage.setItem("token", token);
+      // Guardar tokens y usuario
+      localStorage.setItem("token", accessToken);
+      localStorage.setItem("refreshToken", refreshToken);
       localStorage.setItem("user", JSON.stringify(usuario));
 
-      // Redirigir según el rol
-      if (rol === "cliente") {
-        navigate("/usuario");
-      } else if (rol === "administrador") {
-        navigate("/admin");
-      } else if (rol === "domiciliario") {
-        navigate("/domiciliario");
-      } else {
-        alert("Rol no permitido en la aplicación.");
-      }
+      // Redirigir según rol
+      if (rol === "cliente") navigate("/usuario");
+      else if (rol === "administrador") navigate("/admin");
+      else if (rol === "domiciliario") navigate("/domiciliario");
+      else alert("Rol no permitido en la aplicación.");
 
     } catch (error) {
       console.error("Error durante el login:", error);
-      alert("Ocurrió un error al intentar iniciar sesión.");
+      alert(error.response?.data?.message || "Ocurrió un error al intentar iniciar sesión.");
     }
   };
 

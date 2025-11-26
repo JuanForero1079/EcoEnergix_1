@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const DB = require("../db/connection");
+const { verificarToken, verificarRol } = require("../middleware/auth");
 
 /**
  * @swagger
@@ -15,6 +16,8 @@ const DB = require("../db/connection");
  *   get:
  *     summary: Obtener reporte de compras parametrizado
  *     tags: [Reportes]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: fechaInicio
@@ -42,26 +45,10 @@ const DB = require("../db/connection");
  *     responses:
  *       200:
  *         description: Lista de compras según los filtros aplicados
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: integer
- *                   fecha_compra:
- *                     type: string
- *                     format: date
- *                   estado:
- *                     type: string
- *                   total:
- *                     type: number
- *                   cliente:
- *                     type: string
+ *       500:
+ *         description: Error del servidor
  */
-router.get("/", (req, res) => {
+router.get("/", verificarToken, verificarRol("admin"), (req, res) => {
   let { fechaInicio, fechaFin, estado, tipo } = req.query;
 
   let query = `

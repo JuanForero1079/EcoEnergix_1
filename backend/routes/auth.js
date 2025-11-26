@@ -28,6 +28,9 @@ const authController = require("../controllers/authController");
  *                 type: string
  *               password:
  *                 type: string
+ *               rol:
+ *                 type: string
+ *                 enum: [Administrador, Cliente, Domiciliario]
  *             required:
  *               - nombre
  *               - email
@@ -52,7 +55,6 @@ router.post("/register", authController.register);
  *         required: true
  *         schema:
  *           type: string
- *         description: Token de verificación enviado por email
  *     responses:
  *       200:
  *         description: Correo verificado exitosamente
@@ -88,5 +90,30 @@ router.get("/verificar/:token", authController.verifyEmail);
  *         description: Credenciales inválidas
  */
 router.post("/login", authController.login);
+
+/**
+ * @swagger
+ * /api/auth/refresh:
+ *   post:
+ *     summary: Renovar el token de acceso usando refresh token
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *             required:
+ *               - refreshToken
+ *     responses:
+ *       200:
+ *         description: Nuevo token generado
+ *       403:
+ *         description: Refresh token inválido o expirado
+ */
+router.post("/refresh", authController.refresh);
 
 module.exports = router;

@@ -2,6 +2,7 @@
 const express = require("express");
 const router = express.Router();
 const DB = require("../db/connection");
+const { verificarToken, verificarRol } = require("../middleware/auth");
 
 /**
  * @swagger
@@ -14,15 +15,17 @@ const DB = require("../db/connection");
  * @swagger
  * /api/admin/pagos:
  *   get:
- *     summary: Obtener todos los pagos
+ *     summary: Obtener todos los pagos (solo Admin)
  *     tags: [Pagos]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Lista de pagos
  *       500:
  *         description: Error del servidor
  */
-router.get("/", (req, res) => {
+router.get("/", verificarToken, verificarRol("Administrador"), (req, res) => {
   DB.query("SELECT * FROM pago", (err, result) => {
     if (err) return res.status(500).json({ error: "Error al obtener los pagos", details: err });
     res.json(result);
@@ -33,7 +36,7 @@ router.get("/", (req, res) => {
  * @swagger
  * /api/admin/pagos/{id}:
  *   get:
- *     summary: Obtener pago por ID
+ *     summary: Obtener pago por ID (solo Admin)
  *     tags: [Pagos]
  *     parameters:
  *       - in: path
@@ -50,7 +53,7 @@ router.get("/", (req, res) => {
  *       500:
  *         description: Error del servidor
  */
-router.get("/:id", (req, res) => {
+router.get("/:id", verificarToken, verificarRol("Administrador"), (req, res) => {
   const { id } = req.params;
   DB.query("SELECT * FROM pago WHERE ID_pago = ?", [id], (err, result) => {
     if (err) return res.status(500).json({ error: "Error al buscar el pago", details: err });
@@ -61,10 +64,48 @@ router.get("/:id", (req, res) => {
 
 /**
  * @swagger
+ * /api/admin/pagos/usuario/{userId}:
+ *   get:
+ *     summary: Obtener pagos de un usuario (Cliente puede ver solo los suyos)
+ *     tags: [Pagos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del usuario
+ *     responses:
+ *       200:
+ *         description: Lista de pagos del usuario
+ *       403:
+ *         description: Acceso denegado
+ *       500:
+ *         description: Error del servidor
+ */
+router.get("/usuario/:userId", verificarToken, (req, res) => {
+  const { userId } = req.params;
+
+  if (req.user.rol !== "Administrador" && req.user.id != userId) {
+    return res.status(403).json({ message: "No tienes permiso para ver estos pagos" });
+  }
+
+  DB.query("SELECT * FROM pago WHERE ID_usuario = ?", [userId], (err, result) => {
+    if (err) return res.status(500).json({ error: "Error al obtener los pagos del usuario", details: err });
+    res.json(result);
+  });
+});
+
+/**
+ * @swagger
  * /api/admin/pagos:
  *   post:
- *     summary: Crear un nuevo pago
+ *     summary: Crear un nuevo pago (solo Admin)
  *     tags: [Pagos]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -97,7 +138,7 @@ router.get("/:id", (req, res) => {
  *       500:
  *         description: Error del servidor
  */
-router.post("/", (req, res) => {
+router.post("/", verificarToken, verificarRol("Administrador"), (req, res) => {
   const { ID_usuario, Monto, Fecha_pago, Metodo_pago, Estado_pago } = req.body;
 
   if (!ID_usuario || !Monto || !Fecha_pago || !Metodo_pago || !Estado_pago) {
@@ -120,8 +161,10 @@ router.post("/", (req, res) => {
  * @swagger
  * /api/admin/pagos/{id}:
  *   put:
- *     summary: Actualizar un pago existente
+ *     summary: Actualizar un pago existente (solo Admin)
  *     tags: [Pagos]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -141,18 +184,6 @@ router.post("/", (req, res) => {
  *               - Fecha_pago
  *               - Metodo_pago
  *               - Estado_pago
- *             properties:
- *               ID_usuario:
- *                 type: integer
- *               Monto:
- *                 type: number
- *               Fecha_pago:
- *                 type: string
- *                 format: date
- *               Metodo_pago:
- *                 type: string
- *               Estado_pago:
- *                 type: string
  *     responses:
  *       200:
  *         description: Pago actualizado exitosamente
@@ -161,7 +192,7 @@ router.post("/", (req, res) => {
  *       500:
  *         description: Error del servidor
  */
-router.put("/:id", (req, res) => {
+router.put("/:id", verificarToken, verificarRol("Administrador"), (req, res) => {
   const { id } = req.params;
   const { ID_usuario, Monto, Fecha_pago, Metodo_pago, Estado_pago } = req.body;
 
@@ -185,8 +216,10 @@ router.put("/:id", (req, res) => {
  * @swagger
  * /api/admin/pagos/{id}:
  *   delete:
- *     summary: Eliminar un pago
+ *     summary: Eliminar un pago (solo Admin)
  *     tags: [Pagos]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -202,7 +235,7 @@ router.put("/:id", (req, res) => {
  *       500:
  *         description: Error del servidor
  */
-router.delete("/:id", (req, res) => {
+router.delete("/:id", verificarToken, verificarRol("Administrador"), (req, res) => {
   const { id } = req.params;
 
   DB.query("DELETE FROM pago WHERE ID_pago = ?", [id], (err, result) => {
