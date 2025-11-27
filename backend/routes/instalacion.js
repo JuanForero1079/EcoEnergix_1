@@ -6,70 +6,63 @@ const { verificarToken, verificarRol } = require("../middleware/auth");
 // ==================================================
 // GET: Obtener instalaciones según rol
 // ==================================================
-router.get(
-  "/",
-  verificarToken,
-  verificarRol("Administrador", "Cliente"),
-  (req, res) => {
-    const rol = req.user.rol;
-    const userId = req.user.id;
+router.get("/", verificarToken, (req, res) => {
+  const rol = req.user.rol;
+  const userId = req.user.id;
 
-    let query = "SELECT * FROM instalacion";
-    let params = [];
+  let query = "SELECT * FROM instalacion";
+  let params = [];
 
-    if (rol === "Cliente") {
-      query += " WHERE ID_usuario = ?";
-      params.push(userId);
-    }
+  // CLIENTE → solo sus instalaciones
+  if (rol === "Cliente") {
+    query += " WHERE ID_usuario = ?";
+    params.push(userId);
+  }
 
-    DB.query(query, params, (err, result) => {
+  DB.query(query, params, (err, result) => {
+    if (err)
+      return res.status(500).json({
+        error: "Error al obtener instalaciones",
+        details: err,
+      });
+    res.json(result);
+  });
+});
+
+// ==================================================
+// GET: Obtener instalación por ID (validación por rol)
+// ==================================================
+router.get("/:id", verificarToken, (req, res) => {
+  const { id } = req.params;
+  const rol = req.user.rol;
+  const userId = req.user.id;
+
+  DB.query(
+    "SELECT * FROM instalacion WHERE ID_instalacion = ?",
+    [id],
+    (err, result) => {
       if (err)
         return res.status(500).json({
-          error: "Error al obtener instalaciones",
+          error: "Error al buscar la instalación",
           details: err,
         });
-      res.json(result);
-    });
-  }
-);
 
-// ==================================================
-// GET: Obtener instalación por ID (con validación de rol)
-// ==================================================
-router.get(
-  "/:id",
-  verificarToken,
-  verificarRol("Administrador", "Cliente"),
-  (req, res) => {
-    const { id } = req.params;
-    const rol = req.user.rol;
-    const userId = req.user.id;
+      if (result.length === 0)
+        return res.status(404).json({ message: "Instalación no encontrada" });
 
-    DB.query(
-      "SELECT * FROM instalacion WHERE ID_instalacion = ?",
-      [id],
-      (err, result) => {
-        if (err)
-          return res.status(500).json({
-            error: "Error al buscar la instalación",
-            details: err,
-          });
-        if (result.length === 0)
-          return res.status(404).json({ message: "Instalación no encontrada" });
+      const instalacion = result[0];
 
-        const instalacion = result[0];
-
-        if (rol === "Cliente" && instalacion.ID_usuario !== userId) {
-          return res.status(403).json({
-            message: "No tienes permiso para ver esta instalación",
-          });
-        }
-
-        res.json(instalacion);
+      // CLIENTE → solo puede ver su instalación
+      if (rol === "Cliente" && instalacion.ID_usuario !== userId) {
+        return res.status(403).json({
+          message: "No tienes permiso para ver esta instalación",
+        });
       }
-    );
-  }
-);
+
+      res.json(instalacion);
+    }
+  );
+});
 
 // ==================================================
 // POST: Crear instalación (solo ADMIN)
@@ -152,13 +145,13 @@ router.put("/:id", verificarToken, verificarRol("Administrador"), (req, res) => 
     !ID_usuario ||
     !ID_producto
   ) {
-    return res
-      .status(400)
-      .json({ message: "Todos los campos son obligatorios para actualizar" });
+    return res.status(400).json({
+      message: "Todos los campos son obligatorios para actualizar",
+    });
   }
 
   DB.query(
-    "UPDATE instalacion SET Fecha_instalacion = ?, Duracion_instalacion = ?, Costo_instalacion = ?, Estado_instalacion = ?, ID_usuario = ?, ID_producto = ? WHERE ID_instalacion = ?",
+    "UPDATE instalacion SET Fecha_instalacion=?, Duracion_instalacion=?, Costo_instalacion=?, Estado_instalacion=?, ID_usuario=?, ID_producto=? WHERE ID_instalacion=?",
     [
       Fecha_instalacion,
       Duracion_instalacion,
@@ -168,12 +161,18 @@ router.put("/:id", verificarToken, verificarRol("Administrador"), (req, res) => 
       ID_producto,
       id,
     ],
-    (err) => {
+    (err, result) => {
       if (err)
         return res.status(500).json({
           error: "Error al actualizar la instalación",
           details: err,
         });
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({
+          message: "Instalación no encontrada para actualizar",
+        });
+      }
 
       res.json({
         message: "Instalación actualizada exitosamente!",

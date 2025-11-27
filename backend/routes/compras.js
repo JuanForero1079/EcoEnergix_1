@@ -15,174 +15,166 @@ const { verificarToken, verificarRol } = require("../middleware/auth");
  * 🟦 GET TODAS LAS COMPRAS (solo Administrador)
  * ==================================================
  */
-router.get(
-  "/",
-  verificarToken,
-  verificarRol("Administrador"),
-  (req, res) => {
-    DB.query("SELECT * FROM compras", (err, result) => {
-      if (err)
-        return res.status(500).json({ error: "Error al obtener las compras", details: err });
-      res.json(result);
-    });
-  }
-);
+router.get("/", verificarToken, verificarRol(), (req, res) => {
+  DB.query("SELECT * FROM compras", (err, result) => {
+    if (err)
+      return res
+        .status(500)
+        .json({ error: "Error al obtener las compras", details: err });
+
+    res.json(result);
+  });
+});
 
 /**
  * ==================================================
  * 🟦 GET UNA COMPRA POR ID (solo Administrador)
  * ==================================================
  */
-router.get(
-  "/:id",
-  verificarToken,
-  verificarRol("Administrador"),
-  (req, res) => {
-    const { id } = req.params;
+router.get("/:id", verificarToken, verificarRol(), (req, res) => {
+  const { id } = req.params;
 
-    DB.query("SELECT * FROM compras WHERE ID_compra = ?", [id], (err, result) => {
-      if (err)
-        return res.status(500).json({ error: "Error al buscar la compra", details: err });
+  DB.query("SELECT * FROM compras WHERE ID_compra = ?", [id], (err, result) => {
+    if (err)
+      return res
+        .status(500)
+        .json({ error: "Error al buscar la compra", details: err });
 
-      if (result.length === 0)
-        return res.status(404).json({ message: "Compra no encontrada" });
+    if (result.length === 0)
+      return res.status(404).json({ message: "Compra no encontrada" });
 
-      res.json(result[0]);
-    });
-  }
-);
+    res.json(result[0]);
+  });
+});
 
 /**
  * ==================================================
  * 🟦 GET COMPRAS DE UN USUARIO
- *   - Cliente: solo puede ver SUS compras
- *   - Administrador: puede ver las de cualquier usuario
+ *   - Cliente: solo sus compras
+ *   - Administrador: puede ver cualquier usuario
  * ==================================================
  */
-router.get(
-  "/usuario/:userId",
-  verificarToken,
-  verificarRol("Administrador", "Cliente"),
-  (req, res) => {
-    const { userId } = req.params;
+router.get("/usuario/:userId", verificarToken, (req, res) => {
+  const { userId } = req.params;
 
-    // Si es cliente, solo puede pedir sus propias compras
-    if (req.user.rol === "Cliente" && req.user.id != userId) {
-      return res.status(403).json({
-        message: "No puedes ver compras de otros usuarios",
-      });
-    }
-
-    DB.query("SELECT * FROM compras WHERE ID_usuario = ?", [userId], (err, result) => {
-      if (err)
-        return res.status(500).json({
-          error: "Error al obtener las compras del usuario",
-          details: err,
-        });
-
-      res.json(result);
+  // Cliente solo puede ver su propia info
+  if (req.user.rol === "cliente" && req.user.id != userId) {
+    return res.status(403).json({
+      message: "No puedes ver compras de otros usuarios",
     });
   }
-);
+
+  DB.query("SELECT * FROM compras WHERE ID_usuario = ?", [userId], (err, result) => {
+    if (err)
+      return res.status(500).json({
+        error: "Error al obtener las compras del usuario",
+        details: err,
+      });
+
+    res.json(result);
+  });
+});
 
 /**
  * ==================================================
  * 🟩 CREAR COMPRA (solo Administrador)
  * ==================================================
  */
-router.post(
-  "/",
-  verificarToken,
-  verificarRol("Administrador"),
-  (req, res) => {
-    const { ID_usuario, Fecha_compra, Monto_total, Estado } = req.body;
+router.post("/", verificarToken, verificarRol(), (req, res) => {
+  const { ID_usuario, Fecha_compra, Monto_total, Estado } = req.body;
 
-    if (!ID_usuario || !Fecha_compra || !Monto_total || !Estado) {
-      return res.status(400).json({ message: "Todos los campos son obligatorios" });
-    }
-
-    DB.query(
-      "INSERT INTO compras (ID_usuario, Fecha_compra, Monto_total, Estado) VALUES (?, ?, ?, ?)",
-      [ID_usuario, Fecha_compra, Monto_total, Estado],
-      (err, result) => {
-        if (err)
-          return res.status(500).json({ error: "Error al crear la compra", details: err });
-
-        const nuevaCompra = {
-          ID_compra: result.insertId,
-          ID_usuario,
-          Fecha_compra,
-          Monto_total,
-          Estado,
-        };
-
-        res.status(201).json({ message: "Compra creada exitosamente!", compra: nuevaCompra });
-      }
-    );
+  if (!ID_usuario || !Fecha_compra || !Monto_total || !Estado) {
+    return res.status(400).json({ message: "Todos los campos son obligatorios" });
   }
-);
+
+  DB.query(
+    "INSERT INTO compras (ID_usuario, Fecha_compra, Monto_total, Estado) VALUES (?, ?, ?, ?)",
+    [ID_usuario, Fecha_compra, Monto_total, Estado],
+    (err, result) => {
+      if (err)
+        return res
+          .status(500)
+          .json({ error: "Error al crear la compra", details: err });
+
+      const nuevaCompra = {
+        ID_compra: result.insertId,
+        ID_usuario,
+        Fecha_compra,
+        Monto_total,
+        Estado,
+      };
+
+      res.status(201).json({
+        message: "Compra creada exitosamente!",
+        compra: nuevaCompra,
+      });
+    }
+  );
+});
 
 /**
  * ==================================================
  * 🟧 ACTUALIZAR COMPRA (solo Administrador)
  * ==================================================
  */
-router.put(
-  "/:id",
-  verificarToken,
-  verificarRol("Administrador"),
-  (req, res) => {
-    const { id } = req.params;
-    const { Fecha_compra, Monto_total, Estado } = req.body;
+router.put("/:id", verificarToken, verificarRol(), (req, res) => {
+  const { id } = req.params;
+  const { Fecha_compra, Monto_total, Estado } = req.body;
 
-    if (!Fecha_compra || !Monto_total || !Estado) {
-      return res.status(400).json({
-        message: "Todos los campos son obligatorios para actualizar",
+  if (!Fecha_compra || !Monto_total || !Estado) {
+    return res.status(400).json({
+      message: "Todos los campos son obligatorios para actualizar",
+    });
+  }
+
+  DB.query(
+    "UPDATE compras SET Fecha_compra = ?, Monto_total = ?, Estado = ? WHERE ID_compra = ?",
+    [Fecha_compra, Monto_total, Estado, id],
+    (err) => {
+      if (err)
+        return res.status(500).json({
+          error: "Error al actualizar la compra",
+          details: err,
+        });
+
+      const compraActualizada = {
+        ID_compra: id,
+        Fecha_compra,
+        Monto_total,
+        Estado,
+      };
+
+      res.json({
+        message: "Compra actualizada exitosamente!",
+        compra: compraActualizada,
       });
     }
-
-    DB.query(
-      "UPDATE compras SET Fecha_compra = ?, Monto_total = ?, Estado = ? WHERE ID_compra = ?",
-      [Fecha_compra, Monto_total, Estado, id],
-      (err) => {
-        if (err)
-          return res.status(500).json({
-            error: "Error al actualizar la compra",
-            details: err,
-          });
-
-        const compraActualizada = { ID_compra: id, Fecha_compra, Monto_total, Estado };
-        res.json({ message: "Compra actualizada exitosamente!", compra: compraActualizada });
-      }
-    );
-  }
-);
+  );
+});
 
 /**
  * ==================================================
  * 🟥 ELIMINAR COMPRA (solo Administrador)
  * ==================================================
  */
-router.delete(
-  "/:id",
-  verificarToken,
-  verificarRol("Administrador"),
-  (req, res) => {
-    const { id } = req.params;
+router.delete("/:id", verificarToken, verificarRol(), (req, res) => {
+  const { id } = req.params;
 
-    DB.query("DELETE FROM compras WHERE ID_compra = ?", [id], (err, result) => {
-      if (err)
-        return res.status(500).json({
-          error: "Error al eliminar la compra",
-          details: err,
-        });
+  DB.query("DELETE FROM compras WHERE ID_compra = ?", [id], (err, result) => {
+    if (err)
+      return res.status(500).json({
+        error: "Error al eliminar la compra",
+        details: err,
+      });
 
-      if (result.affectedRows === 0)
-        return res.status(404).json({ message: "Compra no encontrada" });
+    if (result.affectedRows === 0)
+      return res.status(404).json({ message: "Compra no encontrada" });
 
-      res.json({ message: "Compra eliminada exitosamente!", id });
+    res.json({
+      message: "Compra eliminada exitosamente!",
+      id,
     });
-  }
-);
+  });
+});
 
 module.exports = router;

@@ -22,19 +22,25 @@ const authController = require("../controllers/authController");
  *           schema:
  *             type: object
  *             properties:
- *               nombre:
+ *               Nombre:
  *                 type: string
- *               email:
+ *               Correo_electronico:
  *                 type: string
- *               password:
+ *               Contraseña:
  *                 type: string
- *               rol:
+ *               Tipo_documento:
  *                 type: string
- *                 enum: [Administrador, Cliente, Domiciliario]
+ *               Numero_documento:
+ *                 type: string
+ *               Rol_usuario:
+ *                 type: string
+ *                 enum: [administrador, cliente, domiciliario]
  *             required:
- *               - nombre
- *               - email
- *               - password
+ *               - Nombre
+ *               - Correo_electronico
+ *               - Contraseña
+ *               - Tipo_documento
+ *               - Numero_documento
  *     responses:
  *       201:
  *         description: Usuario registrado correctamente
@@ -47,7 +53,7 @@ router.post("/register", authController.register);
  * @swagger
  * /api/auth/verificar/{token}:
  *   get:
- *     summary: Verificar correo del usuario
+ *     summary: Verificar el correo del usuario
  *     tags: [Auth]
  *     parameters:
  *       - in: path
@@ -67,7 +73,7 @@ router.get("/verificar/:token", authController.verifyEmail);
  * @swagger
  * /api/auth/login:
  *   post:
- *     summary: Iniciar sesión de usuario
+ *     summary: Iniciar sesión del usuario
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -76,13 +82,13 @@ router.get("/verificar/:token", authController.verifyEmail);
  *           schema:
  *             type: object
  *             properties:
- *               email:
+ *               Correo_electronico:
  *                 type: string
- *               password:
+ *               Contraseña:
  *                 type: string
  *             required:
- *               - email
- *               - password
+ *               - Correo_electronico
+ *               - Contraseña
  *     responses:
  *       200:
  *         description: Inicio de sesión exitoso
@@ -95,7 +101,7 @@ router.post("/login", authController.login);
  * @swagger
  * /api/auth/refresh:
  *   post:
- *     summary: Renovar el token de acceso usando refresh token
+ *     summary: Generar un nuevo token de acceso usando el refresh token
  *     tags: [Auth]
  *     requestBody:
  *       required: true

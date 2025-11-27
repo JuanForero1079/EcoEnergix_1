@@ -24,7 +24,7 @@ const { verificarToken, verificarRol } = require("../middleware/auth");
  *       500:
  *         description: Error del servidor
  */
-router.get("/", verificarToken, verificarRol("admin"), (req, res) => {
+router.get("/", verificarToken, verificarRol("Administrador"), (req, res) => {
   DB.query(
     "SELECT ID_proveedor, Nombre_empresa, Dirección, Teléfono, Correo_electronico, ID_usuario FROM proveedor",
     (err, result) => {
@@ -56,7 +56,7 @@ router.get("/", verificarToken, verificarRol("admin"), (req, res) => {
  *       500:
  *         description: Error del servidor
  */
-router.get("/:id", verificarToken, verificarRol("admin"), (req, res) => {
+router.get("/:id", verificarToken, verificarRol("Administrador"), (req, res) => {
   const { id } = req.params;
   DB.query(
     "SELECT ID_proveedor, Nombre_empresa, Dirección, Teléfono, Correo_electronico, ID_usuario FROM proveedor WHERE ID_proveedor = ?",
@@ -108,7 +108,7 @@ router.get("/:id", verificarToken, verificarRol("admin"), (req, res) => {
  *       500:
  *         description: Error del servidor
  */
-router.post("/", verificarToken, verificarRol("admin"), (req, res) => {
+router.post("/", verificarToken, verificarRol("Administrador"), (req, res) => {
   const { Nombre_empresa, Dirección, Teléfono, Correo_electronico, ID_usuario } = req.body;
   if (!Nombre_empresa || !Dirección || !Teléfono || !Correo_electronico || !ID_usuario) {
     return res.status(400).json({ message: "Todos los campos son obligatorios" });
@@ -169,7 +169,7 @@ router.post("/", verificarToken, verificarRol("admin"), (req, res) => {
  *       500:
  *         description: Error del servidor
  */
-router.put("/:id", verificarToken, verificarRol("admin"), (req, res) => {
+router.put("/:id", verificarToken, verificarRol("Administrador"), (req, res) => {
   const { id } = req.params;
   const { Nombre_empresa, Dirección, Teléfono, Correo_electronico, ID_usuario } = req.body;
   if (!Nombre_empresa || !Dirección || !Teléfono || !Correo_electronico || !ID_usuario) {
@@ -208,7 +208,7 @@ router.put("/:id", verificarToken, verificarRol("admin"), (req, res) => {
  *       500:
  *         description: Error del servidor
  */
-router.delete("/:id", verificarToken, verificarRol("admin"), (req, res) => {
+router.delete("/:id", verificarToken, verificarRol("Administrador"), (req, res) => {
   const { id } = req.params;
   DB.query("DELETE FROM proveedor WHERE ID_proveedor = ?", [id], (err, result) => {
     if (err) return res.status(500).json({ error: "Error al eliminar el proveedor", details: err });
@@ -254,7 +254,7 @@ router.delete("/:id", verificarToken, verificarRol("admin"), (req, res) => {
  *       201:
  *         description: Proveedores cargados correctamente
  */
-router.post("/bulk", verificarToken, verificarRol("admin"), (req, res) => {
+router.post("/bulk", verificarToken, verificarRol("Administrador"), (req, res) => {
   const proveedores = req.body;
   if (!Array.isArray(proveedores) || proveedores.length === 0) return res.status(400).json({ message: "Se requiere un array de proveedores" });
 
