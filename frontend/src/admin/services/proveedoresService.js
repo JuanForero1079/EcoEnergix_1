@@ -1,4 +1,3 @@
-// src/admin/services/proveedoresService.js
 import API from "./api";
 
 export const getProveedores = async () => {

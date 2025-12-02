@@ -1,4 +1,3 @@
-// src/admin/layouts/AdminLayoutAdmin.jsx
 import React, { useState, useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import SidebarAdmin from "./Componentes/SidebarAdmin.jsx";

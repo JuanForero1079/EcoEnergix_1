@@ -1,4 +1,3 @@
-// src/admin/services/soportesService.js
 import API from "./api";
 
 // Función auxiliar para obtener headers con token

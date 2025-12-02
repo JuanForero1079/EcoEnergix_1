@@ -1,4 +1,3 @@
-/ ComprasAdmin.jsx
 import React, { useState, useEffect } from "react";
 import API from "../../services/api"; // usa Axios configurado con tu baseURL
 

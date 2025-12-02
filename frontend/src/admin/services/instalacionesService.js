@@ -1,8 +1,7 @@
-// src/admin/services/instalacionesService.js
 import API from "./api";
 
 export const getInstalaciones = async () => {
-  const res = await API.get("/admin/instalaciones"); // 👈 cambio aquí
+  const res = await API.get("/admin/instalaciones"); // 
   return res.data;
 };
 

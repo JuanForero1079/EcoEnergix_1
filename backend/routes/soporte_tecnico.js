@@ -7,7 +7,7 @@ const { verificarToken } = require("../middleware/auth");
 /*                        GET TODOS LOS SOPORTES (ADMIN)                      */
 /* -------------------------------------------------------------------------- */
 router.get("/", verificarToken, (req, res) => {
-  const { id, rol } = req.user; // 🔥 token ya trae { id, correo, rol }
+  const { id, rol } = req.user; //   token ya trae { id, correo, rol }
   const rolLower = rol.toLowerCase();
 
   let query = "SELECT * FROM soporte_tecnico";

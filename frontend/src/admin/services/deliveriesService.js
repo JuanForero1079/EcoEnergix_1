@@ -1,4 +1,3 @@
-// src/admin/services/deliveriesService.js
 import API from "../../services/api";
 
 export async function getDeliveries() {

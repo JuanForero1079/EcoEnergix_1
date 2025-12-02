@@ -1,4 +1,3 @@
-// controllers/authController.js
 const DB = require("../db/connection");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
@@ -35,7 +34,7 @@ const generarAccessToken = (user) => {
     {
       id: user.ID_usuario,
       correo: user.Correo_electronico,
-      rol: user.Rol_usuario.toLowerCase(), // 🔥 Siempre minúscula
+      rol: user.Rol_usuario.toLowerCase(), //   Siempre minúscula
     },
     JWT_SECRET,
     { expiresIn: "15m" }
@@ -94,7 +93,7 @@ exports.register = async (req, res, next) => {
           hashedPassword,
           Tipo_documento,
           Numero_documento,
-          Rol_usuario.toLowerCase(), // 🔥 Siempre minúscula
+          Rol_usuario.toLowerCase(), //  Siempre minúscula
           tokenVerificacion,
           expiraEn,
         ],
@@ -108,7 +107,7 @@ exports.register = async (req, res, next) => {
       from: `"Ecoenergix" <${EMAIL_USER}>`,
       to: Correo_electronico,
       subject: "Verifica tu correo ✔",
-      html: `<h2>Hola ${Nombre}, ¡bienvenido a Ecoenergix! 🌞</h2>
+      html: `<h2>Hola ${Nombre}, ¡bienvenido a Ecoenergix!  </h2>
              <p>Tu enlace es válido por <strong>1 hora</strong>.</p>
              <a href="${link}" style="color:#008f39; font-weight:bold; font-size:18px;">✔ Verificar mi cuenta</a>`,
     });
@@ -207,7 +206,7 @@ exports.login = async (req, res, next) => {
         id: user.ID_usuario,
         nombre: user.Nombre,
         correo: user.Correo_electronico,
-        rol: user.Rol_usuario.toLowerCase(), // 🔥 Siempre minúscula
+        rol: user.Rol_usuario.toLowerCase(), //   Siempre minúscula
       },
     });
   } catch (error) {

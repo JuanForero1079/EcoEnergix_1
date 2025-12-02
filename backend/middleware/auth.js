@@ -4,12 +4,12 @@ require("dotenv").config();
 const JWT_SECRET = process.env.JWT_SECRET;
 
 // ==================================================
-// 🔧 Modo pruebas (desactiva tokens)
+//   Modo pruebas (desactiva tokens)
 // ==================================================
-const modoPruebas = false; // 👉 cambia a true para pruebas SIN autenticación
+const modoPruebas = false; //   cambia a true para pruebas SIN autenticación
 
 if (modoPruebas) {
-  console.log("⚠️ MODO PRUEBAS ACTIVADO (Tokens deshabilitados)");
+  console.log("  MODO PRUEBAS ACTIVADO (Tokens deshabilitados)");
 
   module.exports = {
     verificarToken: (req, res, next) => next(),
@@ -20,7 +20,7 @@ if (modoPruebas) {
 }
 
 // ==================================================
-// 🔐 Verificar Token
+//   Verificar Token
 // ==================================================
 function verificarToken(req, res, next) {
   try {
@@ -45,7 +45,7 @@ function verificarToken(req, res, next) {
 }
 
 // ==================================================
-// 🎭 Verificar Rol (Administrador)
+//   Verificar Rol (Administrador)
 // ==================================================
 function verificarRol() {
   return (req, res, next) => {
@@ -54,12 +54,12 @@ function verificarRol() {
         return res.status(401).json({ message: "No autorizado" });
       }
 
-      // 🟦 Log de depuración
-      console.log("👉 ROL DEL TOKEN:", req.user.rol);
+      //   Log de depuración
+      console.log("  ROL DEL TOKEN:", req.user.rol);
 
       const rol = String(req.user.rol).toLowerCase();
 
-      // 🟩 Roles permitidos
+      //   Roles permitidos
       const rolesPermitidos = ["administrador", "admin"];
 
       if (!rolesPermitidos.includes(rol)) {

@@ -8,4 +8,4 @@
   8   node scripts/hashPasswords.js (solo si la BD no tien las contraseñas Hasheadas)
   9   npm install multer csv-parser
   10  npm install swagger-jsdoc swagger-ui-express
-  11  node ./server.js
+  11 node ./server.js 

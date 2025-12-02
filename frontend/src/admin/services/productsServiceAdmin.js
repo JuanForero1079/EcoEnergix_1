@@ -1,5 +1,5 @@
 const API = axios.create({
-  baseURL: "http://localhost:3001/api/admin", //   cambiar a /api/admin
+  baseURL: "http://localhost:3001/api/admin",
 });
 
 //   Obtener todos los productos

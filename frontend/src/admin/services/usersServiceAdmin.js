@@ -4,7 +4,7 @@ import API from "../../services/api";
 export const getUsuarios = async () => {
   try {
     const res = await API.get("/api/usuarios");
-    console.log("👥 Datos de usuarios recibidos:", res.data);
+    console.log("  Datos de usuarios recibidos:", res.data);
     return res.data;
   } catch (error) {
     console.error("  Error al obtener usuarios:", error);

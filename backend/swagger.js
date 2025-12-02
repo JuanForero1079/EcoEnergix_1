@@ -1,4 +1,3 @@
-// swagger.js
 const swaggerJsdoc = require("swagger-jsdoc");
 
 const options = {
@@ -18,4 +17,4 @@ const options = {
 
 const specs = swaggerJsdoc(options);
 
-module.exports = specs; // ✅ solo exportar specs
+module.exports = specs; //   solo exportar specs

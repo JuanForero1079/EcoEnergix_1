@@ -12,7 +12,7 @@ const { verificarToken, verificarRol } = require("../middleware/auth");
 
 /**
  * ==================================================
- * 🟦 GET TODAS LAS COMPRAS (solo Administrador)
+ *   GET TODAS LAS COMPRAS (solo Administrador)
  * ==================================================
  */
 router.get("/", verificarToken, verificarRol(), (req, res) => {
@@ -28,7 +28,7 @@ router.get("/", verificarToken, verificarRol(), (req, res) => {
 
 /**
  * ==================================================
- * 🟦 GET UNA COMPRA POR ID (solo Administrador)
+ *   GET UNA COMPRA POR ID (solo Administrador)
  * ==================================================
  */
 router.get("/:id", verificarToken, verificarRol(), (req, res) => {
@@ -49,7 +49,7 @@ router.get("/:id", verificarToken, verificarRol(), (req, res) => {
 
 /**
  * ==================================================
- * 🟦 GET COMPRAS DE UN USUARIO
+ *   GET COMPRAS DE UN USUARIO
  *   - Cliente: solo sus compras
  *   - Administrador: puede ver cualquier usuario
  * ==================================================
@@ -77,7 +77,7 @@ router.get("/usuario/:userId", verificarToken, (req, res) => {
 
 /**
  * ==================================================
- * 🟩 CREAR COMPRA (solo Administrador)
+ *   CREAR COMPRA (solo Administrador)
  * ==================================================
  */
 router.post("/", verificarToken, verificarRol(), (req, res) => {
@@ -114,7 +114,7 @@ router.post("/", verificarToken, verificarRol(), (req, res) => {
 
 /**
  * ==================================================
- * 🟧 ACTUALIZAR COMPRA (solo Administrador)
+ *   ACTUALIZAR COMPRA (solo Administrador)
  * ==================================================
  */
 router.put("/:id", verificarToken, verificarRol(), (req, res) => {
@@ -154,7 +154,7 @@ router.put("/:id", verificarToken, verificarRol(), (req, res) => {
 
 /**
  * ==================================================
- * 🟥 ELIMINAR COMPRA (solo Administrador)
+ *   ELIMINAR COMPRA (solo Administrador)
  * ==================================================
  */
 router.delete("/:id", verificarToken, verificarRol(), (req, res) => {

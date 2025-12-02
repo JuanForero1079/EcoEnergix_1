@@ -1,4 +1,3 @@
-// src/admin/services/pagosService.js
 import API from "./api";
 
 //   Obtener todos los pagos

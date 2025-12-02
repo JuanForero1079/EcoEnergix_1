@@ -2,7 +2,7 @@ import API from "../../services/api";
 
 //   Ajustar ruta con /api/admin
 export const getEntregas = async () => {
-  const res = await API.get("/api/admin/entregas"); // ⚡ CORREGIDO
+  const res = await API.get("/api/admin/entregas"); //
   console.log("  Datos de entregas:", res.data);
   return res.data;
 };
