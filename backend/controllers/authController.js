@@ -34,7 +34,7 @@ const generarAccessToken = (user) => {
     {
       id: user.ID_usuario,
       correo: user.Correo_electronico,
-      rol: user.Rol_usuario.toLowerCase(), //   Siempre minúscula
+      rol: user.Rol_usuario.toLowerCase(),
     },
     JWT_SECRET,
     { expiresIn: "15m" }
@@ -48,6 +48,27 @@ const generarRefreshToken = (user) => {
     { expiresIn: "7d" }
   );
 };
+
+// =====================================================
+// SISTEMA DE BLOQUEO TEMPORAL (ANTI ATAQUES)
+// =====================================================
+const intentosFallidos = {}; // { correo: { intentos: n, bloqueadoHasta: Date } }
+const MAX_INTENTOS = 5;
+const BLOQUEO_MINUTOS = 10;
+
+function registrarFallo(correo) {
+  if (!intentosFallidos[correo]) {
+    intentosFallidos[correo] = { intentos: 1 };
+  } else {
+    intentosFallidos[correo].intentos++;
+  }
+
+  if (intentosFallidos[correo].intentos >= MAX_INTENTOS) {
+    intentosFallidos[correo].bloqueadoHasta = new Date(
+      Date.now() + BLOQUEO_MINUTOS * 60000
+    );
+  }
+}
 
 // =====================================================
 // REGISTER
@@ -93,7 +114,7 @@ exports.register = async (req, res, next) => {
           hashedPassword,
           Tipo_documento,
           Numero_documento,
-          Rol_usuario.toLowerCase(), //  Siempre minúscula
+          Rol_usuario.toLowerCase(),
           tokenVerificacion,
           expiraEn,
         ],
@@ -107,7 +128,7 @@ exports.register = async (req, res, next) => {
       from: `"Ecoenergix" <${EMAIL_USER}>`,
       to: Correo_electronico,
       subject: "Verifica tu correo ✔",
-      html: `<h2>Hola ${Nombre}, ¡bienvenido a Ecoenergix!  </h2>
+      html: `<h2>Hola ${Nombre}, ¡bienvenido a Ecoenergix!</h2>
              <p>Tu enlace es válido por <strong>1 hora</strong>.</p>
              <a href="${link}" style="color:#008f39; font-weight:bold; font-size:18px;">✔ Verificar mi cuenta</a>`,
     });
@@ -158,7 +179,7 @@ exports.verifyEmail = async (req, res, next) => {
 };
 
 // =====================================================
-// LOGIN
+// LOGIN (CON BLOQUEO DE INTENTOS)
 // =====================================================
 exports.login = async (req, res, next) => {
   try {
@@ -167,6 +188,28 @@ exports.login = async (req, res, next) => {
     if (!Correo_electronico || !Contraseña)
       throw new AppError("Correo y contraseña son obligatorios.", 400);
 
+    // -------------------------
+    // REVISAR BLOQUEO
+    // -------------------------
+    const registro = intentosFallidos[Correo_electronico];
+
+    if (registro && registro.bloqueadoHasta) {
+      if (new Date() < registro.bloqueadoHasta) {
+        const tiempoRestante = Math.ceil(
+          (registro.bloqueadoHasta - new Date()) / 60000
+        );
+        throw new AppError(
+          `Demasiados intentos fallidos. Vuelve a intentar en ${tiempoRestante} minutos.`,
+          429
+        );
+      } else {
+        intentosFallidos[Correo_electronico] = { intentos: 0 };
+      }
+    }
+
+    // -------------------------
+    // BUSCAR USUARIO
+    // -------------------------
     const results = await new Promise((resolve, reject) => {
       DB.query(
         "SELECT * FROM usuarios WHERE Correo_electronico = ? LIMIT 1",
@@ -175,18 +218,36 @@ exports.login = async (req, res, next) => {
       );
     });
 
-    if (results.length === 0)
-      throw new AppError("Usuario no encontrado", 401);
+    if (results.length === 0) {
+      registrarFallo(Correo_electronico);
+      throw new AppError("Usuario o contraseña incorrectos", 401);
+    }
 
     const user = results[0];
 
+    // -------------------------
+    // VALIDAR PASSWORD
+    // -------------------------
     const passwordCorrecta = await comparePassword(Contraseña, user.Contraseña);
-    if (!passwordCorrecta)
-      throw new AppError("Contraseña incorrecta", 401);
 
+    if (!passwordCorrecta) {
+      registrarFallo(Correo_electronico);
+      throw new AppError("Usuario o contraseña incorrectos", 401);
+    }
+
+    // Limpiar intentos fallidos
+    if (intentosFallidos[Correo_electronico])
+      delete intentosFallidos[Correo_electronico];
+
+    // -------------------------
+    // VERIFICACIÓN DE CORREO
+    // -------------------------
     if (user.verificado === 0)
       throw new AppError("Debes verificar tu correo.", 401);
 
+    // -------------------------
+    // GENERAR TOKENS
+    // -------------------------
     const accessToken = generarAccessToken(user);
     const refreshToken = generarRefreshToken(user);
 
@@ -206,7 +267,7 @@ exports.login = async (req, res, next) => {
         id: user.ID_usuario,
         nombre: user.Nombre,
         correo: user.Correo_electronico,
-        rol: user.Rol_usuario.toLowerCase(), //   Siempre minúscula
+        rol: user.Rol_usuario.toLowerCase(),
       },
     });
   } catch (error) {

@@ -27,7 +27,7 @@ function ComprasList() {
     try {
       setLoading(true);
       setError("");
-      const res = await API.get("/api/admin/compras");
+      const res = await API.get("/admin/compras");
       setCompras(res.data);
     } catch (err) {
       console.error("Error al obtener compras:", err);
@@ -51,12 +51,13 @@ function ComprasList() {
     e.preventDefault();
     try {
       if (editMode) {
-        await API.put(`/api/admin/compras/${formData.ID_compra}`, formData);
+        await API.put(`/admin/compras/${formData.ID_compra}`, formData);
         alert("Compra actualizada correctamente");
       } else {
-        await API.post("/api/admin/compras", formData);
+        await API.post("/admin/compras", formData);
         alert("Compra creada correctamente");
       }
+
       setFormData({
         ID_compra: null,
         ID_usuario: "",
@@ -86,7 +87,7 @@ function ComprasList() {
   const handleDelete = async (id) => {
     if (!window.confirm("¿Seguro que deseas eliminar esta compra?")) return;
     try {
-      await API.delete(`/api/admin/compras/${id}`);
+      await API.delete(`/admin/compras/${id}`);
       alert("Compra eliminada correctamente");
       fetchCompras();
     } catch (err) {
@@ -182,7 +183,7 @@ function ComprasList() {
         </button>
       </form>
 
-      {/* Filtros y exportar */}
+      {/* Filtros */}
       <div className="flex flex-col md:flex-row items-center gap-4 mb-4">
         <input
           type="text"
@@ -206,14 +207,12 @@ function ComprasList() {
           value={filterFechaInicio}
           onChange={(e) => setFilterFechaInicio(e.target.value)}
           className="p-2 rounded bg-slate-700 text-white"
-          placeholder="Fecha inicio"
         />
         <input
           type="date"
           value={filterFechaFin}
           onChange={(e) => setFilterFechaFin(e.target.value)}
           className="p-2 rounded bg-slate-700 text-white"
-          placeholder="Fecha fin"
         />
         <button
           onClick={handleExportPDF}
@@ -223,7 +222,7 @@ function ComprasList() {
         </button>
       </div>
 
-      {/* Tabla de compras */}
+      {/* Tabla */}
       {filteredCompras.length === 0 ? (
         <p>No hay compras registradas.</p>
       ) : (

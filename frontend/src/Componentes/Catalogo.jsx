@@ -10,7 +10,7 @@ const Catalogo = () => {
   // Cargar productos desde el backend
   // =========================================
   useEffect(() => {
-    API.get("/api/productos")
+    API.get("/productos")
       .then((response) => {
         setProductos(response.data);
       })

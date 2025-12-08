@@ -24,7 +24,7 @@ function ProductosList() {
   const fetchProductos = async () => {
     try {
       setLoading(true);
-      const res = await API.get("/api/admin/productos");
+      const res = await API.get("/productos"); // ✅ corregido
       setProductos(res.data);
     } catch (err) {
       console.error("Error al obtener productos:", err);
@@ -47,10 +47,10 @@ function ProductosList() {
     e.preventDefault();
     try {
       if (editMode) {
-        await API.put(`/api/admin/productos/${formData.ID_producto}`, formData);
+        await API.put(`/productos/${formData.ID_producto}`, formData); // ✅ corregido
         alert("Producto actualizado correctamente");
       } else {
-        await API.post("/api/admin/productos", formData);
+        await API.post("/productos", formData); // ✅ corregido
         alert("Producto creado correctamente");
       }
 
@@ -91,7 +91,7 @@ function ProductosList() {
   const handleDelete = async (id) => {
     if (!window.confirm("¿Seguro que deseas eliminar este producto?")) return;
     try {
-      await API.delete(`/api/admin/productos/${id}`);
+      await API.delete(`/productos/${id}`); // ✅ corregido
       alert("Producto eliminado correctamente");
       fetchProductos();
     } catch (err) {
@@ -126,10 +126,7 @@ function ProductosList() {
     ];
 
     try {
-      const res = await API.post(
-        "/api/admin/productos/bulk",
-        productosMasivos
-      );
+      const res = await API.post("/productos/bulk", productosMasivos); // ✅ corregido
       alert(res.data.message);
       fetchProductos();
     } catch (err) {

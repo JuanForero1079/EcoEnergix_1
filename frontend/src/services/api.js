@@ -4,7 +4,7 @@ import axios from "axios";
 // Instancia Axios para cliente/usuario
 // -----------------------------
 const API = axios.create({
-  baseURL: "http://localhost:3001",
+  baseURL: "http://localhost:3001/api",
 });
 
 // -----------------------------

@@ -27,7 +27,7 @@ export default function Login() {
 
     try {
       // Enviar campos exactos que espera el backend
-      const { data } = await API.post("/api/auth/login", {
+      const { data } = await API.post("/auth/login", {
         Correo_electronico: formData.correo,
         Contraseña: formData.contraseña,
       });
