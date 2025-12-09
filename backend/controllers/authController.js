@@ -6,18 +6,19 @@ const AppError = require("../utils/error");
 const { hashPassword, comparePassword } = require("../utils/password");
 require("dotenv").config();
 
-// -----------------------------
+// -------------------------------------
 // Variables de entorno
-// -----------------------------
+// -------------------------------------
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
-const SERVER_URL = process.env.SERVER_URL;
+const SERVER_URL = process.env.SERVER_URL; // Backend
+const FRONTEND_URL = process.env.FRONTEND_URL; // Frontend, ej: http://localhost:5173
 const EMAIL_USER = process.env.EMAIL_USER;
 const EMAIL_PASS = process.env.EMAIL_PASS;
 
-// -----------------------------
-// Nodemailer config
-// -----------------------------
+// -------------------------------------
+// Configuración de Nodemailer
+// -------------------------------------
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
@@ -26,11 +27,11 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// -----------------------------
-// TOKEN GENERATORS
-// -----------------------------
-const generarAccessToken = (user) => {
-  return jwt.sign(
+// -------------------------------------
+// Generadores de tokens
+// -------------------------------------
+const generarAccessToken = (user) =>
+  jwt.sign(
     {
       id: user.ID_usuario,
       correo: user.Correo_electronico,
@@ -39,20 +40,16 @@ const generarAccessToken = (user) => {
     JWT_SECRET,
     { expiresIn: "15m" }
   );
-};
 
-const generarRefreshToken = (user) => {
-  return jwt.sign(
-    { id: user.ID_usuario },
-    JWT_REFRESH_SECRET,
-    { expiresIn: "7d" }
-  );
-};
+const generarRefreshToken = (user) =>
+  jwt.sign({ id: user.ID_usuario }, JWT_REFRESH_SECRET, {
+    expiresIn: "7d",
+  });
 
 // =====================================================
-// SISTEMA DE BLOQUEO TEMPORAL (ANTI ATAQUES)
+// SISTEMA DE BLOQUEO POR INTENTOS FALLIDOS
 // =====================================================
-const intentosFallidos = {}; // { correo: { intentos: n, bloqueadoHasta: Date } }
+const intentosFallidos = {};
 const MAX_INTENTOS = 5;
 const BLOQUEO_MINUTOS = 10;
 
@@ -71,7 +68,7 @@ function registrarFallo(correo) {
 }
 
 // =====================================================
-// REGISTER
+// REGISTRO DE USUARIO
 // =====================================================
 exports.register = async (req, res, next) => {
   try {
@@ -84,7 +81,7 @@ exports.register = async (req, res, next) => {
       Rol_usuario = "cliente",
     } = req.body;
 
-    if (!Nombre || !Correo_electronico || !Contraseña || !Tipo_documento || !Numero_documento)
+    if (!Nombre || !Correo_electronico || !Contraseña)
       throw new AppError("Todos los campos son obligatorios", 400);
 
     const existingUser = await new Promise((resolve, reject) => {
@@ -99,15 +96,14 @@ exports.register = async (req, res, next) => {
       throw new AppError("El correo ya está registrado", 400);
 
     const hashedPassword = await hashPassword(Contraseña);
-
     const tokenVerificacion = crypto.randomBytes(40).toString("hex");
-    const expiraEn = new Date(Date.now() + 60 * 60 * 1000);
+    const expiraEn = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
 
     await new Promise((resolve, reject) => {
       DB.query(
         `INSERT INTO usuarios 
-          (Nombre, Correo_electronico, Contraseña, Tipo_documento, Numero_documento, Rol_usuario, verificado, token_verificacion, token_expira_en)
-          VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)`,
+        (Nombre, Correo_electronico, Contraseña, Tipo_documento, Numero_documento, Rol_usuario, verificado, token_verificacion, token_expira_en)
+        VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)`,
         [
           Nombre,
           Correo_electronico,
@@ -128,21 +124,23 @@ exports.register = async (req, res, next) => {
       from: `"Ecoenergix" <${EMAIL_USER}>`,
       to: Correo_electronico,
       subject: "Verifica tu correo ✔",
-      html: `<h2>Hola ${Nombre}, ¡bienvenido a Ecoenergix!</h2>
-             <p>Tu enlace es válido por <strong>1 hora</strong>.</p>
-             <a href="${link}" style="color:#008f39; font-weight:bold; font-size:18px;">✔ Verificar mi cuenta</a>`,
+      html: `
+        <h2>Hola ${Nombre}, ¡bienvenido a Ecoenergix!</h2>
+        <p>Tu enlace es válido por <strong>1 hora</strong>.</p>
+        <a href="${link}" style="color:#008f39; font-weight:bold;">✔ Verificar mi cuenta</a>
+      `,
     });
 
-    res.status(201).json({
-      message: "Registro exitoso. Verifica tu correo antes de iniciar sesión.",
+    res.json({
+      message: "Registro exitoso. Verifica tu correo.",
     });
   } catch (error) {
-    next(new AppError(error.message, error.statusCode || 500));
+    next(new AppError(error.message, 500));
   }
 };
 
 // =====================================================
-// VERIFY EMAIL
+// VERIFICAR CORREO
 // =====================================================
 exports.verifyEmail = async (req, res, next) => {
   try {
@@ -152,17 +150,16 @@ exports.verifyEmail = async (req, res, next) => {
       DB.query(
         "SELECT * FROM usuarios WHERE token_verificacion = ? LIMIT 1",
         [token],
-        (err, results) => (err ? reject(err) : resolve(results))
+        (err, r) => (err ? reject(err) : resolve(r))
       );
     });
 
-    if (results.length === 0)
-      throw new AppError("Token inválido", 400);
+    if (results.length === 0) throw new AppError("Token inválido", 400);
 
     const user = results[0];
 
     if (new Date() > new Date(user.token_expira_en))
-      throw new AppError("El enlace expiró. Regístrate nuevamente.", 400);
+      throw new AppError("El enlace expiró.", 400);
 
     await new Promise((resolve, reject) => {
       DB.query(
@@ -172,14 +169,14 @@ exports.verifyEmail = async (req, res, next) => {
       );
     });
 
-    res.json({ message: "Correo verificado exitosamente." });
+    res.json({ message: "Correo verificado correctamente." });
   } catch (error) {
-    next(new AppError(error.message, error.statusCode || 500));
+    next(new AppError(error.message, 500));
   }
 };
 
 // =====================================================
-// LOGIN (CON BLOQUEO DE INTENTOS)
+// LOGIN
 // =====================================================
 exports.login = async (req, res, next) => {
   try {
@@ -188,18 +185,15 @@ exports.login = async (req, res, next) => {
     if (!Correo_electronico || !Contraseña)
       throw new AppError("Correo y contraseña son obligatorios.", 400);
 
-    // -------------------------
-    // REVISAR BLOQUEO
-    // -------------------------
     const registro = intentosFallidos[Correo_electronico];
 
-    if (registro && registro.bloqueadoHasta) {
+    if (registro?.bloqueadoHasta) {
       if (new Date() < registro.bloqueadoHasta) {
-        const tiempoRestante = Math.ceil(
+        const minutos = Math.ceil(
           (registro.bloqueadoHasta - new Date()) / 60000
         );
         throw new AppError(
-          `Demasiados intentos fallidos. Vuelve a intentar en ${tiempoRestante} minutos.`,
+          `Demasiados intentos fallidos. Intenta en ${minutos} minutos.`,
           429
         );
       } else {
@@ -207,14 +201,11 @@ exports.login = async (req, res, next) => {
       }
     }
 
-    // -------------------------
-    // BUSCAR USUARIO
-    // -------------------------
     const results = await new Promise((resolve, reject) => {
       DB.query(
         "SELECT * FROM usuarios WHERE Correo_electronico = ? LIMIT 1",
         [Correo_electronico],
-        (err, results) => (err ? reject(err) : resolve(results))
+        (err, r) => (err ? reject(err) : resolve(r))
       );
     });
 
@@ -225,29 +216,21 @@ exports.login = async (req, res, next) => {
 
     const user = results[0];
 
-    // -------------------------
-    // VALIDAR PASSWORD
-    // -------------------------
-    const passwordCorrecta = await comparePassword(Contraseña, user.Contraseña);
+    const passwordCorrecta = await comparePassword(
+      Contraseña,
+      user.Contraseña
+    );
 
     if (!passwordCorrecta) {
       registrarFallo(Correo_electronico);
       throw new AppError("Usuario o contraseña incorrectos", 401);
     }
 
-    // Limpiar intentos fallidos
-    if (intentosFallidos[Correo_electronico])
-      delete intentosFallidos[Correo_electronico];
+    delete intentosFallidos[Correo_electronico];
 
-    // -------------------------
-    // VERIFICACIÓN DE CORREO
-    // -------------------------
     if (user.verificado === 0)
       throw new AppError("Debes verificar tu correo.", 401);
 
-    // -------------------------
-    // GENERAR TOKENS
-    // -------------------------
     const accessToken = generarAccessToken(user);
     const refreshToken = generarRefreshToken(user);
 
@@ -267,9 +250,104 @@ exports.login = async (req, res, next) => {
         id: user.ID_usuario,
         nombre: user.Nombre,
         correo: user.Correo_electronico,
-        rol: user.Rol_usuario.toLowerCase(),
+        rol: user.Rol_usuario,
       },
     });
+  } catch (error) {
+    next(new AppError(error.message, error.statusCode || 500));
+  }
+};
+
+// =====================================================
+// ENVIAR CORREO DE RECUPERACIÓN
+// =====================================================
+exports.forgotPassword = async (req, res, next) => {
+  try {
+    const { Correo_electronico } = req.body;
+
+    if (!Correo_electronico)
+      throw new AppError("El correo es obligatorio", 400);
+
+    const user = await new Promise((resolve, reject) => {
+      DB.query(
+        "SELECT * FROM usuarios WHERE Correo_electronico = ? LIMIT 1",
+        [Correo_electronico],
+        (err, r) => (err ? reject(err) : resolve(r))
+      );
+    });
+
+    if (user.length === 0)
+      throw new AppError("No existe un usuario con este correo", 404);
+
+    const token = crypto.randomBytes(40).toString("hex");
+    const expiraEn = new Date(Date.now() + 15 * 60 * 1000);
+
+    await new Promise((resolve, reject) => {
+      DB.query(
+        "UPDATE usuarios SET token_verificacion = ?, token_expira_en = ? WHERE ID_usuario = ?",
+        [token, expiraEn, user[0].ID_usuario],
+        (err) => (err ? reject(err) : resolve())
+      );
+    });
+
+    // Enlace al frontend
+    const link = `${FRONTEND_URL}/reset-password/${token}`;
+
+    await transporter.sendMail({
+      from: `"Ecoenergix" <${EMAIL_USER}>`,
+      to: Correo_electronico,
+      subject: "Recuperar contraseña 🔒",
+      html: `
+        <h2>Solicitud de recuperación de contraseña</h2>
+        <p>Tu enlace expirará en <strong>15 minutos</strong>.</p>
+        <a href="${link}" style="color:#008f39; font-weight:bold;">🔒 Restablecer contraseña</a>
+      `,
+    });
+
+    res.json({ message: "Se envió un enlace de recuperación a tu correo." });
+  } catch (error) {
+    next(new AppError(error.message, error.statusCode || 500));
+  }
+};
+
+// =====================================================
+// CAMBIAR CONTRASEÑA CON TOKEN
+// =====================================================
+exports.resetPassword = async (req, res, next) => {
+  try {
+    const { token } = req.params;
+    const { nuevaContraseña } = req.body;
+
+    if (!nuevaContraseña)
+      throw new AppError("La nueva contraseña es obligatoria", 400);
+
+    const user = await new Promise((resolve, reject) => {
+      DB.query(
+        "SELECT * FROM usuarios WHERE token_verificacion = ? LIMIT 1",
+        [token],
+        (err, r) => (err ? reject(err) : resolve(r))
+      );
+    });
+
+    if (user.length === 0)
+      throw new AppError("Token inválido", 400);
+
+    const usuario = user[0];
+
+    if (new Date() > new Date(usuario.token_expira_en))
+      throw new AppError("El enlace expiró, solicita otro.", 400);
+
+    const hashed = await hashPassword(nuevaContraseña);
+
+    await new Promise((resolve, reject) => {
+      DB.query(
+        "UPDATE usuarios SET Contraseña = ?, token_verificacion = NULL, token_expira_en = NULL WHERE ID_usuario = ?",
+        [hashed, usuario.ID_usuario],
+        (err) => (err ? reject(err) : resolve())
+      );
+    });
+
+    res.json({ message: "Contraseña cambiada exitosamente." });
   } catch (error) {
     next(new AppError(error.message, error.statusCode || 500));
   }
@@ -289,7 +367,7 @@ exports.refresh = async (req, res, next) => {
       DB.query(
         "SELECT * FROM usuarios WHERE refresh_token = ? LIMIT 1",
         [refreshToken],
-        (err, results) => (err ? reject(err) : resolve(results))
+        (err, r) => (err ? reject(err) : resolve(r))
       );
     });
 
@@ -298,11 +376,7 @@ exports.refresh = async (req, res, next) => {
 
     const user = results[0];
 
-    try {
-      jwt.verify(refreshToken, JWT_REFRESH_SECRET);
-    } catch (err) {
-      throw new AppError("Refresh token expirado o inválido", 401);
-    }
+    jwt.verify(refreshToken, JWT_REFRESH_SECRET);
 
     const nuevoAccess = generarAccessToken(user);
     const nuevoRefresh = generarRefreshToken(user);

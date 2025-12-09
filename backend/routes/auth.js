@@ -122,4 +122,64 @@ router.post("/login", authController.login);
  */
 router.post("/refresh", authController.refresh);
 
+/* =======================================================
+   RECUPERACIÓN DE CONTRASEÑA
+   ======================================================= */
+
+/**
+ * @swagger
+ * /api/auth/forgot-password:
+ *   post:
+ *     summary: Solicitar un correo para recuperar la contraseña
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               Correo_electronico:
+ *                 type: string
+ *             required:
+ *               - Correo_electronico
+ *     responses:
+ *       200:
+ *         description: Enlace de recuperación enviado al correo
+ *       404:
+ *         description: Usuario no encontrado
+ */
+router.post("/forgot-password", authController.forgotPassword);
+
+/**
+ * @swagger
+ * /api/auth/reset-password/{token}:
+ *   post:
+ *     summary: Restablecer la contraseña usando un token temporal
+ *     tags: [Auth]
+ *     parameters:
+ *       - in: path
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nuevaContraseña:
+ *                 type: string
+ *             required:
+ *               - nuevaContraseña
+ *     responses:
+ *       200:
+ *         description: Contraseña restablecida exitosamente
+ *       400:
+ *         description: Token inválido o expirado
+ */
+router.post("/reset-password/:token", authController.resetPassword);
+
 module.exports = router;

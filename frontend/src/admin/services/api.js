@@ -4,7 +4,7 @@ import axios from "axios";
 // Instancia Axios para admin
 // -----------------------------
 const APIAdmin = axios.create({
-  baseURL: "http://localhost:3001/api/admin",
+  baseURL: "http://localhost:3001/api",
 });
 
 // -----------------------------
@@ -12,7 +12,6 @@ const APIAdmin = axios.create({
 // -----------------------------
 APIAdmin.interceptors.request.use(
   (config) => {
-    // Tomamos el token **en el momento exacto** de la request
     const token = localStorage.getItem("token");
     if (token) config.headers["Authorization"] = `Bearer ${token}`;
     return config;
@@ -28,15 +27,16 @@ APIAdmin.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Verificar 401 y refresh token disponible
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
       localStorage.getItem("refreshToken")
     ) {
       originalRequest._retry = true;
+
       try {
         const refreshToken = localStorage.getItem("refreshToken");
+
         const res = await axios.post(
           "http://localhost:3001/api/auth/refresh",
           { refreshToken }
@@ -44,11 +44,9 @@ APIAdmin.interceptors.response.use(
 
         const { accessToken, refreshToken: newRefresh } = res.data;
 
-        // Guardar tokens nuevos
         localStorage.setItem("token", accessToken);
         localStorage.setItem("refreshToken", newRefresh);
 
-        // Reintentar la request original con el nuevo token
         originalRequest.headers["Authorization"] = `Bearer ${accessToken}`;
         return axios(originalRequest);
       } catch (err) {
@@ -62,5 +60,20 @@ APIAdmin.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// -----------------------------
+// 🔐 RECUPERACIÓN DE CONTRASEÑA ADMIN
+// -----------------------------
+export const forgotPasswordAdmin = (correo) => {
+  return APIAdmin.post("/auth/forgot-password", {
+    Correo_electronico: correo,
+  });
+};
+
+export const resetPasswordAdmin = (token, nuevaContraseña) => {
+  return APIAdmin.post(`/auth/reset-password/${token}`, {
+    nuevaContraseña,
+  });
+};
 
 export default APIAdmin;
