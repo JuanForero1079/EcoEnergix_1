@@ -10,270 +10,260 @@ const { verificarToken, verificarRol } = require("../middleware/auth");
  *   description: CRUD de proveedores y carga masiva
  */
 
-/**
- * @swagger
- * /api/admin/proveedores:
- *   get:
- *     summary: Obtener todos los proveedores
- *     tags: [Proveedores]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Lista de proveedores
- *       500:
- *         description: Error del servidor
- */
-router.get("/", verificarToken, verificarRol("Administrador"), (req, res) => {
-  DB.query(
-    "SELECT ID_proveedor, Nombre_empresa, Dirección, Teléfono, Correo_electronico, ID_usuario FROM proveedor",
-    (err, result) => {
-      if (err) return res.status(500).json({ error: "Error al obtener los proveedores", details: err });
-      res.json(result);
-    }
-  );
-});
-
-/**
- * @swagger
- * /api/admin/proveedores/{id}:
- *   get:
- *     summary: Obtener un proveedor por ID
- *     tags: [Proveedores]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *     responses:
- *       200:
- *         description: Proveedor encontrado
- *       404:
- *         description: Proveedor no encontrado
- *       500:
- *         description: Error del servidor
- */
-router.get("/:id", verificarToken, verificarRol("Administrador"), (req, res) => {
-  const { id } = req.params;
-  DB.query(
-    "SELECT ID_proveedor, Nombre_empresa, Dirección, Teléfono, Correo_electronico, ID_usuario FROM proveedor WHERE ID_proveedor = ?",
-    [id],
-    (err, result) => {
-      if (err) return res.status(500).json({ error: "Error al buscar el proveedor", details: err });
-      if (result.length === 0) return res.status(404).json({ message: "Proveedor no encontrado" });
-      res.json(result[0]);
-    }
-  );
-});
-
-/**
- * @swagger
- * /api/admin/proveedores:
- *   post:
- *     summary: Crear un nuevo proveedor
- *     tags: [Proveedores]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - Nombre_empresa
- *               - Dirección
- *               - Teléfono
- *               - Correo_electronico
- *               - ID_usuario
- *             properties:
- *               Nombre_empresa:
- *                 type: string
- *               Dirección:
- *                 type: string
- *               Teléfono:
- *                 type: string
- *               Correo_electronico:
- *                 type: string
- *               ID_usuario:
- *                 type: integer
- *     responses:
- *       201:
- *         description: Proveedor creado exitosamente
- *       400:
- *         description: Faltan campos obligatorios
- *       500:
- *         description: Error del servidor
- */
-router.post("/", verificarToken, verificarRol("Administrador"), (req, res) => {
-  const { Nombre_empresa, Dirección, Teléfono, Correo_electronico, ID_usuario } = req.body;
-  if (!Nombre_empresa || !Dirección || !Teléfono || !Correo_electronico || !ID_usuario) {
-    return res.status(400).json({ message: "Todos los campos son obligatorios" });
-  }
-
-  DB.query(
-    `INSERT INTO proveedor (Nombre_empresa, Dirección, Teléfono, Correo_electronico, ID_usuario) VALUES (?, ?, ?, ?, ?)`,
-    [Nombre_empresa, Dirección, Teléfono, Correo_electronico, ID_usuario],
-    (err, result) => {
-      if (err) return res.status(500).json({ error: "Error al crear el proveedor", details: err });
-      res.status(201).json({ message: "Proveedor creado exitosamente!", proveedor: { ID_proveedor: result.insertId, Nombre_empresa, Dirección, Teléfono, Correo_electronico, ID_usuario } });
-    }
-  );
-});
-
-/**
- * @swagger
- * /api/admin/proveedores/{id}:
- *   put:
- *     summary: Actualizar un proveedor existente
- *     tags: [Proveedores]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - Nombre_empresa
- *               - Dirección
- *               - Teléfono
- *               - Correo_electronico
- *               - ID_usuario
- *             properties:
- *               Nombre_empresa:
- *                 type: string
- *               Dirección:
- *                 type: string
- *               Teléfono:
- *                 type: string
- *               Correo_electronico:
- *                 type: string
- *               ID_usuario:
- *                 type: integer
- *     responses:
- *       200:
- *         description: Proveedor actualizado
- *       400:
- *         description: Faltan campos obligatorios
- *       500:
- *         description: Error del servidor
- */
-router.put("/:id", verificarToken, verificarRol("Administrador"), (req, res) => {
-  const { id } = req.params;
-  const { Nombre_empresa, Dirección, Teléfono, Correo_electronico, ID_usuario } = req.body;
-  if (!Nombre_empresa || !Dirección || !Teléfono || !Correo_electronico || !ID_usuario) {
-    return res.status(400).json({ message: "Todos los campos son obligatorios para actualizar" });
-  }
-
-  DB.query(
-    `UPDATE proveedor SET Nombre_empresa = ?, Dirección = ?, Teléfono = ?, Correo_electronico = ?, ID_usuario = ? WHERE ID_proveedor = ?`,
-    [Nombre_empresa, Dirección, Teléfono, Correo_electronico, ID_usuario, id],
-    (err) => {
-      if (err) return res.status(500).json({ error: "Error al actualizar el proveedor", details: err });
-      res.json({ message: "Proveedor actualizado exitosamente!", proveedor: { ID_proveedor: id, Nombre_empresa, Dirección, Teléfono, Correo_electronico, ID_usuario } });
-    }
-  );
-});
-
-/**
- * @swagger
- * /api/admin/proveedores/{id}:
- *   delete:
- *     summary: Eliminar un proveedor
- *     tags: [Proveedores]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *     responses:
- *       200:
- *         description: Proveedor eliminado exitosamente
- *       404:
- *         description: Proveedor no encontrado
- *       500:
- *         description: Error del servidor
- */
-router.delete("/:id", verificarToken, verificarRol("Administrador"), (req, res) => {
-  const { id } = req.params;
-  DB.query("DELETE FROM proveedor WHERE ID_proveedor = ?", [id], (err, result) => {
-    if (err) return res.status(500).json({ error: "Error al eliminar el proveedor", details: err });
-    if (result.affectedRows === 0) return res.status(404).json({ message: "Proveedor no encontrado para eliminar" });
-    res.json({ message: "Proveedor eliminado exitosamente!", id });
-  });
-});
-
-/**
- * @swagger
- * /api/admin/proveedores/bulk:
- *   post:
- *     summary: Carga masiva de proveedores
- *     tags: [Proveedores]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: array
- *             items:
- *               type: object
- *               required:
- *                 - Nombre_empresa
- *                 - Dirección
- *                 - Teléfono
- *                 - Correo_electronico
- *                 - ID_usuario
- *               properties:
- *                 Nombre_empresa:
- *                   type: string
- *                 Dirección:
- *                   type: string
- *                 Teléfono:
- *                   type: string
- *                 Correo_electronico:
- *                   type: string
- *                 ID_usuario:
- *                   type: integer
- *     responses:
- *       201:
- *         description: Proveedores cargados correctamente
- */
-router.post("/bulk", verificarToken, verificarRol("Administrador"), (req, res) => {
-  const proveedores = req.body;
-  if (!Array.isArray(proveedores) || proveedores.length === 0) return res.status(400).json({ message: "Se requiere un array de proveedores" });
-
-  try {
-    const values = proveedores.map((p) => {
-      if (!p.Nombre_empresa || !p.Dirección || !p.Teléfono || !p.Correo_electronico || !p.ID_usuario) {
-        throw new Error("Cada proveedor debe tener Nombre_empresa, Dirección, Teléfono, Correo_electronico e ID_usuario");
+// =====================
+// GET: Todos los proveedores (ADMIN)
+// =====================
+router.get(
+  "/",
+  verificarToken,
+  verificarRol(["administrador"]),
+  (req, res) => {
+    DB.query(
+      "SELECT ID_proveedor, Nombre_empresa, Dirección, Teléfono, Correo_electronico, ID_usuario FROM proveedor",
+      (err, result) => {
+        if (err)
+          return res.status(500).json({
+            error: "Error al obtener los proveedores",
+            details: err,
+          });
+        res.json(result);
       }
-      return [p.Nombre_empresa, p.Dirección, p.Teléfono, p.Correo_electronico, p.ID_usuario];
-    });
-
-    const sql = `INSERT INTO proveedor (Nombre_empresa, Dirección, Teléfono, Correo_electronico, ID_usuario) VALUES ?`;
-    DB.query(sql, [values], (err, result) => {
-      if (err) return res.status(500).json({ error: "Error al insertar los proveedores" });
-      res.status(201).json({ message: `Se agregaron ${result.affectedRows} proveedores correctamente` });
-    });
-  } catch (err) {
-    return res.status(400).json({ message: err.message });
+    );
   }
-});
+);
+
+// =====================
+// GET: Proveedor por ID (ADMIN)
+// =====================
+router.get(
+  "/:id",
+  verificarToken,
+  verificarRol(["administrador"]),
+  (req, res) => {
+    const { id } = req.params;
+
+    DB.query(
+      "SELECT ID_proveedor, Nombre_empresa, Dirección, Teléfono, Correo_electronico, ID_usuario FROM proveedor WHERE ID_proveedor = ?",
+      [id],
+      (err, result) => {
+        if (err)
+          return res.status(500).json({
+            error: "Error al buscar el proveedor",
+            details: err,
+          });
+
+        if (result.length === 0)
+          return res.status(404).json({
+            message: "Proveedor no encontrado",
+          });
+
+        res.json(result[0]);
+      }
+    );
+  }
+);
+
+// =====================
+// POST: Crear proveedor (ADMIN)
+// =====================
+router.post(
+  "/",
+  verificarToken,
+  verificarRol(["administrador"]),
+  (req, res) => {
+    const {
+      Nombre_empresa,
+      Dirección,
+      Teléfono,
+      Correo_electronico,
+      ID_usuario,
+    } = req.body;
+
+    if (
+      !Nombre_empresa ||
+      !Dirección ||
+      !Teléfono ||
+      !Correo_electronico ||
+      !ID_usuario
+    ) {
+      return res.status(400).json({
+        message: "Todos los campos son obligatorios",
+      });
+    }
+
+    DB.query(
+      `INSERT INTO proveedor 
+       (Nombre_empresa, Dirección, Teléfono, Correo_electronico, ID_usuario) 
+       VALUES (?, ?, ?, ?, ?)`,
+      [
+        Nombre_empresa,
+        Dirección,
+        Teléfono,
+        Correo_electronico,
+        ID_usuario,
+      ],
+      (err, result) => {
+        if (err)
+          return res.status(500).json({
+            error: "Error al crear el proveedor",
+            details: err,
+          });
+
+        res.status(201).json({
+          message: "Proveedor creado exitosamente",
+          proveedor: {
+            ID_proveedor: result.insertId,
+            Nombre_empresa,
+            Dirección,
+            Teléfono,
+            Correo_electronico,
+            ID_usuario,
+          },
+        });
+      }
+    );
+  }
+);
+
+// =====================
+// PUT: Actualizar proveedor (ADMIN)
+// =====================
+router.put(
+  "/:id",
+  verificarToken,
+  verificarRol(["administrador"]),
+  (req, res) => {
+    const { id } = req.params;
+    const {
+      Nombre_empresa,
+      Dirección,
+      Teléfono,
+      Correo_electronico,
+      ID_usuario,
+    } = req.body;
+
+    if (
+      !Nombre_empresa ||
+      !Dirección ||
+      !Teléfono ||
+      !Correo_electronico ||
+      !ID_usuario
+    ) {
+      return res.status(400).json({
+        message: "Todos los campos son obligatorios para actualizar",
+      });
+    }
+
+    DB.query(
+      `UPDATE proveedor 
+       SET Nombre_empresa=?, Dirección=?, Teléfono=?, Correo_electronico=?, ID_usuario=? 
+       WHERE ID_proveedor=?`,
+      [
+        Nombre_empresa,
+        Dirección,
+        Teléfono,
+        Correo_electronico,
+        ID_usuario,
+        id,
+      ],
+      (err, result) => {
+        if (err)
+          return res.status(500).json({
+            error: "Error al actualizar el proveedor",
+            details: err,
+          });
+
+        if (result.affectedRows === 0)
+          return res.status(404).json({
+            message: "Proveedor no encontrado",
+          });
+
+        res.json({
+          message: "Proveedor actualizado exitosamente",
+          id,
+        });
+      }
+    );
+  }
+);
+
+// =====================
+// DELETE: Eliminar proveedor (ADMIN)
+// =====================
+router.delete(
+  "/:id",
+  verificarToken,
+  verificarRol(["administrador"]),
+  (req, res) => {
+    const { id } = req.params;
+
+    DB.query(
+      "DELETE FROM proveedor WHERE ID_proveedor = ?",
+      [id],
+      (err, result) => {
+        if (err)
+          return res.status(500).json({
+            error: "Error al eliminar el proveedor",
+            details: err,
+          });
+
+        if (result.affectedRows === 0)
+          return res.status(404).json({
+            message: "Proveedor no encontrado",
+          });
+
+        res.json({
+          message: "Proveedor eliminado exitosamente",
+          id,
+        });
+      }
+    );
+  }
+);
+
+// =====================
+// POST: Carga masiva (ADMIN)
+// =====================
+router.post(
+  "/bulk",
+  verificarToken,
+  verificarRol(["administrador"]),
+  (req, res) => {
+    const proveedores = req.body;
+
+    if (!Array.isArray(proveedores) || proveedores.length === 0) {
+      return res.status(400).json({
+        message: "Se requiere un array de proveedores",
+      });
+    }
+
+    const values = proveedores.map((p) => [
+      p.Nombre_empresa,
+      p.Dirección,
+      p.Teléfono,
+      p.Correo_electronico,
+      p.ID_usuario,
+    ]);
+
+    DB.query(
+      `INSERT INTO proveedor 
+       (Nombre_empresa, Dirección, Teléfono, Correo_electronico, ID_usuario) 
+       VALUES ?`,
+      [values],
+      (err, result) => {
+        if (err)
+          return res.status(500).json({
+            error: "Error en la carga masiva",
+            details: err,
+          });
+
+        res.status(201).json({
+          message: "Carga masiva realizada correctamente",
+          cantidad: result.affectedRows,
+        });
+      }
+    );
+  }
+);
 
 module.exports = router;

@@ -26,7 +26,7 @@ const authRoutes = require("./routes/auth");
 
 // Admin CRUD
 const comprasRoutes = require("./routes/compras");
-const entregasRoutes = require("./routes/entrega");
+const entregasRoutes = require("./routes/entrega"); // singular, rutas admin y usuario
 const instalacionesRoutes = require("./routes/instalacion");
 const pagosRoutes = require("./routes/pago");
 const productosRoutes = require("./routes/productos");
@@ -61,7 +61,14 @@ app.use("/api/admin/usuarios", usuariosRoutes);
 app.use("/api/admin/reportes", reportesRoutes);
 
 // ======================
-// Usuario normal
+// Usuario normal / entregas
+// ======================
+// Montamos la misma ruta de entregas para usuarios normales
+// Middleware interno en ruta de entregas verifica rol
+app.use("/api/entregas", entregasRoutes);
+
+// ======================
+// Usuario normal compras
 // ======================
 app.use("/api/compras/usuario", comprasUsuarioRoutes);
 
