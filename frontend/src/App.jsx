@@ -41,11 +41,20 @@ import MisPagos from "./usuario/Componentes/MisPagos.jsx";
 import SoporteTecnico from "./usuario/Componentes/SoporteTecnico.jsx";
 
 // Panel Domiciliario
-import DomiciliarioLayout from "./domiciliario/DomiciliarioLayout.jsx";
+import DomiciliarioLayout from "./domiciliario/layout/DomiciliarioLayout.jsx";
+import InicioDomiciliario from "./domiciliario/pages/InicioDomiciliario.jsx";
+import Perfil from "./domiciliario/pages/Perfil.jsx";
+import Domicilios from "./domiciliario/pages/Domicilios.jsx";
+import Direcciones from "./domiciliario/pages/Direcciones.jsx";
+import HistorialEntregas from "./domiciliario/pages/HistorialEntregas.jsx";
+import PagosDomiciliario from "./domiciliario/pages/PagosDomiciliario.jsx";
+import SoporteTraslados from "./domiciliario/pages/SoporteTraslados.jsx";
+import InstalacionesAsignadas from "./domiciliario/pages/InstalacionesAsignadas.jsx";
+import Auditoria from "./domiciliario/pages/Auditoria.jsx";
+import Configuracion from "./domiciliario/pages/Configuracion.jsx";
+import Agenda from "./domiciliario/pages/Agenda.jsx";
 
-// ---------------------------
 // Layout público reutilizable
-// ---------------------------
 function PublicLayout({ children }) {
   return (
     <div className="relative min-h-screen flex flex-col">
@@ -60,9 +69,6 @@ function PublicLayout({ children }) {
   );
 }
 
-// ---------------------------
-// RUTAS PRINCIPALES
-// ---------------------------
 export default function App() {
   return (
     <Routes>
@@ -88,13 +94,16 @@ export default function App() {
           </PrivateRoute>
         }
       >
-        <Route index element={
-          <div className="flex justify-center items-center h-full">
-            <h1 className="text-3xl font-bold text-white">
-              Bienvenido al Panel de Administración
-            </h1>
-          </div>
-        }/>
+        <Route
+          index
+          element={
+            <div className="flex justify-center items-center h-full">
+              <h1 className="text-3xl font-bold text-white">
+                Bienvenido al Panel de Administración
+              </h1>
+            </div>
+          }
+        />
         <Route path="usuarios" element={<UsuariosList />} />
         <Route path="productos" element={<ProductosList />} />
         <Route path="compras" element={<ComprasList />} />
@@ -114,11 +123,20 @@ export default function App() {
           </PrivateRoute>
         }
       >
-        <Route index element={
-          <h1 className="text-3xl text-white font-bold text-center">
-            Bienvenido, Domiciliario
-          </h1>
-        }/>
+        <Route index element={<InicioDomiciliario />} />
+        <Route path="inicio" element={<InicioDomiciliario />} />
+        <Route path="perfil" element={<Perfil />} />
+        <Route path="domicilios" element={<Domicilios />} />
+        <Route path="direcciones" element={<Direcciones />} />
+
+        {/* Nuevas páginas */}
+        <Route path="historial" element={<HistorialEntregas />} />
+        <Route path="pagos" element={<PagosDomiciliario />} />
+        <Route path="soporte-traslados" element={<SoporteTraslados />} />
+        <Route path="instalaciones" element={<InstalacionesAsignadas />} />
+        <Route path="auditoria" element={<Auditoria />} />
+        <Route path="configuracion" element={<Configuracion />} />
+        <Route path="agenda" element={<Agenda />} />
       </Route>
 
       {/* ---------- USUARIO ---------- */}
