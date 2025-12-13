@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import API from "../admin/services/api"; // Axios configurado con baseURL /api/admin
+import API from "../admin/services/api"; // baseURL: /api
 import { exportTableToPDF } from "../utils/exportPDF";
 
 function PagosList() {
@@ -13,6 +13,7 @@ function PagosList() {
     Monto: "",
     Fecha_pago: "",
     Metodo_pago: "",
+    Estado_pago: "", // 🔑 OBLIGATORIO SEGÚN BACKEND
   });
 
   const [editMode, setEditMode] = useState(false);
@@ -20,19 +21,19 @@ function PagosList() {
   const [fechaInicio, setFechaInicio] = useState("");
   const [fechaFin, setFechaFin] = useState("");
 
+  // ===============================
+  // FETCH
+  // ===============================
   useEffect(() => {
     fetchPagos();
   }, []);
 
-  // -----------------------
-  // Funciones de API
-  // -----------------------
   const fetchPagos = async () => {
     try {
       setLoading(true);
       setError("");
-      const res = await API.get("/pagos"); // ruta correcta
-      setPagos(res.data);
+      const res = await API.get("/admin/pagos");
+      setPagos(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error("Error al obtener pagos:", err);
       setError("No se pudieron cargar los pagos.");
@@ -41,20 +42,36 @@ function PagosList() {
     }
   };
 
-  const createPago = async (data) => await API.post("/pagos", data);
-  const updatePago = async (id, data) => await API.put(`/pagos/${id}`, data);
-  const deletePago = async (id) => await API.delete(`/pagos/${id}`);
+  // ===============================
+  // API ACTIONS
+  // ===============================
+  const createPago = (data) => API.post("/admin/pagos", data);
+  const updatePago = (id, data) => API.put(`/admin/pagos/${id}`, data);
+  const deletePago = (id) => API.delete(`/admin/pagos/${id}`);
 
-  // -----------------------
-  // Handlers
-  // -----------------------
+  // ===============================
+  // FORM HANDLERS
+  // ===============================
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const resetForm = () => {
+    setFormData({
+      ID_pago: null,
+      ID_usuario: "",
+      Monto: "",
+      Fecha_pago: "",
+      Metodo_pago: "",
+      Estado_pago: "",
+    });
+    setEditMode(false);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
       if (editMode) {
         await updatePago(formData.ID_pago, formData);
@@ -63,18 +80,12 @@ function PagosList() {
         await createPago(formData);
         alert("Pago creado correctamente");
       }
-      setFormData({
-        ID_pago: null,
-        ID_usuario: "",
-        Monto: "",
-        Fecha_pago: "",
-        Metodo_pago: "",
-      });
-      setEditMode(false);
+
+      resetForm();
       fetchPagos();
     } catch (err) {
       console.error("Error al guardar pago:", err);
-      alert("Error al guardar el pago.");
+      alert("Error al guardar el pago");
     }
   };
 
@@ -98,16 +109,13 @@ function PagosList() {
     }
   };
 
-  // -----------------------
-  // Utilidades
-  // -----------------------
+  // ===============================
+  // HELPERS
+  // ===============================
   const formatFecha = (fechaString) => {
     if (!fechaString) return "";
     const fecha = new Date(fechaString);
-    const dia = fecha.getDate();
-    const mes = fecha.getMonth() + 1;
-    const anio = fecha.getFullYear();
-    return `${dia}/${mes}/${anio}`;
+    return fecha.toLocaleDateString();
   };
 
   const filteredPagos = pagos.filter((p) => {
@@ -115,7 +123,9 @@ function PagosList() {
     const inicio = fechaInicio ? new Date(fechaInicio) : null;
     const fin = fechaFin ? new Date(fechaFin) : null;
 
-    const matchFecha = (!inicio || fecha >= inicio) && (!fin || fecha <= fin);
+    const matchFecha =
+      (!inicio || fecha >= inicio) && (!fin || fecha <= fin);
+
     const matchSearch =
       p.ID_usuario.toString().includes(searchTerm) ||
       p.Metodo_pago.toLowerCase().includes(searchTerm.toLowerCase());
@@ -124,40 +134,36 @@ function PagosList() {
   });
 
   const handleExportPDF = () => {
-    const columns = ["ID", "Usuario", "Monto", "Fecha", "Método"];
+    const columns = ["ID", "Usuario", "Monto", "Fecha", "Método", "Estado"];
     const rows = filteredPagos.map((p) => [
       p.ID_pago,
       p.ID_usuario,
       p.Monto,
       formatFecha(p.Fecha_pago),
       p.Metodo_pago,
+      p.Estado_pago,
     ]);
+
     exportTableToPDF("Pagos Registrados", columns, rows);
   };
 
-  // -----------------------
-  // Render
-  // -----------------------
+  // ===============================
+  // RENDER
+  // ===============================
   if (loading)
-    return (
-      <div className="flex justify-center items-center h-full text-white">
-        <p>Cargando pagos...</p>
-      </div>
-    );
+    return <p className="text-white text-center">Cargando pagos...</p>;
 
   if (error)
-    return (
-      <div className="text-red-400 font-semibold text-center mt-10">{error}</div>
-    );
+    return <p className="text-red-400 text-center">{error}</p>;
 
   return (
-    <div className="p-6 bg-slate-800/60 backdrop-blur-md rounded-2xl shadow-lg border border-slate-700 text-white">
+    <div className="p-6 bg-slate-800/60 rounded-xl text-white border border-slate-700">
       <h2 className="text-2xl font-bold mb-4">Gestión de Pagos</h2>
 
-      {/* Formulario */}
+      {/* FORM */}
       <form
         onSubmit={handleSubmit}
-        className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"
+        className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"
       >
         <input
           type="number"
@@ -165,119 +171,130 @@ function PagosList() {
           placeholder="ID Usuario"
           value={formData.ID_usuario}
           onChange={handleChange}
-          className="p-2 rounded bg-slate-700 text-white"
+          className="p-2 bg-slate-700 rounded"
           required
         />
+
         <input
           type="number"
           name="Monto"
           placeholder="Monto"
           value={formData.Monto}
           onChange={handleChange}
-          className="p-2 rounded bg-slate-700 text-white"
+          className="p-2 bg-slate-700 rounded"
           required
         />
+
         <input
           type="date"
           name="Fecha_pago"
           value={formData.Fecha_pago}
           onChange={handleChange}
-          className="p-2 rounded bg-slate-700 text-white"
+          className="p-2 bg-slate-700 rounded"
           required
         />
+
         <input
           type="text"
           name="Metodo_pago"
           placeholder="Método de pago"
           value={formData.Metodo_pago}
           onChange={handleChange}
-          className="p-2 rounded bg-slate-700 text-white"
+          className="p-2 bg-slate-700 rounded"
           required
         />
-        <button
-          type="submit"
-          className="col-span-1 md:col-span-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded transition"
+
+        <select
+          name="Estado_pago"
+          value={formData.Estado_pago}
+          onChange={handleChange}
+          className="p-2 bg-slate-700 rounded"
+          required
         >
-          {editMode ? "Guardar Cambios" : "Agregar Pago"}
+          <option value="">Estado del pago</option>
+          <option value="pendiente">Pendiente</option>
+          <option value="completado">Completado</option>
+          <option value="cancelado">Cancelado</option>
+        </select>
+
+        <button className="col-span-1 md:col-span-3 bg-indigo-600 hover:bg-indigo-700 py-2 rounded">
+          {editMode ? "Guardar cambios" : "Agregar pago"}
         </button>
       </form>
 
-      {/* Filtros */}
-      <div className="flex flex-col md:flex-row items-center gap-4 mb-4">
+      {/* FILTERS */}
+      <div className="flex gap-4 mb-4">
         <input
           type="text"
-          placeholder="Buscar por Usuario o Método..."
+          placeholder="Buscar usuario o método"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="p-2 rounded bg-slate-700 text-white"
+          className="p-2 bg-slate-700 rounded"
         />
+
         <input
           type="date"
           value={fechaInicio}
           onChange={(e) => setFechaInicio(e.target.value)}
-          className="p-2 rounded bg-slate-700 text-white"
+          className="p-2 bg-slate-700 rounded"
         />
+
         <input
           type="date"
           value={fechaFin}
           onChange={(e) => setFechaFin(e.target.value)}
-          className="p-2 rounded bg-slate-700 text-white"
+          className="p-2 bg-slate-700 rounded"
         />
+
         <button
           onClick={handleExportPDF}
-          className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+          className="bg-green-600 px-4 py-2 rounded"
         >
           Exportar PDF
         </button>
       </div>
 
-      {/* Tabla */}
-      {filteredPagos.length === 0 ? (
-        <p>No hay pagos registrados.</p>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-slate-900 text-gray-100 border border-slate-700 rounded-lg">
-            <thead>
-              <tr className="bg-blue-600 text-left">
-                <th className="py-3 px-4">ID</th>
-                <th className="py-3 px-4">Usuario</th>
-                <th className="py-3 px-4">Monto</th>
-                <th className="py-3 px-4">Fecha</th>
-                <th className="py-3 px-4">Método</th>
-                <th className="py-3 px-4 text-center">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredPagos.map((pago) => (
-                <tr
-                  key={pago.ID_pago}
-                  className="border-b border-slate-700 hover:bg-slate-800"
+      {/* TABLE */}
+      <table className="min-w-full bg-slate-900 border border-slate-700 rounded">
+        <thead className="bg-blue-600">
+          <tr>
+            <th className="p-2">ID</th>
+            <th className="p-2">Usuario</th>
+            <th className="p-2">Monto</th>
+            <th className="p-2">Fecha</th>
+            <th className="p-2">Método</th>
+            <th className="p-2">Estado</th>
+            <th className="p-2">Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {filteredPagos.map((p) => (
+            <tr key={p.ID_pago} className="border-b border-slate-700">
+              <td className="p-2">{p.ID_pago}</td>
+              <td className="p-2">{p.ID_usuario}</td>
+              <td className="p-2">${p.Monto}</td>
+              <td className="p-2">{formatFecha(p.Fecha_pago)}</td>
+              <td className="p-2">{p.Metodo_pago}</td>
+              <td className="p-2">{p.Estado_pago}</td>
+              <td className="p-2 flex gap-2 justify-center">
+                <button
+                  onClick={() => handleEdit(p)}
+                  className="bg-yellow-500 px-2 py-1 rounded"
                 >
-                  <td className="py-2 px-4">{pago.ID_pago}</td>
-                  <td className="py-2 px-4">{pago.ID_usuario}</td>
-                  <td className="py-2 px-4 text-center">${pago.Monto}</td>
-                  <td className="py-2 px-4">{formatFecha(pago.Fecha_pago)}</td>
-                  <td className="py-2 px-4">{pago.Metodo_pago}</td>
-                  <td className="py-2 px-4 text-center flex justify-center gap-2">
-                    <button
-                      onClick={() => handleEdit(pago)}
-                      className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-1 px-3 rounded"
-                    >
-                      Editar
-                    </button>
-                    <button
-                      onClick={() => handleDelete(pago.ID_pago)}
-                      className="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded"
-                    >
-                      Eliminar
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+                  Editar
+                </button>
+                <button
+                  onClick={() => handleDelete(p.ID_pago)}
+                  className="bg-red-600 px-2 py-1 rounded"
+                >
+                  Eliminar
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

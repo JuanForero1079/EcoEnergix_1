@@ -23,10 +23,13 @@ function ProveedoresList() {
     fetchProveedores();
   }, []);
 
+  // =====================
+  // Obtener proveedores
+  // =====================
   const fetchProveedores = async () => {
     try {
       setLoading(true);
-      const res = await API.get("/proveedores");
+      const res = await API.get("/admin/proveedores");
       const data = Array.isArray(res.data) ? res.data : [];
       setProveedores(data);
       setError("");
@@ -39,6 +42,9 @@ function ProveedoresList() {
     }
   };
 
+  // =====================
+  // Manejo de formulario
+  // =====================
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -64,10 +70,10 @@ function ProveedoresList() {
 
     try {
       if (editMode) {
-        await API.put(`/proveedores/${formData.ID_proveedor}`, formData);
+        await API.put(`/admin/proveedores/${formData.ID_proveedor}`, formData);
         alert("Proveedor actualizado correctamente");
       } else {
-        await API.post("/proveedores", formData);
+        await API.post("/admin/proveedores", formData);
         alert("Proveedor creado correctamente");
       }
 
@@ -91,7 +97,7 @@ function ProveedoresList() {
   const handleDelete = async (id) => {
     if (!window.confirm("¿Seguro que deseas eliminar este proveedor?")) return;
     try {
-      await API.delete(`/proveedores/${id}`);
+      await API.delete(`/admin/proveedores/${id}`);
       alert("Proveedor eliminado correctamente");
       fetchProveedores();
     } catch (err) {
@@ -105,7 +111,9 @@ function ProveedoresList() {
     setEditMode(true);
   };
 
-  // ---- CARGA MASIVA ----
+  // =====================
+  // Carga masiva
+  // =====================
   const handleBulkUpload = async () => {
     const proveedoresMasivos = [
       {
@@ -125,8 +133,8 @@ function ProveedoresList() {
     ];
 
     try {
-      const res = await API.post("/proveedores/bulk", proveedoresMasivos);
-      alert(res.data.message);
+      const res = await API.post("/admin/proveedores/bulk", proveedoresMasivos);
+      alert(res.data.message || "Carga masiva realizada correctamente");
       fetchProveedores();
     } catch (err) {
       console.error("Error en carga masiva:", err);
@@ -134,6 +142,9 @@ function ProveedoresList() {
     }
   };
 
+  // =====================
+  // Filtro de búsqueda
+  // =====================
   const filteredProveedores = proveedores.filter((p) => {
     const search = searchTerm.toLowerCase();
     return (
@@ -143,6 +154,9 @@ function ProveedoresList() {
     );
   });
 
+  // =====================
+  // Exportar PDF
+  // =====================
   const handleExportPDF = () => {
     const columns = ["ID", "Empresa", "Dirección", "Teléfono", "Correo", "Usuario"];
     const rows = filteredProveedores.map((p) => [
@@ -156,6 +170,9 @@ function ProveedoresList() {
     exportTableToPDF("Proveedores Registrados", columns, rows);
   };
 
+  // =====================
+  // Render
+  // =====================
   if (loading)
     return (
       <div className="flex justify-center items-center h-full text-white">

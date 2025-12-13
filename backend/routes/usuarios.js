@@ -7,7 +7,7 @@ const { hashPassword } = require("../utils/password");
 // =====================
 // GET todos los usuarios
 // =====================
-router.get("/", verificarToken, verificarRol("Administrador"), (req, res) => {
+router.get("/", verificarToken, verificarRol(["administrador"]), (req, res) => {
   const sql = `
     SELECT ID_usuario, Nombre, Correo_electronico, Rol_usuario, Tipo_documento, Numero_documento, Foto_usuario, Estado_usuario
     FROM usuarios
@@ -22,7 +22,7 @@ router.get("/", verificarToken, verificarRol("Administrador"), (req, res) => {
 // =====================
 // GET usuario por ID
 // =====================
-router.get("/:id", verificarToken, verificarRol("Administrador"), (req, res) => {
+router.get("/:id", verificarToken, verificarRol(["administrador"]), (req, res) => {
   const { id } = req.params;
   DB.query("SELECT * FROM usuarios WHERE ID_usuario = ?", [id], (err, result) => {
     if (err)
@@ -36,7 +36,7 @@ router.get("/:id", verificarToken, verificarRol("Administrador"), (req, res) => 
 // =====================
 // POST crear usuario con hash
 // =====================
-router.post("/", verificarToken, verificarRol("Administrador"), async (req, res) => {
+router.post("/", verificarToken, verificarRol(["administrador"]), async (req, res) => {
   try {
     let {
       Nombre,
@@ -103,7 +103,7 @@ router.post("/", verificarToken, verificarRol("Administrador"), async (req, res)
 // =====================
 // PUT actualizar usuario
 // =====================
-router.put("/:id", verificarToken, verificarRol("Administrador"), async (req, res) => {
+router.put("/:id", verificarToken, verificarRol(["administrador"]), async (req, res) => {
   const { id } = req.params;
   let {
     Nombre,
@@ -180,7 +180,7 @@ router.put("/:id", verificarToken, verificarRol("Administrador"), async (req, re
 // =====================
 // DELETE usuario
 // =====================
-router.delete("/:id", verificarToken, verificarRol("Administrador"), (req, res) => {
+router.delete("/:id", verificarToken, verificarRol(["administrador"]), (req, res) => {
   const { id } = req.params;
   DB.query("DELETE FROM usuarios WHERE ID_usuario = ?", [id], (err, result) => {
     if (err)
@@ -196,7 +196,7 @@ router.delete("/:id", verificarToken, verificarRol("Administrador"), (req, res) 
 // =====================
 // POST carga masiva
 // =====================
-router.post("/bulk", verificarToken, verificarRol("Administrador"), async (req, res) => {
+router.post("/bulk", verificarToken, verificarRol(["administrador"]), async (req, res) => {
   const usuarios = req.body;
 
   if (!Array.isArray(usuarios) || usuarios.length === 0)

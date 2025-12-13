@@ -17,11 +17,12 @@ export default function CatalogoUsuario() {
 
   const { agregarAlCarrito } = useCarrito();
 
-  //  Cargar productos desde la BD
+  // Cargar productos desde la BD
   useEffect(() => {
     const fetchProductos = async () => {
       try {
-        const res = await API.get("/api/productos");
+        // ✅ Corregido: quitar /api extra
+        const res = await API.get("/productos");
         setProductos(res.data);
       } catch (err) {
         console.error("Error al cargar productos:", err);
