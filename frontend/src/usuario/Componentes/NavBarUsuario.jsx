@@ -16,6 +16,9 @@ export default function NavBarUsuario() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Calcular el total de productos (suma de todas las cantidades)
+  const totalProductos = carrito.reduce((total, item) => total + item.cantidad, 0);
+
   const navLinks = [
     { path: "/usuario", label: "Inicio", icon: FaHome },
     { path: "/usuario/catalogo", label: "Catálogo", icon: FaThLarge },
@@ -74,14 +77,18 @@ export default function NavBarUsuario() {
             </Link>
           ))}
 
-          {/* Carrito */}
+          {/* Carrito con contador corregido */}
           <Link to="/usuario/carrito" className={`relative ${linkClasses("/usuario/carrito")}`}>
             <FaShoppingCart className="w-5 h-5" />
 
-            {carrito.length > 0 && (
-              <span className="absolute -top-1 -right-1 bg-gradient-to-r from-[#3dc692] to-[#5f54b3] text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center shadow-lg">
-                {carrito.length}
+            {totalProductos > 0 && (
+              <span className="absolute -top-1 -right-1 bg-gradient-to-r from-[#3dc692] to-[#5f54b3] text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center shadow-lg animate-bounce">
+                {totalProductos}
               </span>
+            )}
+
+            {location.pathname === "/usuario/carrito" && (
+              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1/2 h-0.5 bg-gradient-to-r from-[#3dc692] to-[#5f54b3] rounded-full" />
             )}
           </Link>
 

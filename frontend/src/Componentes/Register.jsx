@@ -146,7 +146,7 @@ export default function Register() {
                 name="documentType"
                 value={formData.documentType}
                 onChange={handleChange}
-                className="w-1/3 px-2 py-2 rounded-lg bg-white/30 text-white focus:ring-2 focus:ring-[#3dc692] outline-none"
+                className="w-1/3 px-2 py-2 rounded-lg bg-white/30 text-black focus:ring-2 focus:ring-[#3dc692] outline-none"
               >
                 <option value="" disabled hidden>Tipo</option>
                 <option value="CC">Cédula</option>
