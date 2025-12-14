@@ -13,7 +13,9 @@ function EntregasList() {
     ID_producto: "",
     Cantidad: "",
     Fecha_entrega: "",
+    ID_domiciliario: "",
   });
+
   const [editMode, setEditMode] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -24,66 +26,109 @@ function EntregasList() {
     fetchEntregas();
   }, []);
 
+  // =========================
+  // GET ENTREGAS (ADMIN)
+  // =========================
   const fetchEntregas = async () => {
     try {
       setLoading(true);
-      const res = await API.get("/entregas");   // ← CORREGIDO
+      const res = await API.get("/admin/entregas");
       setEntregas(res.data);
     } catch (err) {
-      setError("No se pudo conectar con el servidor.");
+      console.error(err);
+      setError("No se pudo cargar las entregas.");
     } finally {
       setLoading(false);
     }
   };
 
+  // =========================
+  // FORM HANDLERS
+  // =========================
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+  const { name, value } = e.target;
+  setFormData((prev) => ({ ...prev, [name]: value }));
+};
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (
+      !formData.ID_usuario ||
+      !formData.ID_producto ||
+      !formData.Cantidad ||
+      !formData.Fecha_entrega
+    ) {
+      alert("Todos los campos obligatorios deben estar completos");
+      return;
+    }
+
     try {
       if (editMode) {
-        await API.put(`/entregas/${formData.ID_entrega}`, formData);   // ← CORREGIDO
+        // UPDATE
+        await API.put(
+          `/admin/entregas/${formData.ID_entrega}`,
+          formData
+        );
         alert("Entrega actualizada correctamente");
       } else {
-        await API.post("/entregas", formData);   // ← CORREGIDO
+        // CREATE
+        await API.post("/admin/entregas", formData);
         alert("Entrega creada correctamente");
       }
+
       setFormData({
         ID_entrega: null,
         ID_usuario: "",
         ID_producto: "",
         Cantidad: "",
         Fecha_entrega: "",
+        ID_domiciliario: "",
       });
+
       setEditMode(false);
       fetchEntregas();
     } catch (err) {
-      alert("Error al guardar entrega.");
+      console.error(err);
+      alert("Error al guardar la entrega");
     }
   };
 
+  // =========================
+  // DELETE
+  // =========================
   const handleDelete = async (id) => {
     if (!window.confirm("¿Seguro que deseas eliminar esta entrega?")) return;
+
     try {
-      await API.delete(`/entregas/${id}`);  // ← CORREGIDO
+      await API.delete(`/admin/entregas/${id}`);
       alert("Entrega eliminada correctamente");
       fetchEntregas();
     } catch (err) {
-      alert("No se pudo eliminar la entrega.");
+      console.error(err);
+      alert("No se pudo eliminar la entrega");
     }
   };
 
+  // =========================
+  // EDIT MODE
+  // =========================
   const handleEdit = (entrega) => {
     setFormData({
-      ...entrega,
+      ID_entrega: entrega.ID_entrega,
+      ID_usuario: entrega.ID_usuario,
+      ID_producto: entrega.ID_producto,
+      Cantidad: entrega.Cantidad,
       Fecha_entrega: entrega.Fecha_entrega?.split("T")[0] || "",
+      ID_domiciliario: entrega.ID_domiciliario || "",
     });
     setEditMode(true);
   };
 
+  // =========================
+  // FILTROS
+  // =========================
   const filteredEntregas = entregas.filter((e) => {
     const matchesSearch =
       e.ID_usuario.toString().includes(searchTerm) ||
@@ -97,6 +142,9 @@ function EntregasList() {
     return matchesSearch && matchesFecha;
   });
 
+  // =========================
+  // EXPORT PDF
+  // =========================
   const handleExportPDF = () => {
     const columns = ["ID", "Usuario", "Producto", "Cantidad", "Fecha"];
     const rows = filteredEntregas.map((e) => [
@@ -106,20 +154,30 @@ function EntregasList() {
       e.Cantidad,
       new Date(e.Fecha_entrega).toLocaleDateString(),
     ]);
+
     exportTableToPDF("Entregas Registradas", columns, rows);
   };
 
+  // =========================
+  // RENDER
+  // =========================
   if (loading)
-    return <p className="text-white text-center mt-10">Cargando entregas...</p>;
+    return (
+      <p className="text-white text-center mt-10">
+        Cargando entregas...
+      </p>
+    );
 
   if (error)
-    return <p className="text-red-400 text-center mt-10">{error}</p>;
+    return (
+      <p className="text-red-400 text-center mt-10">{error}</p>
+    );
 
   return (
-    <div className="p-6 bg-slate-800/60 backdrop-blur-md rounded-2xl shadow-lg border border-slate-700 text-white">
+    <div className="p-6 bg-slate-800/60 rounded-2xl shadow-lg border border-slate-700 text-white">
       <h2 className="text-2xl font-bold mb-4">Gestión de Entregas</h2>
 
-      {/* Form */}
+      {/* FORM */}
       <form
         onSubmit={handleSubmit}
         className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"
@@ -130,73 +188,80 @@ function EntregasList() {
           placeholder="ID Usuario"
           value={formData.ID_usuario}
           onChange={handleChange}
-          className="p-2 bg-slate-700 text-white rounded"
+          className="p-2 bg-slate-700 rounded"
         />
+
         <input
           type="number"
           name="ID_producto"
           placeholder="ID Producto"
           value={formData.ID_producto}
           onChange={handleChange}
-          className="p-2 bg-slate-700 text-white rounded"
+          className="p-2 bg-slate-700 rounded"
         />
+
         <input
           type="number"
           name="Cantidad"
           placeholder="Cantidad"
           value={formData.Cantidad}
           onChange={handleChange}
-          className="p-2 bg-slate-700 text-white rounded"
+          className="p-2 bg-slate-700 rounded"
         />
+
         <input
           type="date"
           name="Fecha_entrega"
           value={formData.Fecha_entrega}
           onChange={handleChange}
-          className="p-2 bg-slate-700 text-white rounded"
+          className="p-2 bg-slate-700 rounded"
         />
+
         <button
           type="submit"
-          className="col-span-1 md:col-span-3 bg-indigo-600 hover:bg-indigo-700 py-2 rounded text-white font-semibold"
+          className="md:col-span-3 bg-indigo-600 hover:bg-indigo-700 py-2 rounded font-semibold"
         >
           {editMode ? "Guardar Cambios" : "Agregar Entrega"}
         </button>
       </form>
 
-      {/* Filtros */}
+      {/* ACCIONES */}
       <div className="flex flex-wrap gap-4 mb-4">
         <input
           type="text"
           placeholder="Buscar usuario o producto..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="p-2 bg-slate-700 text-white rounded"
+          className="p-2 bg-slate-700 rounded"
         />
+
         <input
           type="date"
           value={filterFechaInicio}
           onChange={(e) => setFilterFechaInicio(e.target.value)}
-          className="p-2 bg-slate-700 text-white rounded"
+          className="p-2 bg-slate-700 rounded"
         />
+
         <input
           type="date"
           value={filterFechaFin}
           onChange={(e) => setFilterFechaFin(e.target.value)}
-          className="p-2 bg-slate-700 text-white rounded"
+          className="p-2 bg-slate-700 rounded"
         />
+
         <button
           onClick={handleExportPDF}
-          className="bg-green-600 hover:bg-green-700 py-2 px-4 rounded text-white font-bold"
+          className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded font-bold"
         >
           Exportar PDF
         </button>
       </div>
 
-      {/* Tabla */}
+      {/* TABLA */}
       <div className="overflow-x-auto">
-        <table className="min-w-full bg-slate-900 border border-slate-700 rounded-lg text-gray-100">
-          <thead>
-            <tr className="bg-indigo-700">
+        <table className="min-w-full bg-slate-900 border border-slate-700 rounded-lg">
+          <thead className="bg-indigo-700">
+            <tr>
               <th className="py-3 px-4">ID</th>
               <th className="py-3 px-4">Usuario</th>
               <th className="py-3 px-4">Producto</th>
@@ -207,10 +272,7 @@ function EntregasList() {
           </thead>
           <tbody>
             {filteredEntregas.map((e) => (
-              <tr
-                key={e.ID_entrega}
-                className="border-b border-slate-700 hover:bg-slate-800"
-              >
+              <tr key={e.ID_entrega} className="border-b border-slate-700">
                 <td className="py-2 px-4">{e.ID_entrega}</td>
                 <td className="py-2 px-4">{e.ID_usuario}</td>
                 <td className="py-2 px-4">{e.ID_producto}</td>
@@ -221,13 +283,13 @@ function EntregasList() {
                 <td className="py-2 px-4 flex gap-2 justify-center">
                   <button
                     onClick={() => handleEdit(e)}
-                    className="bg-yellow-500 hover:bg-yellow-600 text-black px-3 py-1 rounded"
+                    className="bg-yellow-500 px-3 py-1 rounded text-black"
                   >
                     Editar
                   </button>
                   <button
                     onClick={() => handleDelete(e.ID_entrega)}
-                    className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-white"
+                    className="bg-red-600 px-3 py-1 rounded"
                   >
                     Eliminar
                   </button>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import API from "../services/api";
+import API from "../admin/services/api";
 import { exportTableToPDF } from "../utils/exportPDF";
 
 function ProductosList() {
@@ -21,14 +21,17 @@ function ProductosList() {
   const [editMode, setEditMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
+  // ============================
+  // OBTENER PRODUCTOS (ADMIN)
+  // ============================
   const fetchProductos = async () => {
     try {
       setLoading(true);
-      const res = await API.get("/productos"); // ✅ corregido
+      const res = await API.get("/admin/productos");
       setProductos(res.data);
     } catch (err) {
       console.error("Error al obtener productos:", err);
-      setError("No se pudo obtener la lista de productos. Verifica el backend.");
+      setError("No se pudo obtener la lista de productos.");
     } finally {
       setLoading(false);
     }
@@ -43,14 +46,20 @@ function ProductosList() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // ============================
+  // CREAR / EDITAR PRODUCTO
+  // ============================
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       if (editMode) {
-        await API.put(`/productos/${formData.ID_producto}`, formData); // ✅ corregido
+        await API.put(
+          `/admin/productos/${formData.ID_producto}`,
+          formData
+        );
         alert("Producto actualizado correctamente");
       } else {
-        await API.post("/productos", formData); // ✅ corregido
+        await API.post("/admin/productos", formData);
         alert("Producto creado correctamente");
       }
 
@@ -88,10 +97,13 @@ function ProductosList() {
     setEditMode(true);
   };
 
+  // ============================
+  // ELIMINAR PRODUCTO
+  // ============================
   const handleDelete = async (id) => {
     if (!window.confirm("¿Seguro que deseas eliminar este producto?")) return;
     try {
-      await API.delete(`/productos/${id}`); // ✅ corregido
+      await API.delete(`/admin/productos/${id}`);
       alert("Producto eliminado correctamente");
       fetchProductos();
     } catch (err) {
@@ -101,7 +113,7 @@ function ProductosList() {
   };
 
   // ============================
-  // CARGA MASIVA RÁPIDA
+  // CARGA MASIVA
   // ============================
   const handleBulkUpload = async () => {
     const productosMasivos = [
@@ -126,7 +138,10 @@ function ProductosList() {
     ];
 
     try {
-      const res = await API.post("/productos/bulk", productosMasivos); // ✅ corregido
+      const res = await API.post(
+        "/admin/productos/bulk",
+        productosMasivos
+      );
       alert(res.data.message);
       fetchProductos();
     } catch (err) {
@@ -135,14 +150,26 @@ function ProductosList() {
     }
   };
 
-  const filteredProductos = productos.filter((p) =>
-    p.Nombre_producto.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.Tipo_producto.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    String(p.ID_proveedor).includes(searchTerm)
+  // ============================
+  // FILTRO + PDF
+  // ============================
+  const filteredProductos = productos.filter(
+    (p) =>
+      p.Nombre_producto.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.Tipo_producto.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      String(p.ID_proveedor).includes(searchTerm)
   );
 
   const handleExportPDF = () => {
-    const columns = ["ID", "Nombre", "Tipo", "Precio", "Marca", "Garantía", "Proveedor"];
+    const columns = [
+      "ID",
+      "Nombre",
+      "Tipo",
+      "Precio",
+      "Marca",
+      "Garantía",
+      "Proveedor",
+    ];
     const rows = filteredProductos.map((p) => [
       p.ID_producto,
       p.Nombre_producto,
@@ -237,7 +264,7 @@ function ProductosList() {
         </button>
       </form>
 
-      {/* Barra de acciones */}
+      {/* Acciones */}
       <div className="flex flex-col md:flex-row items-center gap-4 mb-4">
         <input
           type="text"
@@ -291,7 +318,7 @@ function ProductosList() {
                   <td className="py-2 px-4">{p.Marca}</td>
                   <td className="py-2 px-4">{p.Garantia}</td>
                   <td className="py-2 px-4">{p.ID_proveedor}</td>
-                  <td className="py-2 px-4 text-center flex gap-2 justify-center">
+                  <td className="py-2 px-4 flex gap-2 justify-center">
                     <button
                       onClick={() => handleEdit(p)}
                       className="bg-yellow-500 hover:bg-yellow-600 text-black px-3 py-1 rounded"
