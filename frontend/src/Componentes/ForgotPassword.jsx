@@ -10,6 +10,7 @@ export default function ForgotPassword() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!correo) {
       alert("Ingresa tu correo");
       return;
@@ -17,12 +18,20 @@ export default function ForgotPassword() {
 
     try {
       setLoading(true);
-      const { data } = await API.post("/auth/forgot-password", { Correo_electronico: correo });
+
+      const { data } = await API.post("/auth/forgot-password", {
+        Correo_electronico: correo,
+      });
+
       alert(data.message || "Revisa tu correo para restablecer la contraseña");
       navigate("/login");
     } catch (error) {
-      console.error(error);
-      alert(error.response?.data?.message || "Error al enviar correo");
+      console.error("Error al enviar correo de recuperación:", error);
+      const mensaje =
+        error.response?.data?.message ||
+        error.message ||
+        "Error inesperado al enviar correo";
+      alert(mensaje);
     } finally {
       setLoading(false);
     }
@@ -37,13 +46,16 @@ export default function ForgotPassword() {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-white mb-2 text-sm sm:text-base">Correo electrónico</label>
+            <label className="block text-white mb-2 text-sm sm:text-base">
+              Correo electrónico
+            </label>
             <input
               type="email"
               value={correo}
               onChange={(e) => setCorreo(e.target.value)}
               placeholder="Ingresa tu correo"
               required
+              autoComplete="email"
               className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-white/30 text-white placeholder-white/70 focus:ring-2 focus:ring-[#3dc692] outline-none text-sm sm:text-base"
             />
           </div>
@@ -52,7 +64,9 @@ export default function ForgotPassword() {
             type="submit"
             disabled={loading}
             className={`w-full font-bold py-2 sm:py-3 rounded-xl text-base sm:text-lg text-white transition ${
-              loading ? "bg-gray-400 cursor-not-allowed" : "bg-[#5f54b3] hover:bg-[#3dc692]"
+              loading
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-[#5f54b3] hover:bg-[#3dc692]"
             }`}
           >
             {loading ? "Enviando..." : "Enviar link"}
@@ -61,7 +75,7 @@ export default function ForgotPassword() {
 
         <div className="mt-4 flex flex-col items-center text-sm sm:text-base text-white/90 space-y-2">
           <p>
-            Recuerdas tu contraseña?{" "}
+            ¿Recuerdas tu contraseña?{" "}
             <span
               onClick={() => navigate("/login")}
               className="text-[#3dc692] hover:underline cursor-pointer"

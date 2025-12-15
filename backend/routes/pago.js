@@ -3,6 +3,11 @@ const router = express.Router();
 const DB = require("../db/connection");
 const { verificarToken, verificarRol } = require("../middleware/auth");
 
+// ==================================================
+// ESTADOS PERMITIDOS
+// ==================================================
+const ESTADOS_PAGO = ["Pendiente", "Completado"];
+
 /**
  * @swagger
  * tags:
@@ -105,15 +110,16 @@ router.post(
   (req, res) => {
     const { ID_usuario, Monto, Fecha_pago, Metodo_pago, Estado_pago } = req.body;
 
-    if (
-      !ID_usuario ||
-      !Monto ||
-      !Fecha_pago ||
-      !Metodo_pago ||
-      !Estado_pago
-    ) {
+    if (!ID_usuario || !Monto || !Fecha_pago || !Metodo_pago || !Estado_pago) {
       return res.status(400).json({
         message: "Todos los campos son obligatorios",
+      });
+    }
+
+    // Validar estado
+    if (!ESTADOS_PAGO.includes(Estado_pago)) {
+      return res.status(400).json({
+        message: `Estado inválido. Los estados permitidos son: ${ESTADOS_PAGO.join(", ")}`,
       });
     }
 
@@ -155,18 +161,18 @@ router.put(
   verificarRol(["administrador"]),
   (req, res) => {
     const { id } = req.params;
-    const { ID_usuario, Monto, Fecha_pago, Metodo_pago, Estado_pago } =
-      req.body;
+    const { ID_usuario, Monto, Fecha_pago, Metodo_pago, Estado_pago } = req.body;
 
-    if (
-      !ID_usuario ||
-      !Monto ||
-      !Fecha_pago ||
-      !Metodo_pago ||
-      !Estado_pago
-    ) {
+    if (!ID_usuario || !Monto || !Fecha_pago || !Metodo_pago || !Estado_pago) {
       return res.status(400).json({
         message: "Todos los campos son obligatorios para actualizar",
+      });
+    }
+
+    // Validar estado
+    if (!ESTADOS_PAGO.includes(Estado_pago)) {
+      return res.status(400).json({
+        message: `Estado inválido. Los estados permitidos son: ${ESTADOS_PAGO.join(", ")}`,
       });
     }
 

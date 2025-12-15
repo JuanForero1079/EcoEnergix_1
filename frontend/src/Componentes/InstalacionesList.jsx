@@ -2,14 +2,13 @@ import React, { useEffect, useState } from "react";
 import API from "../admin/services/api";
 import { exportTableToPDF } from "../utils/exportPDF";
 
+const ESTADOS_INSTALACION = ["Pendiente", "En_Proceso", "Completada", "Cancelada"];
+
 function InstalacionesList() {
   const [instalaciones, setInstalaciones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // ===============================
-  // FORM STATE
-  // ===============================
   const [formData, setFormData] = useState({
     ID_instalacion: null,
     Fecha_instalacion: "",
@@ -22,16 +21,10 @@ function InstalacionesList() {
 
   const [editMode, setEditMode] = useState(false);
 
-  // ===============================
-  // FILTERS
-  // ===============================
   const [fechaInicio, setFechaInicio] = useState("");
   const [fechaFin, setFechaFin] = useState("");
   const [estadoFiltro, setEstadoFiltro] = useState("");
 
-  // ===============================
-  // FETCH
-  // ===============================
   useEffect(() => {
     fetchInstalaciones();
   }, []);
@@ -50,9 +43,6 @@ function InstalacionesList() {
     }
   };
 
-  // ===============================
-  // FORM HANDLERS
-  // ===============================
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -61,12 +51,13 @@ function InstalacionesList() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!ESTADOS_INSTALACION.includes(formData.Estado_instalacion)) {
+      return alert(`Estado inválido. Usa: ${ESTADOS_INSTALACION.join(", ")}`);
+    }
+
     try {
       if (editMode) {
-        await API.put(
-          `/admin/instalaciones/${formData.ID_instalacion}`,
-          formData
-        );
+        await API.put(`/admin/instalaciones/${formData.ID_instalacion}`, formData);
         alert("Instalación actualizada");
       } else {
         await API.post("/admin/instalaciones", formData);
@@ -94,9 +85,6 @@ function InstalacionesList() {
     setEditMode(false);
   };
 
-  // ===============================
-  // ACTIONS
-  // ===============================
   const handleEdit = (inst) => {
     setFormData({
       ...inst,
@@ -118,43 +106,25 @@ function InstalacionesList() {
     }
   };
 
-  // ===============================
-  // HELPERS
-  // ===============================
   const formatFecha = (f) => new Date(f).toLocaleDateString();
 
   const filtered = instalaciones.filter((i) => {
     const fecha = new Date(i.Fecha_instalacion);
     const inicio = fechaInicio ? new Date(fechaInicio) : null;
     const fin = fechaFin ? new Date(fechaFin) : null;
-
-    const matchFecha =
-      (!inicio || fecha >= inicio) &&
-      (!fin || fecha <= fin);
-
-    const matchEstado =
-      !estadoFiltro || i.Estado_instalacion === estadoFiltro;
-
+    const matchFecha = (!inicio || fecha >= inicio) && (!fin || fecha <= fin);
+    const matchEstado = !estadoFiltro || i.Estado_instalacion === estadoFiltro;
     return matchFecha && matchEstado;
   });
 
   const handleExportPDF = () => {
-    const columns = [
-      "ID",
-      "Fecha",
-      "Duración",
-      "Costo",
-      "Estado",
-      "Usuario",
-      "Producto",
-    ];
-
+    const columns = ["ID", "Fecha", "Duración", "Costo", "Estado", "Usuario", "Producto"];
     const rows = filtered.map((i) => [
       i.ID_instalacion,
       formatFecha(i.Fecha_instalacion),
       i.Duracion_instalacion,
       i.Costo_instalacion,
-      i.Estado_instalacion,
+      i.Estado_instalacion.replace("_", " "),
       i.ID_usuario,
       i.ID_producto,
     ]);
@@ -162,9 +132,6 @@ function InstalacionesList() {
     exportTableToPDF("Instalaciones Registradas", columns, rows);
   };
 
-  // ===============================
-  // RENDER
-  // ===============================
   if (loading) return <p className="text-white">Cargando instalaciones...</p>;
   if (error) return <p className="text-red-400">{error}</p>;
 
@@ -180,9 +147,9 @@ function InstalacionesList() {
 
         <select name="Estado_instalacion" value={formData.Estado_instalacion} onChange={handleChange} className="p-2 bg-slate-700 rounded" required>
           <option value="">Estado</option>
-          <option value="Pendiente">Pendiente</option>
-          <option value="En proceso">En proceso</option>
-          <option value="Completada">Completada</option>
+          {ESTADOS_INSTALACION.map((e) => (
+            <option key={e} value={e}>{e.replace("_", " ")}</option>
+          ))}
         </select>
 
         <input type="number" name="ID_usuario" placeholder="ID Usuario" value={formData.ID_usuario} onChange={handleChange} className="p-2 bg-slate-700 rounded" required />
@@ -200,12 +167,12 @@ function InstalacionesList() {
 
         <select value={estadoFiltro} onChange={(e) => setEstadoFiltro(e.target.value)} className="p-2 bg-slate-700 rounded">
           <option value="">Todos</option>
-          <option value="Pendiente">Pendiente</option>
-          <option value="En proceso">En proceso</option>
-          <option value="Completada">Completada</option>
+          {ESTADOS_INSTALACION.map((e) => (
+            <option key={e} value={e}>{e.replace("_", " ")}</option>
+          ))}
         </select>
 
-        <button onClick={handleExportPDF} className="bg-green-600 px-4 py-2 rounded">
+        <button onClick={handleExportPDF} type="button" className="bg-green-600 px-4 py-2 rounded">
           Exportar PDF
         </button>
       </div>
@@ -224,7 +191,6 @@ function InstalacionesList() {
             <th className="p-2">Acciones</th>
           </tr>
         </thead>
-
         <tbody>
           {filtered.map((i) => (
             <tr key={i.ID_instalacion} className="border-b border-slate-700">
@@ -232,7 +198,7 @@ function InstalacionesList() {
               <td className="p-2">{formatFecha(i.Fecha_instalacion)}</td>
               <td className="p-2">{i.Duracion_instalacion}</td>
               <td className="p-2">${i.Costo_instalacion}</td>
-              <td className="p-2">{i.Estado_instalacion}</td>
+              <td className="p-2">{i.Estado_instalacion.replace("_", " ")}</td>
               <td className="p-2">{i.ID_usuario}</td>
               <td className="p-2">{i.ID_producto}</td>
               <td className="p-2 flex gap-2 justify-center">

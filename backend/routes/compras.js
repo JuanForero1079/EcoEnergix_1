@@ -3,6 +3,12 @@ const router = express.Router();
 const DB = require("../db/connection");
 const { verificarToken, verificarRol } = require("../middleware/auth");
 
+// ==================================================
+// ESTADOS PERMITIDOS
+// ==================================================
+// backend
+const ESTADOS_COMPRAS = ["pendiente", "aprobada", "en_proceso", "entregada", "cancelada"];
+
 /**
  * @swagger
  * tags:
@@ -71,7 +77,6 @@ router.get(
 router.get("/usuario/:userId", verificarToken, (req, res) => {
   const { userId } = req.params;
 
-  // Cliente solo puede ver sus propias compras
   if (req.user.rol === "cliente" && req.user.id != userId) {
     return res.status(403).json({
       message: "No puedes ver compras de otros usuarios",
@@ -108,6 +113,14 @@ router.post(
     if (!ID_usuario || !Fecha_compra || !Monto_total || !Estado) {
       return res.status(400).json({
         message: "Todos los campos son obligatorios",
+      });
+    }
+
+    if (!ESTADOS_COMPRAS.includes(Estado)) {
+      return res.status(400).json({
+        message: `Estado inválido. Los estados permitidos son: ${ESTADOS_COMPRAS.join(
+          ", "
+        )}`,
       });
     }
 
@@ -154,28 +167,59 @@ router.put(
       });
     }
 
+    if (!ESTADOS_COMPRAS.includes(Estado)) {
+      return res.status(400).json({
+        message: `Estado inválido. Los estados permitidos son: ${ESTADOS_COMPRAS.join(
+          ", "
+        )}`,
+      });
+    }
+
+    // Obtener el estado actual para validar transición
     DB.query(
-      "UPDATE compras SET Fecha_compra = ?, Monto_total = ?, Estado = ? WHERE ID_compra = ?",
-      [Fecha_compra, Monto_total, Estado, id],
+      "SELECT Estado FROM compras WHERE ID_compra = ?",
+      [id],
       (err, result) => {
         if (err)
-          return res.status(500).json({
-            error: "Error al actualizar la compra",
-            details: err,
-          });
+          return res
+            .status(500)
+            .json({ error: "Error al consultar la compra", details: err });
 
-        if (result.affectedRows === 0)
+        if (result.length === 0)
           return res.status(404).json({ message: "Compra no encontrada" });
 
-        res.json({
-          message: "Compra actualizada exitosamente",
-          compra: {
-            ID_compra: id,
-            Fecha_compra,
-            Monto_total,
-            Estado,
-          },
-        });
+        const estadoActual = result[0].Estado;
+
+        // Ejemplo de regla de negocio: no permitir Pendiente -> Entregado directamente
+        if (estadoActual === "Pendiente" && Estado === "Entregado") {
+          return res.status(400).json({
+            message:
+              "No puedes cambiar directamente de Pendiente a Entregado",
+          });
+        }
+
+        // Actualizar compra
+        DB.query(
+          "UPDATE compras SET Fecha_compra = ?, Monto_total = ?, Estado = ? WHERE ID_compra = ?",
+          [Fecha_compra, Monto_total, Estado, id],
+          (err, result) => {
+            if (err)
+              return res.status(500).json({
+                error: "Error al actualizar la compra",
+                details: err,
+              });
+
+            res.json({
+              message: "Compra actualizada exitosamente",
+              compra: {
+                ID_compra: id,
+                Fecha_compra,
+                Monto_total,
+                Estado,
+              },
+            });
+          }
+        );
       }
     );
   }

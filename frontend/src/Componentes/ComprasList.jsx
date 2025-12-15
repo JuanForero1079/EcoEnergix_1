@@ -2,6 +2,15 @@ import React, { useEffect, useState } from "react";
 import API from "../services/api";
 import { exportTableToPDF } from "../utils/exportPDF";
 
+// Estados válidos según la BD
+const ESTADOS_COMPRAS = [
+  "pendiente",
+  "aprobada",
+  "en_proceso",
+  "entregada",
+  "cancelada",
+];
+
 function ComprasList() {
   const [compras, setCompras] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -49,6 +58,7 @@ function ComprasList() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("Datos a enviar:", formData); // Para depuración
     try {
       if (editMode) {
         await API.put(`/admin/compras/${formData.ID_compra}`, formData);
@@ -69,7 +79,9 @@ function ComprasList() {
       fetchCompras();
     } catch (err) {
       console.error("Error al guardar compra:", err);
-      alert("Error al guardar compra.");
+      alert(
+        "Error al guardar compra. Verifica los datos y el token de autorización."
+      );
     }
   };
 
@@ -122,7 +134,7 @@ function ComprasList() {
       c.ID_usuario,
       new Date(c.Fecha_compra).toLocaleDateString(),
       Number(c.Monto_total).toLocaleString(),
-      c.Estado,
+      c.Estado.charAt(0).toUpperCase() + c.Estado.slice(1),
     ]);
     exportTableToPDF("Compras Registradas", columns, rows);
   };
@@ -166,15 +178,20 @@ function ComprasList() {
           className="p-2 rounded bg-slate-700 text-white"
           required
         />
-        <input
-          type="text"
+        <select
           name="Estado"
-          placeholder="Estado"
           value={formData.Estado}
           onChange={handleChange}
           className="p-2 rounded bg-slate-700 text-white"
           required
-        />
+        >
+          <option value="">Selecciona un estado</option>
+          {ESTADOS_COMPRAS.map((estado) => (
+            <option key={estado} value={estado}>
+              {estado.charAt(0).toUpperCase() + estado.slice(1)}
+            </option>
+          ))}
+        </select>
         <button
           type="submit"
           className="col-span-1 md:col-span-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded"
@@ -198,9 +215,11 @@ function ComprasList() {
           className="p-2 rounded bg-slate-700 text-white"
         >
           <option value="">Todos los estados</option>
-          <option value="pendiente">Pendiente</option>
-          <option value="pagado">Pagado</option>
-          <option value="cancelado">Cancelado</option>
+          {ESTADOS_COMPRAS.map((estado) => (
+            <option key={estado} value={estado}>
+              {estado.charAt(0).toUpperCase() + estado.slice(1)}
+            </option>
+          ))}
         </select>
         <input
           type="date"
@@ -252,7 +271,9 @@ function ComprasList() {
                   <td className="py-2 px-4 text-center">
                     ${Number(c.Monto_total).toLocaleString()}
                   </td>
-                  <td className="py-2 px-4">{c.Estado}</td>
+                  <td className="py-2 px-4">
+                    {c.Estado.charAt(0).toUpperCase() + c.Estado.slice(1)}
+                  </td>
                   <td className="py-2 px-4 text-center flex justify-center gap-2">
                     <button
                       onClick={() => handleEdit(c)}

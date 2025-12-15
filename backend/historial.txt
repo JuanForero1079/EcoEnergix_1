@@ -9,13 +9,14 @@
   9   npm install multer csv-parser
   10  npm install swagger-jsdoc swagger-ui-express
   11  npm install express-rate-limit
-  12  node ./server.js 
+  12  npm install multer  
+  13  node ./server.js 
 
 # -------------------------------
 # Correo para Nodemailer
 # -------------------------------
 EMAIL_USER=ecoenergix2@gmail.com
-EMAIL_PASS=zsea ilid ptlh cqin
+EMAIL_PASS=zsea ilid ptlh cqis
 --------------------------------
 EMAIL_USER=jujofoca19@gmail.com
 EMAIL_PASS=pers joak jyqi icha

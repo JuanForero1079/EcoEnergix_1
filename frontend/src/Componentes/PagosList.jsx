@@ -13,13 +13,19 @@ function PagosList() {
     Monto: "",
     Fecha_pago: "",
     Metodo_pago: "",
-    Estado_pago: "", // 🔑 OBLIGATORIO SEGÚN BACKEND
+    Estado_pago: "",
   });
 
   const [editMode, setEditMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [fechaInicio, setFechaInicio] = useState("");
   const [fechaFin, setFechaFin] = useState("");
+
+  // ==================================================
+  // ESTADOS Y MÉTODOS PERMITIDOS
+  // ==================================================
+  const ESTADOS_PAGO = ["Pendiente", "Completado"];
+  const METODOS_PAGO = ["Tarjeta", "Efectivo", "Transferencia"];
 
   // ===============================
   // FETCH
@@ -72,6 +78,20 @@ function PagosList() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Validar estado
+    if (!ESTADOS_PAGO.includes(formData.Estado_pago)) {
+      return alert(
+        `Estado inválido. Solo se permite: ${ESTADOS_PAGO.join(", ")}`
+      );
+    }
+
+    // Validar método de pago
+    if (!METODOS_PAGO.includes(formData.Metodo_pago)) {
+      return alert(
+        `Método de pago inválido. Solo se permite: ${METODOS_PAGO.join(", ")}`
+      );
+    }
+
     try {
       if (editMode) {
         await updatePago(formData.ID_pago, formData);
@@ -123,9 +143,7 @@ function PagosList() {
     const inicio = fechaInicio ? new Date(fechaInicio) : null;
     const fin = fechaFin ? new Date(fechaFin) : null;
 
-    const matchFecha =
-      (!inicio || fecha >= inicio) && (!fin || fecha <= fin);
-
+    const matchFecha = (!inicio || fecha >= inicio) && (!fin || fecha <= fin);
     const matchSearch =
       p.ID_usuario.toString().includes(searchTerm) ||
       p.Metodo_pago.toLowerCase().includes(searchTerm.toLowerCase());
@@ -152,9 +170,7 @@ function PagosList() {
   // ===============================
   if (loading)
     return <p className="text-white text-center">Cargando pagos...</p>;
-
-  if (error)
-    return <p className="text-red-400 text-center">{error}</p>;
+  if (error) return <p className="text-red-400 text-center">{error}</p>;
 
   return (
     <div className="p-6 bg-slate-800/60 rounded-xl text-white border border-slate-700">
@@ -194,15 +210,20 @@ function PagosList() {
           required
         />
 
-        <input
-          type="text"
+        <select
           name="Metodo_pago"
-          placeholder="Método de pago"
           value={formData.Metodo_pago}
           onChange={handleChange}
           className="p-2 bg-slate-700 rounded"
           required
-        />
+        >
+          <option value="">Método de pago</option>
+          {METODOS_PAGO.map((metodo) => (
+            <option key={metodo} value={metodo}>
+              {metodo}
+            </option>
+          ))}
+        </select>
 
         <select
           name="Estado_pago"
@@ -212,9 +233,11 @@ function PagosList() {
           required
         >
           <option value="">Estado del pago</option>
-          <option value="pendiente">Pendiente</option>
-          <option value="completado">Completado</option>
-          <option value="cancelado">Cancelado</option>
+          {ESTADOS_PAGO.map((estado) => (
+            <option key={estado} value={estado}>
+              {estado}
+            </option>
+          ))}
         </select>
 
         <button className="col-span-1 md:col-span-3 bg-indigo-600 hover:bg-indigo-700 py-2 rounded">

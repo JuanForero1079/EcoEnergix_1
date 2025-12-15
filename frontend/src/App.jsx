@@ -1,6 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 
-// Componentes públicos
+// ---------- Componentes públicos ----------
 import FondoSlider from "./Componentes/FondoSlider.jsx";
 import Navbar from "./Componentes/Navbar.jsx";
 import Hero from "./Componentes/Hero.jsx";
@@ -13,12 +13,13 @@ import Register from "./Componentes/Register.jsx";
 import Terms from "./Componentes/Terms.jsx";
 import Privacy from "./Componentes/Privacy.jsx";
 import Catalogo from "./Componentes/Catalogo.jsx";
-import PrivateRoute from "./Componentes/PrivateRoute.jsx";
 import ForgotPassword from "./Componentes/ForgotPassword.jsx";
 import ResetPassword from "./Componentes/ResetPassword.jsx";
+import PrivateRoute from "./Componentes/PrivateRoute.jsx";
 
-// Panel Admin
+// ---------- Admin ----------
 import AdminLayoutAdmin from "./admin/AdminLayoutAdmin.jsx";
+import PerfilAdmin from "./Componentes/PerfilAdmin.jsx";
 import UsuariosList from "./Componentes/UsuariosList.jsx";
 import ProductosList from "./Componentes/ProductosList.jsx";
 import ComprasList from "./Componentes/ComprasList.jsx";
@@ -28,7 +29,7 @@ import ProveedoresList from "./Componentes/ProveedoresList.jsx";
 import SoporteList from "./Componentes/SoporteList.jsx";
 import EntregasList from "./Componentes/EntregasList.jsx";
 
-// Panel Usuario
+// ---------- Usuario ----------
 import UsuarioLayout from "./usuario/UsuarioLayout.jsx";
 import HomeUsuario from "./usuario/Componentes/HomeUsuario.jsx";
 import CatalogoUsuario from "./usuario/Componentes/CatalogoUsuario.jsx";
@@ -40,7 +41,7 @@ import MisCompras from "./usuario/Componentes/MisCompras.jsx";
 import MisPagos from "./usuario/Componentes/MisPagos.jsx";
 import SoporteTecnico from "./usuario/Componentes/SoporteTecnico.jsx";
 
-// Panel Domiciliario
+// ---------- Domiciliario ----------
 import DomiciliarioLayout from "./domiciliario/layout/DomiciliarioLayout.jsx";
 import InicioDomiciliario from "./domiciliario/pages/InicioDomiciliario.jsx";
 import Perfil from "./domiciliario/pages/Perfil.jsx";
@@ -54,7 +55,7 @@ import Auditoria from "./domiciliario/pages/Auditoria.jsx";
 import Configuracion from "./domiciliario/pages/Configuracion.jsx";
 import Agenda from "./domiciliario/pages/Agenda.jsx";
 
-// Layout público reutilizable
+// ---------- Layout público ----------
 function PublicLayout({ children }) {
   return (
     <div className="relative min-h-screen flex flex-col">
@@ -69,10 +70,11 @@ function PublicLayout({ children }) {
   );
 }
 
+// ---------- App ----------
 export default function App() {
   return (
     <Routes>
-      {/* ---------- PÚBLICAS ---------- */}
+      {/* ---------- Rutas públicas ---------- */}
       <Route path="/" element={<PublicLayout><Hero /></PublicLayout>} />
       <Route path="/services" element={<PublicLayout><Services /></PublicLayout>} />
       <Route path="/about" element={<PublicLayout><About /></PublicLayout>} />
@@ -85,7 +87,7 @@ export default function App() {
       <Route path="/privacy" element={<PublicLayout><Privacy /></PublicLayout>} />
       <Route path="/catalogo" element={<PublicLayout><Catalogo /></PublicLayout>} />
 
-      {/* ---------- ADMIN ---------- */}
+      {/* ---------- Admin ---------- */}
       <Route
         path="/admin/*"
         element={
@@ -94,16 +96,8 @@ export default function App() {
           </PrivateRoute>
         }
       >
-        <Route
-          index
-          element={
-            <div className="flex justify-center items-center h-full">
-              <h1 className="text-3xl font-bold text-white">
-                Bienvenido al Panel de Administración
-              </h1>
-            </div>
-          }
-        />
+        <Route index element={<h1 className="text-3xl text-white font-bold text-center">Bienvenido al Panel de Administración</h1>} />
+        <Route path="perfil" element={<PerfilAdmin />} />
         <Route path="usuarios" element={<UsuariosList />} />
         <Route path="productos" element={<ProductosList />} />
         <Route path="compras" element={<ComprasList />} />
@@ -114,7 +108,7 @@ export default function App() {
         <Route path="soporte" element={<SoporteList />} />
       </Route>
 
-      {/* ---------- DOMICILIARIO ---------- */}
+      {/* ---------- Domiciliario ---------- */}
       <Route
         path="/domiciliario/*"
         element={
@@ -128,8 +122,6 @@ export default function App() {
         <Route path="perfil" element={<Perfil />} />
         <Route path="domicilios" element={<Domicilios />} />
         <Route path="direcciones" element={<Direcciones />} />
-
-        {/* Nuevas páginas */}
         <Route path="historial" element={<HistorialEntregas />} />
         <Route path="pagos" element={<PagosDomiciliario />} />
         <Route path="soporte-traslados" element={<SoporteTraslados />} />
@@ -139,7 +131,7 @@ export default function App() {
         <Route path="agenda" element={<Agenda />} />
       </Route>
 
-      {/* ---------- USUARIO ---------- */}
+      {/* ---------- Usuario ---------- */}
       <Route
         path="/usuario/*"
         element={
@@ -159,14 +151,12 @@ export default function App() {
         <Route path="soporte" element={<SoporteTecnico />} />
       </Route>
 
-      {/* ---------- NOT FOUND ---------- */}
+      {/* ---------- Not found ---------- */}
       <Route
         path="*"
         element={
           <PublicLayout>
-            <h1 className="text-3xl text-white font-bold text-center">
-              Ruta no encontrada
-            </h1>
+            <h1 className="text-3xl text-white font-bold text-center">Ruta no encontrada</h1>
           </PublicLayout>
         }
       />

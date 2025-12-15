@@ -73,6 +73,7 @@ export default function Login() {
             <input
               type="email"
               name="correo"
+              autoComplete="email" // <-- agregado
               required
               placeholder="Ingresa tu correo"
               value={formData.correo}
@@ -86,6 +87,7 @@ export default function Login() {
             <input
               type="password"
               name="contraseña"
+              autoComplete="current-password" // <-- agregado
               required
               placeholder="Ingresa tu contraseña"
               value={formData.contraseña}

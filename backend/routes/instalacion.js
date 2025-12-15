@@ -4,6 +4,11 @@ const DB = require("../db/connection");
 const { verificarToken, verificarRol } = require("../middleware/auth");
 
 // ==================================================
+// ESTADOS PERMITIDOS
+// ==================================================
+const ESTADOS_INSTALACION = ["Pendiente", "En_Proceso", "Completada", "Cancelada"];
+
+// ==================================================
 // GET: Obtener instalaciones según rol
 // ==================================================
 router.get("/", verificarToken, (req, res) => {
@@ -100,6 +105,13 @@ router.post(
       });
     }
 
+    // Validar estado
+    if (!ESTADOS_INSTALACION.includes(Estado_instalacion)) {
+      return res.status(400).json({
+        message: `Estado inválido. Los estados permitidos son: ${ESTADOS_INSTALACION.join(", ")}`,
+      });
+    }
+
     DB.query(
       `INSERT INTO instalacion
        (Fecha_instalacion, Duracion_instalacion, Costo_instalacion, Estado_instalacion, ID_usuario, ID_producto)
@@ -168,38 +180,62 @@ router.put(
       });
     }
 
+    // Validar estado
+    if (!ESTADOS_INSTALACION.includes(Estado_instalacion)) {
+      return res.status(400).json({
+        message: `Estado inválido. Los estados permitidos son: ${ESTADOS_INSTALACION.join(", ")}`,
+      });
+    }
+
+    // Obtener estado actual para reglas de negocio
     DB.query(
-      `UPDATE instalacion
-       SET Fecha_instalacion = ?, Duracion_instalacion = ?, Costo_instalacion = ?,
-           Estado_instalacion = ?, ID_usuario = ?, ID_producto = ?
-       WHERE ID_instalacion = ?`,
-      [
-        Fecha_instalacion,
-        Duracion_instalacion,
-        Costo_instalacion,
-        Estado_instalacion,
-        ID_usuario,
-        ID_producto,
-        id,
-      ],
+      "SELECT Estado_instalacion FROM instalacion WHERE ID_instalacion = ?",
+      [id],
       (err, result) => {
-        if (err) {
-          return res.status(500).json({
-            error: "Error al actualizar la instalación",
-            details: err,
+        if (err)
+          return res.status(500).json({ error: "Error al consultar la instalación", details: err });
+
+        if (result.length === 0)
+          return res.status(404).json({ message: "Instalación no encontrada" });
+
+        const estadoActual = result[0].Estado_instalacion;
+
+        // Regla de negocio: no permitir Pendiente → Completada directo
+        if (estadoActual === "Pendiente" && Estado_instalacion === "Completada") {
+          return res.status(400).json({
+            message: "No puedes cambiar directamente de Pendiente a Completada",
           });
         }
 
-        if (result.affectedRows === 0) {
-          return res.status(404).json({
-            message: "Instalación no encontrada",
-          });
-        }
+        // Actualizar instalación
+        DB.query(
+          `UPDATE instalacion
+           SET Fecha_instalacion = ?, Duracion_instalacion = ?, Costo_instalacion = ?,
+               Estado_instalacion = ?, ID_usuario = ?, ID_producto = ?
+           WHERE ID_instalacion = ?`,
+          [
+            Fecha_instalacion,
+            Duracion_instalacion,
+            Costo_instalacion,
+            Estado_instalacion,
+            ID_usuario,
+            ID_producto,
+            id,
+          ],
+          (err, result) => {
+            if (err) {
+              return res.status(500).json({
+                error: "Error al actualizar la instalación",
+                details: err,
+              });
+            }
 
-        res.json({
-          message: "Instalación actualizada exitosamente",
-          id,
-        });
+            res.json({
+              message: "Instalación actualizada exitosamente",
+              id,
+            });
+          }
+        );
       }
     );
   }

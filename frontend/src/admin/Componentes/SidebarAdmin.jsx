@@ -34,6 +34,8 @@ export default function SidebarAdmin({
     { to: "/admin/pagos", label: "Pagos", Icon: DollarSign },
     { to: "/admin/proveedores", label: "Proveedores", Icon: ClipboardList },
     { to: "/admin/soporte", label: "Soporte Técnico", Icon: Wrench },
+    // NUEVO: Perfil del Admin
+    { to: "/admin/perfil", label: "Perfil", Icon: UsersIcon }, 
   ];
 
   const handleLogout = () => {
@@ -52,10 +54,9 @@ export default function SidebarAdmin({
           "linear-gradient(to bottom, rgba(91,33,182,0.9), rgba(37,99,235,0.9), rgba(13,148,136,0.9))",
       }}
     >
-      {/* Fondo blur semitransparente sin invadir el resto del layout */}
+      {/* Fondo blur semitransparente */}
       <div className="absolute inset-0 backdrop-blur-xl bg-white/10 z-0" />
 
-      {/* Contenido del Sidebar */}     
       <div className="relative z-10 flex flex-col justify-between h-full">
         {/* Header con logo */}
         <div className="flex items-center justify-between p-4 border-b border-white/20">

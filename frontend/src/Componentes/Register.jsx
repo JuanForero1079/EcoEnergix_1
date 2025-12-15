@@ -54,7 +54,6 @@ export default function Register() {
     setLoading(true);
 
     try {
-      // Llamada a la API usando Axios
       const { data } = await API.post("/auth/register", {
         Nombre: formData.name,
         Correo_electronico: formData.email,
@@ -63,12 +62,10 @@ export default function Register() {
         Numero_documento: formData.documentNumber,
       });
 
-      // Mensaje de éxito
       setSuccess(
         data.message || "¡Registro exitoso! Se ha enviado un correo de verificación."
       );
 
-      // Redirigir después de 3 segundos
       setTimeout(() => navigate("/login"), 3000);
     } catch (err) {
       console.error("Error al registrar:", err.response || err);
@@ -105,6 +102,7 @@ export default function Register() {
             <input
               type="text"
               name="name"
+              autoComplete="name"
               value={formData.name}
               onChange={handleChange}
               placeholder="Ingresa tu nombre"
@@ -118,6 +116,7 @@ export default function Register() {
             <input
               type="email"
               name="email"
+              autoComplete="email"
               value={formData.email}
               onChange={handleChange}
               placeholder="Ingresa tu correo"
@@ -131,6 +130,7 @@ export default function Register() {
             <input
               type="password"
               name="password"
+              autoComplete="new-password"
               value={formData.password}
               onChange={handleChange}
               placeholder="Crea una contraseña"
@@ -156,6 +156,7 @@ export default function Register() {
               <input
                 type="text"
                 name="documentNumber"
+                autoComplete="off"
                 value={formData.documentNumber}
                 onChange={handleChange}
                 placeholder="Número"
