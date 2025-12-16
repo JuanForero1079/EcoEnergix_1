@@ -10,7 +10,6 @@ const Usuario = require("../model/Usuario");  // Modelo Usuario
 // ===========================
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    // Carpeta específica para fotos de usuario
     cb(null, "uploads/usuarios");
   },
   filename: (req, file, cb) => {
@@ -28,41 +27,116 @@ const upload = multer({
   },
 });
 
-// ===========================
-// GET /api/usuario/perfil
-// ===========================
+/**
+ * @swagger
+ * tags:
+ *   name: Usuarios
+ *   description: Endpoints para gestión de perfil de usuario
+ */
+
+/**
+ * @swagger
+ * /api/usuario/perfil:
+ *   get:
+ *     summary: Obtener perfil del usuario autenticado
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Datos del usuario
+ *       404:
+ *         description: Usuario no encontrado
+ *       500:
+ *         description: Error al obtener perfil
+ */
 router.get("/perfil", verificarToken, async (req, res) => {
   try {
     const user = await Usuario.findById(req.user.id);
     if (!user) return res.status(404).json({ msg: "Usuario no encontrado" });
-
-    res.json(user);  // Retorna datos del perfil
+    res.json(user);
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: "Error al obtener perfil" });
   }
 });
 
-// ===========================
-// PUT /api/usuario/perfil
-// ===========================
+/**
+ * @swagger
+ * /api/usuario/perfil:
+ *   put:
+ *     summary: Actualizar datos del perfil
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - Nombre
+ *               - Tipo_documento
+ *               - Numero_documento
+ *             properties:
+ *               Nombre:
+ *                 type: string
+ *               Tipo_documento:
+ *                 type: string
+ *               Numero_documento:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Perfil actualizado correctamente
+ *       400:
+ *         description: Datos incompletos
+ *       500:
+ *         description: Error al actualizar perfil
+ */
 router.put("/perfil", verificarToken, async (req, res) => {
   try {
     const { Nombre, Tipo_documento, Numero_documento } = req.body;
 
+    if (!Nombre || !Tipo_documento || !Numero_documento)
+      return res.status(400).json({ msg: "Todos los campos son obligatorios" });
+
     await Usuario.updatePerfil(req.user.id, Nombre, Tipo_documento, Numero_documento);
 
     const user = await Usuario.findById(req.user.id);
-    res.json(user);  // Retorna perfil actualizado
+    res.json(user);
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: "Error al actualizar perfil" });
   }
 });
 
-// ===========================
-// POST /api/usuario/foto
-// ===========================
+/**
+ * @swagger
+ * /api/usuario/foto:
+ *   post:
+ *     summary: Subir o actualizar foto de perfil
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               foto:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Foto actualizada correctamente
+ *       400:
+ *         description: No se envió ningún archivo
+ *       500:
+ *         description: Error al subir foto
+ */
 router.post(
   "/foto",
   verificarToken,
@@ -71,9 +145,7 @@ router.post(
     try {
       if (!req.file) return res.status(400).json({ msg: "No se subió ningún archivo" });
 
-      // Guardar ruta relativa correcta
       const rutaFoto = `/uploads/usuarios/${req.file.filename}`;
-
       await Usuario.updateFoto(req.user.id, rutaFoto);
 
       res.json({

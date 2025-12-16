@@ -1,6 +1,10 @@
 import React from "react";
-import { FaShoppingCart, FaTrash, FaArrowRight, FaBoxOpen, FaMinus, FaPlus } from "react-icons/fa";
+import { 
+  FaShoppingCart, FaTrash, FaArrowRight, FaBoxOpen, FaMinus, FaPlus 
+} from "react-icons/fa";
 import { useCarrito } from "../context/CarritoContext";
+import { getFullImageUrl } from "../../services/api.js";
+import { useNavigate } from "react-router-dom";
 
 export default function CarritoUsuario() {
   const { 
@@ -9,8 +13,25 @@ export default function CarritoUsuario() {
     vaciarCarrito, 
     total,
     aumentarCantidad,
-    disminuirCantidad 
+    disminuirCantidad,
+    cargando
   } = useCarrito();
+
+  const navigate = useNavigate();
+
+  // Solo navega al paso de pago, no crea pedido aquí
+  const procederPago = () => {
+    if(carrito.length === 0) return;
+    navigate("/usuario/pago");
+  };
+
+  if (cargando) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-white text-xl">
+        Cargando carrito...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 py-24 px-4 sm:px-6 lg:px-8">
@@ -49,26 +70,22 @@ export default function CarritoUsuario() {
             <div className="lg:col-span-2 space-y-4">
               {carrito.map((item) => (
                 <div
-                  key={item.id || item._id}
+                  key={item.id}
                   className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-6 hover:border-[#3dc692]/50 transition-all group"
                 >
                   <div className="flex flex-col sm:flex-row gap-4">
                     <div className="relative w-full sm:w-32 h-32 flex-shrink-0 bg-white/5 rounded-xl p-2 overflow-hidden">
                       <img
-                        src={item.imagen || item.imagenUrl || '/placeholder-product.png'}
-                        alt={item.nombre || item.name || 'Producto'}
+                        src={getFullImageUrl(item.imagen)}
+                        alt={item.nombre}
                         className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
-                        onError={(e) => {
-                          e.target.src = '/placeholder-product.png';
-                        }}
+                        onError={(e) => { e.target.src = '/placeholder-product.png'; }}
                       />
                     </div>
 
                     <div className="flex-1 flex flex-col justify-between">
                       <div>
-                        <h2 className="text-xl font-bold text-white mb-2">
-                          {item.nombre || item.name || 'Producto sin nombre'}
-                        </h2>
+                        <h2 className="text-xl font-bold text-white mb-2">{item.nombre}</h2>
                         <p className="text-2xl font-bold bg-gradient-to-r from-[#3dc692] to-[#5f54b3] bg-clip-text text-transparent mb-2">
                           ${item.precio?.toLocaleString() || '0'}
                         </p>
@@ -76,21 +93,15 @@ export default function CarritoUsuario() {
                           <span>Cantidad:</span>
                           <div className="flex items-center gap-2 bg-white/5 rounded-lg px-3 py-1">
                             <button 
-                              onClick={() => disminuirCantidad(item.id || item._id)}
+                              onClick={() => disminuirCantidad(item.id)}
                               disabled={item.cantidad <= 1}
-                              className={`text-white transition ${
-                                item.cantidad <= 1 
-                                  ? 'opacity-50 cursor-not-allowed' 
-                                  : 'hover:text-[#3dc692]'
-                              }`}
+                              className={`text-white transition ${item.cantidad <= 1 ? 'opacity-50 cursor-not-allowed' : 'hover:text-[#3dc692]'}`}
                             >
                               <FaMinus className="w-3 h-3" />
                             </button>
-                            <span className="text-white font-semibold min-w-[2rem] text-center">
-                              {item.cantidad}
-                            </span>
+                            <span className="text-white font-semibold min-w-[2rem] text-center">{item.cantidad}</span>
                             <button 
-                              onClick={() => aumentarCantidad(item.id || item._id)}
+                              onClick={() => aumentarCantidad(item.id)}
                               className="text-white hover:text-[#3dc692] transition"
                             >
                               <FaPlus className="w-3 h-3" />
@@ -104,7 +115,7 @@ export default function CarritoUsuario() {
                           Subtotal: <span className="text-white font-bold">${(item.precio * item.cantidad).toLocaleString()}</span>
                         </div>
                         <button
-                          onClick={() => eliminarDelCarrito(item.id || item._id)}
+                          onClick={() => eliminarDelCarrito(item.id)}
                           className="px-4 py-2 bg-red-500/20 border border-red-400/50 text-red-300 rounded-xl hover:bg-red-500 hover:text-white transition-all flex items-center gap-2"
                         >
                           <FaTrash className="w-4 h-4" />
@@ -129,32 +140,28 @@ export default function CarritoUsuario() {
                     <span>Productos ({carrito.length})</span>
                     <span className="text-white font-semibold">${total.toLocaleString()}</span>
                   </div>
-                  
                   <div className="flex justify-between text-blue-200">
                     <span>Envío</span>
-                    <span className="text-[#3dc692] font-semibold">
-                      {total >= 500000 ? 'Gratis' : `$${(50000).toLocaleString()}`}
-                    </span>
+                    <span className="text-[#3dc692] font-semibold">{total >= 5000 ? 'Gratis' : `$${(50).toLocaleString()}`}</span>
                   </div>
-
                   <div className="border-t border-white/10 pt-4">
                     <div className="flex justify-between text-lg">
                       <span className="text-white font-bold">Total</span>
                       <span className="text-2xl font-bold bg-gradient-to-r from-[#3dc692] to-[#5f54b3] bg-clip-text text-transparent">
-                        ${(total >= 500000 ? total : total + 50000).toLocaleString()}
+                        ${(total >= 5000 ? total : total + 50).toLocaleString()}
                       </span>
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-3">
-                  <a
-                    href="/usuario/pago"
+                  <button
+                    onClick={procederPago}
                     className="w-full px-6 py-4 bg-gradient-to-r from-[#3dc692] to-[#5f54b3] text-white rounded-xl font-bold hover:shadow-xl hover:shadow-[#3dc692]/50 transition-all hover:scale-105 flex items-center justify-center gap-2"
                   >
                     Proceder al Pago
                     <FaArrowRight className="w-5 h-5" />
-                  </a>
+                  </button>
 
                   <button
                     onClick={vaciarCarrito}
@@ -167,29 +174,11 @@ export default function CarritoUsuario() {
 
                 <div className="mt-6 p-4 bg-[#3dc692]/10 border border-[#3dc692]/30 rounded-xl">
                   <p className="text-sm text-[#3dc692] font-semibold flex items-center gap-2">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    {total >= 500000 
+                    {total >= 5000 
                       ? '¡Envío gratis aplicado!' 
-                      : `Agrega $${(500000 - total).toLocaleString()} más para envío gratis`
+                      : `Agrega $${(5000 - total).toLocaleString()} más para envío gratis`
                     }
                   </p>
-                </div>
-
-                <div className="mt-4 space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-blue-200">
-                    <svg className="w-4 h-4 text-[#3dc692]" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M10 2a8 8 0 100 16 8 8 0 000-16zM8 11a1 1 0 112 0v3a1 1 0 11-2 0v-3zm1-5a1 1 0 100 2 1 1 0 000-2z" />
-                    </svg>
-                    Compra 100% segura
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-blue-200">
-                    <svg className="w-4 h-4 text-[#3dc692]" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M10 2a8 8 0 100 16 8 8 0 000-16zM8 11a1 1 0 112 0v3a1 1 0 11-2 0v-3zm1-5a1 1 0 100 2 1 1 0 000-2z" />
-                    </svg>
-                    Garantía de 25 años
-                  </div>
                 </div>
               </div>
             </div>

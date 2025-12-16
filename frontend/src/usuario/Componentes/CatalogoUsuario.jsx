@@ -5,8 +5,14 @@ import { useCarrito } from "../context/CarritoContext";
 import { FaSearch, FaShoppingCart, FaTimes } from "react-icons/fa";
 import { BackgroundGradient } from "@/components/ui/background-gradient";
 
+// Normaliza texto para búsquedas
 const normalizeText = (text) =>
   text?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() || "";
+
+// Función para obtener la URL completa de la imagen
+const getImagenUrl = (foto) => {
+  return foto ? `http://localhost:3001${foto}` : "https://via.placeholder.com/400";
+};
 
 export default function CatalogoUsuario() {
   const [productos, setProductos] = useState([]);
@@ -17,6 +23,7 @@ export default function CatalogoUsuario() {
 
   const { agregarAlCarrito } = useCarrito();
 
+  // Cargar productos desde el backend
   useEffect(() => {
     const fetchProductos = async () => {
       try {
@@ -32,8 +39,9 @@ export default function CatalogoUsuario() {
     fetchProductos();
   }, []);
 
+  // Filtrar productos según la búsqueda
   const productosFiltrados = productos.filter((p) =>
-    normalizeText(p.nombre || p.Nombre_producto).includes(normalizeText(busqueda))
+    normalizeText(p.Nombre_producto).includes(normalizeText(busqueda))
   );
 
   if (loading)
@@ -55,11 +63,13 @@ export default function CatalogoUsuario() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-6 pt-24">
+      {/* Fondos animados */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#3dc692]/20 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#5f54b3]/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
       </div>
 
+      {/* Título */}
       <h1 className="text-5xl font-bold text-center mb-4 bg-gradient-to-r from-[#3dc692] via-[#5f54b3] to-[#4375b2] bg-clip-text text-transparent">
         Catálogo de Productos
       </h1>
@@ -67,6 +77,7 @@ export default function CatalogoUsuario() {
         Encuentra los mejores paneles solares para tu hogar
       </p>
 
+      {/* Buscador */}
       <div className="max-w-2xl mx-auto mb-12">
         <div className="relative">
           <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -80,34 +91,34 @@ export default function CatalogoUsuario() {
         </div>
       </div>
 
+      {/* Lista de productos */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
         {productosFiltrados.length > 0 ? (
           productosFiltrados.map((producto) => (
             <motion.div
-              key={producto.id || producto.ID_producto}
+              key={producto.ID_producto}
               className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl hover:shadow-[#3dc692]/20 hover:border-[#3dc692]/50 transition-all"
               whileHover={{ scale: 1.03 }}
             >
               <div className="relative overflow-hidden bg-white/5">
                 <img
-                  src={producto.imagen || "https://via.placeholder.com/400"}
-                  alt={producto.nombre || producto.Nombre_producto}
+                  src={getImagenUrl(producto.Foto)}
+                  alt={producto.Nombre_producto}
                   className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
                 />
               </div>
-              
-              <div className="p-5">
-                <h2 className="text-lg font-bold text-white mb-2">
-                  {producto.nombre || producto.Nombre_producto}
-                </h2>
-                <p className="text-3xl font-bold bg-gradient-to-r from-[#3dc692] to-[#5f54b3] bg-clip-text text-transparent mb-3">
-                  ${producto.precio?.toLocaleString() || producto.Precio?.toLocaleString()}
-                </p>
-                <p className="text-blue-200 text-sm mb-4 line-clamp-2">
-                  {producto.descripcion || producto.detalles || producto.Tipo_producto}
-                </p>
 
-                <div className="flex justify-between gap-2">
+              <div className="p-5">
+                <h2 className="text-lg font-bold text-white mb-2">{producto.Nombre_producto}</h2>
+                <p className="text-blue-200 text-sm mb-2">{producto.Descripcion}</p>
+                <p className="text-sm text-gray-300 mb-1">Marca: {producto.Marca}</p>
+                <p className="text-sm text-gray-300 mb-1">Tipo: {producto.Tipo_producto}</p>
+                <p className="text-3xl font-bold bg-gradient-to-r from-[#3dc692] to-[#5f54b3] bg-clip-text text-transparent mb-3">
+                  ${producto.Precio?.toLocaleString()}
+                </p>
+                <p className="text-sm text-gray-400">Garantía: {producto.Garantia} años</p>
+
+                <div className="flex justify-between gap-2 mt-3">
                   <button
                     onClick={() => setProductoSeleccionado(producto)}
                     className="flex-1 px-4 py-2 bg-white/10 border border-white/20 text-white rounded-xl font-semibold hover:bg-white/20 transition-all"
@@ -115,10 +126,10 @@ export default function CatalogoUsuario() {
                     Ver detalles
                   </button>
                   <button
-                    onClick={() => agregarAlCarrito(producto)}
+                    onClick={() => agregarAlCarrito({ ID_producto: producto.ID_producto, Cantidad: 1 })}
                     className="flex-1 px-4 py-2 bg-gradient-to-r from-[#3dc692] to-[#5f54b3] text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-[#3dc692]/50 transition-all"
                   >
-                    Agregar 
+                    Agregar
                   </button>
                 </div>
               </div>
@@ -133,6 +144,7 @@ export default function CatalogoUsuario() {
         )}
       </div>
 
+      {/* Modal de producto */}
       <AnimatePresence>
         {productoSeleccionado && (
           <motion.div
@@ -158,66 +170,54 @@ export default function CatalogoUsuario() {
                 </button>
 
                 <img
-                  src={productoSeleccionado.imagen || "https://via.placeholder.com/400"}
-                  alt={productoSeleccionado.nombre || productoSeleccionado.Nombre_producto}
-                  height="400"
-                  width="400"
+                  src={getImagenUrl(productoSeleccionado.Foto)}
+                  alt={productoSeleccionado.Nombre_producto}
                   className="object-contain w-full h-64 mb-6 rounded-xl bg-white/5 p-4"
                 />
 
-                <p className="text-2xl sm:text-3xl font-bold text-white mb-3">
-                  {productoSeleccionado.nombre || productoSeleccionado.Nombre_producto}
-                </p>
+                <p className="text-2xl sm:text-3xl font-bold text-white mb-3">{productoSeleccionado.Nombre_producto}</p>
 
                 <div className="bg-white/5 rounded-xl p-4 mb-4 border border-white/10">
                   <h3 className="text-lg font-semibold text-[#3dc692] mb-3 flex items-center gap-2">
                     <span className="w-1 h-6 bg-gradient-to-b from-[#3dc692] to-[#5f54b3] rounded-full"></span>
                     Descripción del Producto
                   </h3>
-                  <p className="text-sm sm:text-base text-blue-200 leading-relaxed">
-                    {productoSeleccionado.descripcion || productoSeleccionado.detalles || productoSeleccionado.Tipo_producto}
-                  </p>
+                  <p className="text-sm sm:text-base text-blue-200 leading-relaxed">{productoSeleccionado.Descripcion}</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 mb-4">
                   <div className="bg-white/5 rounded-xl p-3 border border-white/10">
-                    <p className="text-xs text-gray-400 mb-1">Potencia</p>
-                    <p className="text-sm font-semibold text-white">
-                      {productoSeleccionado.potencia || "300W"}
-                    </p>
-                  </div>
-                  <div className="bg-white/5 rounded-xl p-3 border border-white/10">
-                    <p className="text-xs text-gray-400 mb-1">Eficiencia</p>
-                    <p className="text-sm font-semibold text-white">
-                      {productoSeleccionado.eficiencia || "Alta"}
-                    </p>
-                  </div>
-                  <div className="bg-white/5 rounded-xl p-3 border border-white/10">
-                    <p className="text-xs text-gray-400 mb-1">Garantía</p>
-                    <p className="text-sm font-semibold text-white">
-                      {productoSeleccionado.garantia || "25 años"}
-                    </p>
+                    <p className="text-xs text-gray-400 mb-1">Marca</p>
+                    <p className="text-sm font-semibold text-white">{productoSeleccionado.Marca}</p>
                   </div>
                   <div className="bg-white/5 rounded-xl p-3 border border-white/10">
                     <p className="text-xs text-gray-400 mb-1">Tipo</p>
-                    <p className="text-sm font-semibold text-white">
-                      {productoSeleccionado.Tipo_producto || "Monocristalino"}
+                    <p className="text-sm font-semibold text-white">{productoSeleccionado.Tipo_producto}</p>
+                  </div>
+                  <div className="bg-white/5 rounded-xl p-3 border border-white/10">
+                    <p className="text-xs text-gray-400 mb-1">Garantía</p>
+                    <p className="text-sm font-semibold text-white">{productoSeleccionado.Garantia} años</p>
+                  </div>
+                  <div className="bg-white/5 rounded-xl p-3 border border-white/10">
+                    <p className="text-xs text-gray-400 mb-1">Fecha de fabricación</p>
+                    <p className="text-sm font-semibold text-white">{productoSeleccionado.Fecha_fabricacion}</p>
+                  </div>
+                  <div className="col-span-full text-right mt-2">
+                    <p className="text-3xl font-bold bg-gradient-to-r from-[#3dc692] to-[#5f54b3] bg-clip-text text-transparent">
+                      ${productoSeleccionado.Precio?.toLocaleString()}
                     </p>
                   </div>
                 </div>
 
                 <button
                   onClick={() => {
-                    agregarAlCarrito(productoSeleccionado);
+                    agregarAlCarrito({ ID_producto: productoSeleccionado.ID_producto, Cantidad: 1 });
                     setProductoSeleccionado(null);
                   }}
                   className="rounded-full pl-6 pr-2 py-2 text-white flex items-center gap-2 bg-gradient-to-r from-[#3dc692] to-[#5f54b3] mt-4 text-sm font-bold hover:shadow-lg hover:shadow-[#3dc692]/50 transition-all"
                 >
                   <FaShoppingCart className="w-4 h-4" />
                   <span>Agregar al carrito</span>
-                  <span className="bg-slate-800 rounded-full text-xs px-3 py-1 text-white">
-                    ${productoSeleccionado.precio?.toLocaleString() || productoSeleccionado.Precio?.toLocaleString()}
-                  </span>
                 </button>
               </BackgroundGradient>
             </motion.div>

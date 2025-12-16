@@ -3,11 +3,34 @@ const router = express.Router();
 const DB = require("../db/connection");
 const { verificarToken } = require("../middleware/auth");
 
-/* -------------------------------------------------------------------------- */
-/*                        GET TODOS LOS SOPORTES (ADMIN)                      */
-/* -------------------------------------------------------------------------- */
+/**
+ * @swagger
+ * tags:
+ *   name: Soportes
+ *   description: CRUD de soporte técnico para todos los roles
+ */
+
+/**
+ * ==================================================
+ * GET: Obtener todos los soportes según rol
+ * ==================================================
+ * @swagger
+ * /admin/soporte:
+ *   get:
+ *     summary: Obtener todos los soportes del usuario o rol correspondiente
+ *     tags: [Soportes]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de soportes
+ *       403:
+ *         description: Rol no autorizado
+ *       500:
+ *         description: Error al obtener soportes
+ */
 router.get("/", verificarToken, (req, res) => {
-  const { id, rol } = req.user; //   token ya trae { id, correo, rol }
+  const { id, rol } = req.user;
   const rolLower = rol.toLowerCase();
 
   let query = "SELECT * FROM soporte_tecnico";
@@ -16,12 +39,10 @@ router.get("/", verificarToken, (req, res) => {
   if (rolLower === "cliente") {
     query += " WHERE ID_usuarioFK = ?";
     params.push(id);
-  } 
-  else if (rolLower === "domiciliario") {
+  } else if (rolLower === "domiciliario") {
     query += " WHERE ID_domiciliario = ?";
     params.push(id);
-  } 
-  else if (rolLower !== "administrador") {
+  } else if (rolLower !== "administrador") {
     return res.status(403).json({ message: "Rol no autorizado" });
   }
 
@@ -33,9 +54,34 @@ router.get("/", verificarToken, (req, res) => {
   });
 });
 
-/* -------------------------------------------------------------------------- */
-/*                       GET SOPORTE POR ID (TODOS LOS ROLES)                */
-/* -------------------------------------------------------------------------- */
+/**
+ * ==================================================
+ * GET: Obtener soporte por ID (todos los roles)
+ * ==================================================
+ * @swagger
+ * /admin/soporte/{id}:
+ *   get:
+ *     summary: Obtener un soporte por su ID
+ *     tags: [Soportes]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del soporte
+ *     responses:
+ *       200:
+ *         description: Soporte encontrado
+ *       403:
+ *         description: No tienes permiso para ver este soporte
+ *       404:
+ *         description: Soporte no encontrado
+ *       500:
+ *         description: Error al buscar soporte
+ */
 router.get("/:id", verificarToken, (req, res) => {
   const { id } = req.params;
   const { rol, id: userId } = req.user;
@@ -61,9 +107,55 @@ router.get("/:id", verificarToken, (req, res) => {
   });
 });
 
-/* -------------------------------------------------------------------------- */
-/*                           CREAR SOPORTE (TODOS)                            */
-/* -------------------------------------------------------------------------- */
+/**
+ * ==================================================
+ * POST: Crear soporte (todos los roles)
+ * ==================================================
+ * @swagger
+ * /admin/soporte:
+ *   post:
+ *     summary: Crear un nuevo soporte
+ *     tags: [Soportes]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - Fecha_solicitud
+ *               - Descripcion_problema
+ *               - ID_usuarioFK
+ *               - ID_producto
+ *               - ID_instalacion
+ *               - ID_domiciliario
+ *             properties:
+ *               Fecha_solicitud:
+ *                 type: string
+ *                 format: date
+ *               Descripcion_problema:
+ *                 type: string
+ *               Fecha_resolucion:
+ *                 type: string
+ *                 format: date
+ *               ID_usuarioFK:
+ *                 type: integer
+ *               ID_producto:
+ *                 type: integer
+ *               ID_instalacion:
+ *                 type: integer
+ *               ID_domiciliario:
+ *                 type: integer
+ *     responses:
+ *       201:
+ *         description: Soporte creado exitosamente
+ *       400:
+ *         description: Campos obligatorios incompletos
+ *       500:
+ *         description: Error al crear soporte
+ */
 router.post("/", verificarToken, (req, res) => {
   const {
     Fecha_solicitud,
@@ -118,9 +210,64 @@ router.post("/", verificarToken, (req, res) => {
   );
 });
 
-/* -------------------------------------------------------------------------- */
-/*                      ACTUALIZAR SOPORTE (ROLES PROPIOS)                   */
-/* -------------------------------------------------------------------------- */
+/**
+ * ==================================================
+ * PUT: Actualizar soporte (roles propios)
+ * ==================================================
+ * @swagger
+ * /admin/soporte/{id}:
+ *   put:
+ *     summary: Actualizar un soporte existente (solo roles propios)
+ *     tags: [Soportes]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del soporte
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - Fecha_solicitud
+ *               - Descripcion_problema
+ *               - ID_usuarioFK
+ *               - ID_producto
+ *               - ID_instalacion
+ *               - ID_domiciliario
+ *             properties:
+ *               Fecha_solicitud:
+ *                 type: string
+ *                 format: date
+ *               Descripcion_problema:
+ *                 type: string
+ *               Fecha_resolucion:
+ *                 type: string
+ *                 format: date
+ *               ID_usuarioFK:
+ *                 type: integer
+ *               ID_producto:
+ *                 type: integer
+ *               ID_instalacion:
+ *                 type: integer
+ *               ID_domiciliario:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: Soporte actualizado exitosamente
+ *       400:
+ *         description: Campos obligatorios incompletos
+ *       403:
+ *         description: No tienes permiso para actualizar
+ *       500:
+ *         description: Error al actualizar soporte
+ */
 router.put("/:id", verificarToken, (req, res) => {
   const { id } = req.params;
   const {
@@ -188,9 +335,34 @@ router.put("/:id", verificarToken, (req, res) => {
   );
 });
 
-/* -------------------------------------------------------------------------- */
-/*                    ELIMINAR SOPORTE (ROLES PROPIOS / ADMIN)               */
-/* -------------------------------------------------------------------------- */
+/**
+ * ==================================================
+ * DELETE: Eliminar soporte (roles propios / admin)
+ * ==================================================
+ * @swagger
+ * /admin/soporte/{id}:
+ *   delete:
+ *     summary: Eliminar un soporte (solo roles propios o admin)
+ *     tags: [Soportes]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del soporte a eliminar
+ *     responses:
+ *       200:
+ *         description: Soporte eliminado exitosamente
+ *       403:
+ *         description: No tienes permiso para eliminar
+ *       404:
+ *         description: Soporte no encontrado
+ *       500:
+ *         description: Error al eliminar soporte
+ */
 router.delete("/:id", verificarToken, (req, res) => {
   const { id } = req.params;
   const { rol, id: userId } = req.user;

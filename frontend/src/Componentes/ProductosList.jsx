@@ -53,10 +53,7 @@ function ProductosList() {
     e.preventDefault();
     try {
       if (editMode) {
-        await API.put(
-          `/admin/productos/${formData.ID_producto}`,
-          formData
-        );
+        await API.put(`/admin/productos/${formData.ID_producto}`, formData);
         alert("Producto actualizado correctamente");
       } else {
         await API.post("/admin/productos", formData);
@@ -89,8 +86,7 @@ function ProductosList() {
       Tipo_producto: producto.Tipo_producto,
       Precio: producto.Precio,
       Marca: producto.Marca,
-      Fecha_fabricacion:
-        producto.Fecha_fabricacion?.split("T")[0] || "",
+      Fecha_fabricacion: producto.Fecha_fabricacion?.split("T")[0] || "",
       Garantia: producto.Garantia,
       ID_proveedor: producto.ID_proveedor,
     });
@@ -109,6 +105,36 @@ function ProductosList() {
     } catch (err) {
       console.error("Error al eliminar producto:", err);
       alert("No se pudo eliminar el producto.");
+    }
+  };
+
+  // ============================
+  // SUBIR IMAGEN POR PRODUCTO
+  // ============================
+  const handleImageUpload = async (e, idProducto) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("imagen", file);
+
+    try {
+      const { data } = await API.post(
+        `/admin/productos/${idProducto}/imagen`,
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+      alert(data.message);
+
+      // Actualiza la lista de productos con la nueva imagen
+      setProductos((prev) =>
+        prev.map((p) =>
+          p.ID_producto === idProducto ? { ...p, Foto: data.imagen } : p
+        )
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Error subiendo la imagen");
     }
   };
 
@@ -138,10 +164,7 @@ function ProductosList() {
     ];
 
     try {
-      const res = await API.post(
-        "/admin/productos/bulk",
-        productosMasivos
-      );
+      const res = await API.post("/admin/productos/bulk", productosMasivos);
       alert(res.data.message);
       fetchProductos();
     } catch (err) {
@@ -180,6 +203,11 @@ function ProductosList() {
       p.ID_proveedor,
     ]);
     exportTableToPDF("Productos Registrados", columns, rows);
+  };
+
+  const getImagenUrl = (foto) => {
+    // Si no hay foto, usar placeholder
+    return foto ? `http://localhost:3001${foto}` : "/placeholder.png";
   };
 
   if (loading) return <p className="text-white p-4">Cargando productos...</p>;
@@ -302,6 +330,8 @@ function ProductosList() {
                 <th className="py-3 px-4">Marca</th>
                 <th className="py-3 px-4">Garantía</th>
                 <th className="py-3 px-4">Proveedor</th>
+                <th className="py-3 px-4 text-center">Imagen</th>
+                <th className="py-3 px-4 text-center">Subir Imagen</th>
                 <th className="py-3 px-4 text-center">Acciones</th>
               </tr>
             </thead>
@@ -318,6 +348,20 @@ function ProductosList() {
                   <td className="py-2 px-4">{p.Marca}</td>
                   <td className="py-2 px-4">{p.Garantia}</td>
                   <td className="py-2 px-4">{p.ID_proveedor}</td>
+                  <td className="py-2 px-4 text-center">
+                    <img
+                      src={getImagenUrl(p.Foto)}
+                      alt={p.Nombre_producto}
+                      className="w-16 h-16 object-cover mx-auto rounded"
+                    />
+                  </td>
+                  <td className="py-2 px-4 text-center">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageUpload(e, p.ID_producto)}
+                    />
+                  </td>
                   <td className="py-2 px-4 flex gap-2 justify-center">
                     <button
                       onClick={() => handleEdit(p)}

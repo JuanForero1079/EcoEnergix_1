@@ -16,7 +16,7 @@
 # Correo para Nodemailer
 # -------------------------------
 EMAIL_USER=ecoenergix2@gmail.com
-EMAIL_PASS=zsea ilid ptlh cqis
+EMAIL_PASS=kjje wihu tvlw uzkk
 --------------------------------
 EMAIL_USER=jujofoca19@gmail.com
 EMAIL_PASS=pers joak jyqi icha

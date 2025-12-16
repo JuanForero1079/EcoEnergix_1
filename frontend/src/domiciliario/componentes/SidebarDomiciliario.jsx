@@ -24,12 +24,9 @@ export default function SidebarDomiciliario({
 
   const menuItems = [
     { to: "/domiciliario/inicio", label: "Inicio", Icon: Home },
-    { to: "/domiciliario/asignados", label: "Asignados", Icon: ClipboardList },
     { to: "/domiciliario/domicilios", label: "Mis Domicilios", Icon: Truck },
     { to: "/domiciliario/historial", label: "Historial", Icon: History },
     { to: "/domiciliario/direcciones", label: "Direcciones", Icon: MapPin },
-    { to: "/domiciliario/mapa", label: "Mapa", Icon: Map },
-    { to: "/domiciliario/soporte", label: "Soporte", Icon: HelpCircle },
     { to: "/domiciliario/auditoria", label: "Auditoría", Icon: Shield },
     { to: "/domiciliario/perfil", label: "Perfil", Icon: User },
   ];

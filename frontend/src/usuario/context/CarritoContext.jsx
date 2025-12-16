@@ -1,4 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import {
+  getCarrito as fetchCarritoBackend,
+  agregarAlCarrito as agregarAlCarritoBackend,
+  actualizarCantidad as actualizarCantidadBackend,
+  eliminarDelCarrito as eliminarDelCarritoBackend,
+  vaciarCarrito as vaciarCarritoBackend
+} from '../services/carritoService';
+import { getFullImageUrl } from "../../services/api.js";
 
 const CarritoContext = createContext();
 
@@ -11,108 +19,137 @@ export const useCarrito = () => {
 };
 
 export const CarritoProvider = ({ children }) => {
-  const [carrito, setCarrito] = useState(() => {
-    // Cargar carrito del localStorage al iniciar
-    const carritoGuardado = localStorage.getItem('carrito');
-    return carritoGuardado ? JSON.parse(carritoGuardado) : [];
-  });
+  const [carrito, setCarrito] = useState([]);
+  const [cargando, setCargando] = useState(true);
+
+  // Cargar carrito desde backend al iniciar
+  useEffect(() => {
+    const cargarCarrito = async () => {
+      try {
+        const datos = await fetchCarritoBackend();
+        const carritoFormateado = datos.map(item => ({
+          id: item.ID_carrito,
+          nombre: item.Nombre_producto,
+          precio: item.Precio,
+          cantidad: item.Cantidad,
+          imagen: getFullImageUrl(item.Foto) || '/placeholder-product.png'
+        }));
+        setCarrito(carritoFormateado);
+      } catch (err) {
+        console.error('Error al cargar carrito:', err);
+      } finally {
+        setCargando(false);
+      }
+    };
+    cargarCarrito();
+  }, []);
 
   // Guardar carrito en localStorage cada vez que cambie
   useEffect(() => {
     localStorage.setItem('carrito', JSON.stringify(carrito));
-    console.log('Carrito actualizado:', carrito); // Para debugging
+    console.log('Carrito actualizado:', carrito);
   }, [carrito]);
 
-  // Calcular total
   const total = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
 
   // Agregar producto al carrito
-  const agregarAlCarrito = (producto) => {
-    console.log('Agregando producto:', producto); // Para debugging
-    
-    setCarrito((prevCarrito) => {
-      // Buscar si el producto YA existe en el carrito usando su ID
-      const productoExistente = prevCarrito.find(
-        item => item.id === producto.id || item._id === producto._id
+  const agregarAlCarrito = async (producto) => {
+    try {
+      const nuevoItem = await agregarAlCarritoBackend(producto);
+      setCarrito(prev => {
+        const existe = prev.find(item => item.id === nuevoItem.ID_carrito);
+        if (existe) {
+          return prev.map(item =>
+            item.id === nuevoItem.ID_carrito
+              ? { ...item, cantidad: nuevoItem.Cantidad }
+              : item
+          );
+        }
+        return [...prev, {
+          id: nuevoItem.ID_carrito,
+          nombre: nuevoItem.Nombre_producto,
+          precio: nuevoItem.Precio,
+          cantidad: nuevoItem.Cantidad,
+          imagen: getFullImageUrl(nuevoItem.Foto) || '/placeholder-product.png'
+        }];
+      });
+    } catch (err) {
+      console.error("Error agregando al carrito:", err);
+    }
+  };
+
+  // Aumentar cantidad
+  const aumentarCantidad = async (id) => {
+    const item = carrito.find(i => i.id === id);
+    if (!item) return;
+    try {
+      const actualizado = await actualizarCantidadBackend(id, item.cantidad + 1);
+      setCarrito(prev =>
+        prev.map(i =>
+          i.id === id ? { ...i, cantidad: actualizado.Cantidad } : i
+        )
       );
-      
-      if (productoExistente) {
-        // Si ya existe, solo aumentar la cantidad
-        console.log('Producto existente, aumentando cantidad');
-        return prevCarrito.map(item =>
-          (item.id === producto.id || item._id === producto._id)
-            ? { ...item, cantidad: item.cantidad + 1 }
-            : item
-        );
-      } else {
-        // Si NO existe, agregarlo como nuevo producto con toda su información
-        console.log('Producto nuevo, agregando al carrito');
-        const nuevoProducto = {
-          id: producto.id || producto._id,
-          _id: producto._id || producto.id,
-          nombre: producto.nombre || producto.name || producto.title || 'Producto sin nombre',
-          precio: producto.precio || producto.price || 0,
-          imagen: producto.imagen || producto.imagenUrl || producto.image || '/placeholder-product.png',
-          descripcion: producto.descripcion || producto.description || '',
-          cantidad: 1
-        };
-        return [...prevCarrito, nuevoProducto];
-      }
-    });
+    } catch (err) {
+      console.error("Error aumentando cantidad:", err);
+    }
   };
 
-  // Aumentar cantidad de un producto
-  const aumentarCantidad = (id) => {
-    setCarrito((prevCarrito) =>
-      prevCarrito.map(item =>
-        (item.id === id || item._id === id)
-          ? { ...item, cantidad: item.cantidad + 1 }
-          : item
-      )
-    );
+  // Disminuir cantidad
+  const disminuirCantidad = async (id) => {
+    const item = carrito.find(i => i.id === id);
+    if (!item || item.cantidad <= 1) return;
+    try {
+      const actualizado = await actualizarCantidadBackend(id, item.cantidad - 1);
+      setCarrito(prev =>
+        prev.map(i =>
+          i.id === id ? { ...i, cantidad: actualizado.Cantidad } : i
+        )
+      );
+    } catch (err) {
+      console.error("Error disminuyendo cantidad:", err);
+    }
   };
 
-  // Disminuir cantidad de un producto
-  const disminuirCantidad = (id) => {
-    setCarrito((prevCarrito) =>
-      prevCarrito.map(item =>
-        (item.id === id || item._id === id) && item.cantidad > 1
-          ? { ...item, cantidad: item.cantidad - 1 }
-          : item
-      )
-    );
+  // Eliminar producto
+  const eliminarDelCarrito = async (id) => {
+    try {
+      await eliminarDelCarritoBackend(id);
+      setCarrito(prev => prev.filter(i => i.id !== id));
+    } catch (err) {
+      console.error("Error eliminando del carrito:", err);
+    }
   };
 
-  // Eliminar producto del carrito
-  const eliminarDelCarrito = (id) => {
-    setCarrito((prevCarrito) => 
-      prevCarrito.filter(item => item.id !== id && item._id !== id)
-    );
-  };
-
-  // Vaciar carrito completo
-  const vaciarCarrito = () => {
-    if (window.confirm('¿Estás seguro de que deseas vaciar el carrito?')) {
+  // Vaciar carrito
+  const vaciarCarrito = async () => {
+    if (!window.confirm('¿Estás seguro de que deseas vaciar el carrito?')) return;
+    try {
+      await vaciarCarritoBackend();
       setCarrito([]);
+    } catch (err) {
+      console.error("Error vaciando carrito:", err);
     }
   };
 
   // Actualizar cantidad directamente
-  const actualizarCantidad = (id, nuevaCantidad) => {
+  const actualizarCantidad = async (id, nuevaCantidad) => {
     if (nuevaCantidad < 1) return;
-    
-    setCarrito((prevCarrito) =>
-      prevCarrito.map(item =>
-        (item.id === id || item._id === id)
-          ? { ...item, cantidad: nuevaCantidad }
-          : item
-      )
-    );
+    try {
+      const actualizado = await actualizarCantidadBackend(id, nuevaCantidad);
+      setCarrito(prev =>
+        prev.map(i =>
+          i.id === id ? { ...i, cantidad: actualizado.Cantidad } : i
+        )
+      );
+    } catch (err) {
+      console.error("Error actualizando cantidad:", err);
+    }
   };
 
   const value = {
     carrito,
     total,
+    cargando,
     agregarAlCarrito,
     aumentarCantidad,
     disminuirCantidad,

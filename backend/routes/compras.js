@@ -6,7 +6,6 @@ const { verificarToken, verificarRol } = require("../middleware/auth");
 // ==================================================
 // ESTADOS PERMITIDOS
 // ==================================================
-// backend
 const ESTADOS_COMPRAS = ["pendiente", "aprobada", "en_proceso", "entregada", "cancelada"];
 
 /**
@@ -18,8 +17,20 @@ const ESTADOS_COMPRAS = ["pendiente", "aprobada", "en_proceso", "entregada", "ca
 
 /**
  * ==================================================
- *   GET TODAS LAS COMPRAS (solo Administrador)
+ * GET TODAS LAS COMPRAS (solo Administrador)
  * ==================================================
+ * @swagger
+ * /admin/compras:
+ *   get:
+ *     summary: Obtener todas las compras
+ *     tags: [Compras]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de compras
+ *       500:
+ *         description: Error al obtener las compras
  */
 router.get(
   "/",
@@ -39,8 +50,29 @@ router.get(
 
 /**
  * ==================================================
- *   GET UNA COMPRA POR ID (solo Administrador)
+ * GET UNA COMPRA POR ID (solo Administrador)
  * ==================================================
+ * @swagger
+ * /admin/compras/{id}:
+ *   get:
+ *     summary: Obtener una compra por ID
+ *     tags: [Compras]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID de la compra
+ *     responses:
+ *       200:
+ *         description: Compra encontrada
+ *       404:
+ *         description: Compra no encontrada
+ *       500:
+ *         description: Error al buscar la compra
  */
 router.get(
   "/:id",
@@ -69,10 +101,31 @@ router.get(
 
 /**
  * ==================================================
- *   GET COMPRAS DE UN USUARIO
- *   - Cliente: solo sus compras
- *   - Administrador: puede ver cualquier usuario
+ * GET COMPRAS DE UN USUARIO
+ * - Cliente: solo sus compras
+ * - Administrador: puede ver cualquier usuario
  * ==================================================
+ * @swagger
+ * /admin/compras/usuario/{userId}:
+ *   get:
+ *     summary: Obtener compras de un usuario
+ *     tags: [Compras]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del usuario
+ *     responses:
+ *       200:
+ *         description: Lista de compras del usuario
+ *       403:
+ *         description: Acceso denegado
+ *       500:
+ *         description: Error al obtener las compras
  */
 router.get("/usuario/:userId", verificarToken, (req, res) => {
   const { userId } = req.params;
@@ -100,8 +153,44 @@ router.get("/usuario/:userId", verificarToken, (req, res) => {
 
 /**
  * ==================================================
- *   CREAR COMPRA (solo Administrador)
+ * CREAR COMPRA (solo Administrador)
  * ==================================================
+ * @swagger
+ * /admin/compras:
+ *   post:
+ *     summary: Crear una compra
+ *     tags: [Compras]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - ID_usuario
+ *               - Fecha_compra
+ *               - Monto_total
+ *               - Estado
+ *             properties:
+ *               ID_usuario:
+ *                 type: integer
+ *               Fecha_compra:
+ *                 type: string
+ *                 format: date-time
+ *               Monto_total:
+ *                 type: number
+ *               Estado:
+ *                 type: string
+ *                 enum: [pendiente, aprobada, en_proceso, entregada, cancelada]
+ *     responses:
+ *       201:
+ *         description: Compra creada exitosamente
+ *       400:
+ *         description: Campos inválidos
+ *       500:
+ *         description: Error al crear la compra
  */
 router.post(
   "/",
@@ -150,8 +239,50 @@ router.post(
 
 /**
  * ==================================================
- *   ACTUALIZAR COMPRA (solo Administrador)
+ * ACTUALIZAR COMPRA (solo Administrador)
  * ==================================================
+ * @swagger
+ * /admin/compras/{id}:
+ *   put:
+ *     summary: Actualizar una compra
+ *     tags: [Compras]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID de la compra a actualizar
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - Fecha_compra
+ *               - Monto_total
+ *               - Estado
+ *             properties:
+ *               Fecha_compra:
+ *                 type: string
+ *                 format: date-time
+ *               Monto_total:
+ *                 type: number
+ *               Estado:
+ *                 type: string
+ *                 enum: [pendiente, aprobada, en_proceso, entregada, cancelada]
+ *     responses:
+ *       200:
+ *         description: Compra actualizada exitosamente
+ *       400:
+ *         description: Campos inválidos o transición no permitida
+ *       404:
+ *         description: Compra no encontrada
+ *       500:
+ *         description: Error al actualizar la compra
  */
 router.put(
   "/:id",
@@ -190,15 +321,12 @@ router.put(
 
         const estadoActual = result[0].Estado;
 
-        // Ejemplo de regla de negocio: no permitir Pendiente -> Entregado directamente
         if (estadoActual === "Pendiente" && Estado === "Entregado") {
           return res.status(400).json({
-            message:
-              "No puedes cambiar directamente de Pendiente a Entregado",
+            message: "No puedes cambiar directamente de Pendiente a Entregado",
           });
         }
 
-        // Actualizar compra
         DB.query(
           "UPDATE compras SET Fecha_compra = ?, Monto_total = ?, Estado = ? WHERE ID_compra = ?",
           [Fecha_compra, Monto_total, Estado, id],
@@ -227,8 +355,29 @@ router.put(
 
 /**
  * ==================================================
- *   ELIMINAR COMPRA (solo Administrador)
+ * ELIMINAR COMPRA (solo Administrador)
  * ==================================================
+ * @swagger
+ * /admin/compras/{id}:
+ *   delete:
+ *     summary: Eliminar una compra
+ *     tags: [Compras]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID de la compra a eliminar
+ *     responses:
+ *       200:
+ *         description: Compra eliminada exitosamente
+ *       404:
+ *         description: Compra no encontrada
+ *       500:
+ *         description: Error al eliminar la compra
  */
 router.delete(
   "/:id",

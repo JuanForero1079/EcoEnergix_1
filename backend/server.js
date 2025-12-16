@@ -35,8 +35,11 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 const authRoutes = require("./routes/auth");
 
 // Usuario normal
-const userRoutes = require("./routes/userRoutes"); // nuevas rutas de perfil usuario
+const userRoutes = require("./routes/userRoutes"); // perfil usuario
 const comprasUsuarioRoutes = require("./routes/comprasUsuario");
+
+// Cliente: pedidos + pagos + entregas
+const clientePagoRoutes = require("./routes/clientePago"); // ruta que hace todo en 1
 
 // Admin CRUD
 const comprasRoutes = require("./routes/compras");
@@ -52,6 +55,11 @@ const adminRoutes = require("./routes/admin");
 
 // Público
 const publicProductosRoutes = require("./routes/publicProductos");
+
+// Carrito y pedidos (solo admin)
+const carritoRoutes = require("./routes/carrito");
+const pedidoRoutes = require("./routes/pedido");
+const detallePedidoRoutes = require("./routes/detalle_pedido");
 
 // ======================
 // Rutas públicas
@@ -73,12 +81,26 @@ app.use("/api/admin/soportes", soportesRoutes);
 app.use("/api/admin/usuarios", usuariosRoutes);
 app.use("/api/admin/reportes", reportesRoutes);
 
+// Admin: pedidos y detalles de pedidos
+app.use("/api/admin/pedido", pedidoRoutes);
+app.use("/api/admin/detalle-pedido", detallePedidoRoutes);
+
 // ======================
 // Usuario normal / perfil y compras
 // ======================
-app.use("/api/user", userRoutes); // aquí van las rutas de perfil, actualizar, subir foto
+app.use("/api/user", userRoutes); // perfil, actualizar, subir foto
 app.use("/api/compras/usuario", comprasUsuarioRoutes);
-app.use("/api/entregas", entregasRoutes);
+
+// ======================
+// Cliente: ruta única para crear pedido + pago + entrega
+// ======================
+app.use("/api/cliente/pago", clientePagoRoutes);
+
+// ======================
+// Usuario normal: carrito y pedidos
+// ======================
+app.use("/api/carrito", carritoRoutes);
+app.use("/api/pedido", pedidoRoutes);
 
 // ======================
 // Manejo de rutas inexistentes
@@ -101,7 +123,7 @@ app.use((err, req, res, next) => {
 // Inicio del servidor
 // ======================
 app.listen(PORT, () => {
-  console.log(` Servidor escuchando en http://localhost:${PORT}`);
-  console.log(` Swagger: http://localhost:${PORT}/api-docs`);
-  console.log(` Uploads: http://localhost:${PORT}/uploads`);
+  console.log(`Servidor escuchando en http://localhost:${PORT}`);
+  console.log(`Swagger: http://localhost:${PORT}/api-docs`);
+  console.log(`Uploads: http://localhost:${PORT}/uploads`);
 });

@@ -96,7 +96,6 @@ export default function App() {
           </PrivateRoute>
         }
       >
-        <Route index element={<h1 className="text-3xl text-white font-bold text-center">Bienvenido al Panel de Administración</h1>} />
         <Route path="perfil" element={<PerfilAdmin />} />
         <Route path="usuarios" element={<UsuariosList />} />
         <Route path="productos" element={<ProductosList />} />

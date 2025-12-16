@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import API from "../services/api"; // importa tu Axios base
+import API from "../services/api"; // tu Axios base
 
 const Catalogo = () => {
   const [productos, setProductos] = useState([]);
@@ -18,6 +18,14 @@ const Catalogo = () => {
         console.error("Error obteniendo productos:", error);
       });
   }, []);
+
+  // =========================================
+  // Función para obtener URL completa de imagen
+  // =========================================
+  const getImagenUrl = (foto) => {
+    // Si no hay foto, usar placeholder
+    return foto ? `http://localhost:3001${foto}` : "https://via.placeholder.com/300";
+  };
 
   return (
     <div className="container mx-auto px-6 py-12">
@@ -41,7 +49,7 @@ const Catalogo = () => {
               onClick={() => setProductoSeleccionado(producto)}
             >
               <img
-                src={producto.imagen || "https://via.placeholder.com/300"}
+                src={getImagenUrl(producto.Foto)}
                 alt={producto.Nombre_producto}
                 className="w-full h-40 object-cover"
               />
@@ -86,10 +94,7 @@ const Catalogo = () => {
               </h3>
 
               <img
-                src={
-                  productoSeleccionado.imagen ||
-                  "https://via.placeholder.com/300"
-                }
+                src={getImagenUrl(productoSeleccionado.Foto)}
                 alt={productoSeleccionado.Nombre_producto}
                 className="w-full h-48 object-cover rounded-md mb-4"
               />

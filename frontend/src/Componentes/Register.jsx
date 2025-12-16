@@ -60,6 +60,8 @@ export default function Register() {
         Contraseña: formData.password,
         Tipo_documento: formData.documentType,
         Numero_documento: formData.documentNumber,
+        terms: formData.terms,     // <-- enviar consentimiento de términos
+        privacy: formData.privacy, // <-- enviar consentimiento de privacidad
       });
 
       setSuccess(
