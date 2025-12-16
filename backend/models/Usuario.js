@@ -42,6 +42,20 @@ const Usuario = {
       );
     });
   },
+
+  // ✅ MÉTODO NUEVO – NO AFECTA LOS DEMÁS
+  updateRol: async (id, rol) => {
+    return new Promise((resolve, reject) => {
+      DB.query(
+        "UPDATE usuarios SET Rol_usuario = ? WHERE ID_usuario = ?",
+        [rol, id],
+        (err, results) => {
+          if (err) return reject(err);
+          resolve(results);
+        }
+      );
+    });
+  },
 };
 
 module.exports = Usuario;

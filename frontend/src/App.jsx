@@ -28,6 +28,7 @@ import InstalacionesList from "./Componentes/InstalacionesList.jsx";
 import ProveedoresList from "./Componentes/ProveedoresList.jsx";
 import SoporteList from "./Componentes/SoporteList.jsx";
 import EntregasList from "./Componentes/EntregasList.jsx";
+import Dashboard from "./admin/pages/Dashboard.jsx";
 
 // ---------- Usuario ----------
 import UsuarioLayout from "./usuario/UsuarioLayout.jsx";
@@ -40,6 +41,7 @@ import PerfilUsuario from "./usuario/Componentes/PerfilUsuario.jsx";
 import MisCompras from "./usuario/Componentes/MisCompras.jsx";
 import MisPagos from "./usuario/Componentes/MisPagos.jsx";
 import SoporteTecnico from "./usuario/Componentes/SoporteTecnico.jsx";
+import IntroUsuario from './usuario/Componentes/IntroUsuario.jsx';
 
 // ---------- Domiciliario ----------
 import DomiciliarioLayout from "./domiciliario/layout/DomiciliarioLayout.jsx";
@@ -96,6 +98,7 @@ export default function App() {
           </PrivateRoute>
         }
       >
+        <Route index element={<Dashboard />} />
         <Route path="perfil" element={<PerfilAdmin />} />
         <Route path="usuarios" element={<UsuariosList />} />
         <Route path="productos" element={<ProductosList />} />
@@ -139,7 +142,7 @@ export default function App() {
           </PrivateRoute>
         }
       >
-        <Route index element={<HomeUsuario />} />
+        <Route index element={<IntroUsuario />} />
         <Route path="catalogo" element={<CatalogoUsuario />} />
         <Route path="carrito" element={<CarritoUsuario />} />
         <Route path="seguimiento" element={<SeguimientoPedidos />} />

@@ -6,10 +6,10 @@ const JWT_SECRET = process.env.JWT_SECRET;
 // ==================================================
 //   Modo pruebas (desactiva autenticación)
 // ==================================================
-const modoPruebas = false; // ⚠️ SOLO desarrollo local
+const modoPruebas = false; //   SOLO desarrollo local
 
 if (modoPruebas) {
-  console.log("⚠️  MODO PRUEBAS ACTIVADO (Tokens deshabilitados)");
+  console.log("   MODO PRUEBAS ACTIVADO (Tokens deshabilitados)");
 
   module.exports = {
     verificarToken: (req, res, next) => {

@@ -161,7 +161,7 @@ export default function PerfilUsuario() {
     }
 
     const confirmar = window.confirm(
-      "⚠️ Esta acción es irreversible. ¿Deseas eliminar tu cuenta?"
+      "  Esta acción es irreversible. ¿Deseas eliminar tu cuenta?"
     );
     if (!confirmar) return;
 
@@ -293,7 +293,7 @@ export default function PerfilUsuario() {
           {/* Zona de peligro */}
           <div className="mt-12 border-t border-red-500/40 pt-8">
             <h2 className="text-xl font-bold text-red-400 mb-4">
-              ⚠️ Zona de peligro
+                Zona de peligro
             </h2>
 
             <input

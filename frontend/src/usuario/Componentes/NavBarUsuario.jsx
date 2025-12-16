@@ -36,6 +36,8 @@ export default function NavBarUsuario() {
     localStorage.removeItem("token");
     localStorage.removeItem("usuario");
 
+    sessionStorage.removeItem("introUsuarioMostrada");
+
     navigate("/", { replace: true });
   };
 
