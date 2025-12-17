@@ -82,7 +82,7 @@ export default function AdminLayoutAdmin() {
       >
         {user && (
           <h1 className="text-2xl font-bold mb-6">
-            Bienvenido al Panel de Administración, {user.Nombre} 👋
+            Bienvenido al Panel de Administración, {user.Nombre} 
           </h1>
         )}
         <Outlet />

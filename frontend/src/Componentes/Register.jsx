@@ -30,41 +30,26 @@ export default function Register() {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = "El nombre es obligatorio.";
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = "El correo electrónico es obligatorio.";
-    }
-
+    if (!formData.name.trim()) newErrors.name = "El nombre es obligatorio.";
+    if (!formData.email.trim()) newErrors.email = "El correo es obligatorio.";
     if (!formData.password) {
       newErrors.password = "La contraseña es obligatoria.";
     } else if (formData.password.length < 6) {
-      newErrors.password = "La contraseña debe tener al menos 6 caracteres.";
+      newErrors.password = "Debe tener al menos 6 caracteres.";
     }
-
-    if (!formData.documentType) {
-      newErrors.documentType = "Selecciona el tipo de documento.";
-    }
-
-    if (!formData.documentNumber.trim()) {
-      newErrors.documentNumber = "El número de documento es obligatorio.";
-    }
-
-    if (!formData.terms) {
+    if (!formData.documentType) newErrors.documentType = "Selecciona el tipo.";
+    if (!formData.documentNumber.trim())
+      newErrors.documentNumber = "El número es obligatorio.";
+    if (!formData.terms)
       newErrors.terms = "Debes aceptar los Términos y Condiciones.";
-    }
-
-    if (!formData.privacy) {
+    if (!formData.privacy)
       newErrors.privacy = "Debes aceptar la Política de Privacidad.";
-    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     setSuccess("");
 
@@ -107,17 +92,15 @@ export default function Register() {
               value={formData.name}
               onChange={handleChange}
               placeholder="Ingresa tu nombre completo"
-              className="w-full px-4 py-2 rounded-lg bg-white/30 text-white placeholder-white/70 focus:ring-2 focus:ring-[#5f54b3]"
+              className="w-full px-4 py-2 rounded-lg bg-white/30 text-white placeholder-white/70"
             />
-            {errors.name && (
-              <p className="text-red-400 text-sm mt-1">{errors.name}</p>
-            )}
+            {errors.name && <p className="text-red-400 text-sm">{errors.name}</p>}
           </div>
 
           {/* Correo */}
           <div>
             <label className="block text-white mb-1">
-              Correo electrónico <span className="text-red-400">*</span>
+              Correo <span className="text-red-400">*</span>
             </label>
             <input
               type="email"
@@ -125,11 +108,9 @@ export default function Register() {
               value={formData.email}
               onChange={handleChange}
               placeholder="ejemplo@correo.com"
-              className="w-full px-4 py-2 rounded-lg bg-white/30 text-white placeholder-white/70 focus:ring-2 focus:ring-[#3dc692]"
+              className="w-full px-4 py-2 rounded-lg bg-white/30 text-white placeholder-white/70"
             />
-            {errors.email && (
-              <p className="text-red-400 text-sm mt-1">{errors.email}</p>
-            )}
+            {errors.email && <p className="text-red-400 text-sm">{errors.email}</p>}
           </div>
 
           {/* Contraseña */}
@@ -143,10 +124,10 @@ export default function Register() {
               value={formData.password}
               onChange={handleChange}
               placeholder="Mínimo 6 caracteres"
-              className="w-full px-4 py-2 rounded-lg bg-white/30 text-white placeholder-white/70 focus:ring-2 focus:ring-[#5f54b3]"
+              className="w-full px-4 py-2 rounded-lg bg-white/30 text-white placeholder-white/70"
             />
             {errors.password && (
-              <p className="text-red-400 text-sm mt-1">{errors.password}</p>
+              <p className="text-red-400 text-sm">{errors.password}</p>
             )}
           </div>
 
@@ -167,18 +148,17 @@ export default function Register() {
                 <option value="TI">Tarjeta de Identidad</option>
                 <option value="CE">Cédula de Extranjería</option>
               </select>
-
               <input
                 type="text"
                 name="documentNumber"
                 value={formData.documentNumber}
                 onChange={handleChange}
-                placeholder="Número de documento"
+                placeholder="Número"
                 className="w-2/3 px-3 py-2 rounded-lg bg-white/30 text-white placeholder-white/70"
               />
             </div>
             {(errors.documentType || errors.documentNumber) && (
-              <p className="text-red-400 text-sm mt-1">
+              <p className="text-red-400 text-sm">
                 {errors.documentType || errors.documentNumber}
               </p>
             )}
@@ -194,7 +174,7 @@ export default function Register() {
                 onChange={handleChange}
                 className="mr-2 mt-1"
               />
-              Acepto los{" "}
+              Estoy de acuerdo con los{" "}
               <button
                 type="button"
                 onClick={() => setShowTerminos(!showTerminos)}
@@ -205,6 +185,15 @@ export default function Register() {
               </button>
               <span className="text-red-400 ml-1">*</span>
             </label>
+
+            {showTerminos && (
+              <div className="ml-6 p-4 bg-white/10 rounded-lg max-h-60 overflow-y-auto text-xs text-blue-200 space-y-2">
+                <p>Al usar EcoEnergix aceptas cumplir estos términos.</p>
+                <p>Eres responsable del uso de tu cuenta.</p>
+                <p>Los precios pueden cambiar sin previo aviso.</p>
+              </div>
+            )}
+
             {errors.terms && (
               <p className="text-red-400 text-sm ml-6">{errors.terms}</p>
             )}
@@ -231,6 +220,15 @@ export default function Register() {
               </button>
               <span className="text-red-400 ml-1">*</span>
             </label>
+
+            {showPrivacidad && (
+              <div className="ml-6 p-4 bg-white/10 rounded-lg max-h-60 overflow-y-auto text-xs text-blue-200 space-y-2">
+                <p>Protegemos tus datos personales.</p>
+                <p>No compartimos tu información con terceros.</p>
+                <p>Puedes solicitar eliminación de datos.</p>
+              </div>
+            )}
+
             {errors.privacy && (
               <p className="text-red-400 text-sm ml-6">{errors.privacy}</p>
             )}
@@ -239,18 +237,11 @@ export default function Register() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#5f54b3] text-white py-2 rounded-lg hover:bg-[#3dc692] transition disabled:opacity-50"
+            className="w-full bg-[#5f54b3] text-white py-2 rounded-lg hover:bg-[#3dc692] transition"
           >
             {loading ? "Registrando..." : "Registrarme"}
           </button>
         </form>
-
-        <p className="text-sm text-white text-center mt-4">
-          ¿Ya tienes cuenta?{" "}
-          <a href="/login" className="text-[#3dc692] hover:underline">
-            Inicia sesión
-          </a>
-        </p>
       </div>
     </div>
   );
