@@ -215,7 +215,7 @@ function ProductosList() {
   if (loading)
     return (
       <div className="min-h-screen flex items-center justify-center text-white">
-        Cargando productos.....
+        Cargando productos..
       </div>
     );
 
