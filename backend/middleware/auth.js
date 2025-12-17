@@ -2,14 +2,11 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 const JWT_SECRET = process.env.JWT_SECRET;
-
 // ==================================================
-//   Modo pruebas (desactiva autenticación)
-// ==================================================
-const modoPruebas = false; //   SOLO desarrollo local
+const modoPruebas = true; 
 
 if (modoPruebas) {
-  console.log("   MODO PRUEBAS ACTIVADO (Tokens deshabilitados)");
+  console.log(" MODO PRUEBAS");
 
   module.exports = {
     verificarToken: (req, res, next) => {

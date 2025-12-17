@@ -5,7 +5,7 @@ const authController = require("../controllers/authController");
 // Middleware para verificar token de usuario
 const { verificarUsuario } = require("../middleware/authUsuario");
 // Middleware para la subida de fotos de perfil
-const uploadUsuario = require("../middleware/uploadUsuario");
+const uploadUsuario = require("../middleware/upload");
 
 /* =======================================================
    REGISTRO

@@ -1,17 +1,12 @@
-const express = require("express");
+// routes/productos.js
+const express = require("express"); 
 const router = express.Router();
 const DB = require("../db/connection");
 const { verificarToken, verificarRol } = require("../middleware/auth");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
-
-/**
- * @swagger
- * tags:
- *   name: Productos
- *   description: CRUD de productos, carga masiva y subida de imágenes
- */
+const csv = require("csv-parser"); // npm install csv-parser
 
 // ============================
 // Configuración multer
@@ -30,125 +25,114 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// ==================================================
-// GET: Obtener todos los productos (solo ADMIN)
-// ==================================================
+// ============================
+// GET: Todos los productos (ADMIN)
+// ============================
 router.get("/", verificarToken, verificarRol(["administrador"]), (req, res) => {
-  DB.query("SELECT * FROM producto", (err, result) => {
-    if (err) {
-      return res.status(500).json({ error: "Error al obtener los productos", details: err });
-    }
-    res.json(result);
+  const sql = "SELECT * FROM producto";
+  DB.query(sql, (err, results) => {
+    if (err) return res.status(500).json({ message: "Error al obtener productos", details: err });
+    res.json(results);
   });
 });
 
-// ==================================================
-// GET: Obtener producto por ID (solo ADMIN)
-// ==================================================
-router.get("/:id", verificarToken, verificarRol(["administrador"]), (req, res) => {
-  const { id } = req.params;
-  DB.query("SELECT * FROM producto WHERE ID_producto = ?", [id], (err, result) => {
-    if (err) return res.status(500).json({ error: "Error al buscar el producto", details: err });
-    if (result.length === 0) return res.status(404).json({ message: "Producto no encontrado" });
-    res.json(result[0]);
-  });
-});
-
-// ==================================================
-// POST: Crear producto (solo ADMIN)
-// ==================================================
+// ============================
+// POST: Crear producto
+// ============================
 router.post("/", verificarToken, verificarRol(["administrador"]), (req, res) => {
   const { Nombre_producto, Tipo_producto, Precio, Marca, Fecha_fabricacion, Garantia, ID_proveedor } = req.body;
-
-  if (!Nombre_producto || !Tipo_producto || !Precio || !Marca || !Fecha_fabricacion || !Garantia || !ID_proveedor) {
-    return res.status(400).json({ message: "Todos los campos son obligatorios" });
-  }
-
-  DB.query(
-    `INSERT INTO producto (Nombre_producto, Tipo_producto, Precio, Marca, Fecha_fabricacion, Garantia, ID_proveedor) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [Nombre_producto, Tipo_producto, Precio, Marca, Fecha_fabricacion, Garantia, ID_proveedor],
-    (err, result) => {
-      if (err) return res.status(500).json({ error: "Error al crear el producto", details: err });
-      res.status(201).json({
-        message: "Producto creado exitosamente",
-        producto: { ID_producto: result.insertId, Nombre_producto, Tipo_producto, Precio, Marca, Fecha_fabricacion, Garantia, ID_proveedor },
-      });
-    }
-  );
+  const sql = "INSERT INTO producto (Nombre_producto, Tipo_producto, Precio, Marca, Fecha_fabricacion, Garantia, ID_proveedor) VALUES (?, ?, ?, ?, ?, ?, ?)";
+  DB.query(sql, [Nombre_producto, Tipo_producto, Precio, Marca, Fecha_fabricacion, Garantia, ID_proveedor], (err, result) => {
+    if (err) return res.status(500).json({ message: "Error al crear producto", details: err });
+    res.status(201).json({ message: "Producto creado", ID_producto: result.insertId });
+  });
 });
 
-// ==================================================
-// PUT: Actualizar producto (solo ADMIN)
-// ==================================================
+// ============================
+// PUT: Actualizar producto
+// ============================
 router.put("/:id", verificarToken, verificarRol(["administrador"]), (req, res) => {
   const { id } = req.params;
   const { Nombre_producto, Tipo_producto, Precio, Marca, Fecha_fabricacion, Garantia, ID_proveedor } = req.body;
-
-  if (!Nombre_producto || !Tipo_producto || !Precio || !Marca || !Fecha_fabricacion || !Garantia || !ID_proveedor) {
-    return res.status(400).json({ message: "Todos los campos son obligatorios para actualizar" });
-  }
-
-  DB.query(
-    `UPDATE producto SET Nombre_producto=?, Tipo_producto=?, Precio=?, Marca=?, Fecha_fabricacion=?, Garantia=?, ID_proveedor=? WHERE ID_producto=?`,
-    [Nombre_producto, Tipo_producto, Precio, Marca, Fecha_fabricacion, Garantia, ID_proveedor, id],
-    (err, result) => {
-      if (err) return res.status(500).json({ error: "Error al actualizar el producto", details: err });
-      if (result.affectedRows === 0) return res.status(404).json({ message: "Producto no encontrado" });
-      res.json({ message: "Producto actualizado exitosamente", id });
-    }
-  );
+  const sql = "UPDATE producto SET Nombre_producto=?, Tipo_producto=?, Precio=?, Marca=?, Fecha_fabricacion=?, Garantia=?, ID_proveedor=? WHERE ID_producto=?";
+  DB.query(sql, [Nombre_producto, Tipo_producto, Precio, Marca, Fecha_fabricacion, Garantia, ID_proveedor, id], (err) => {
+    if (err) return res.status(500).json({ message: "Error al actualizar producto", details: err });
+    res.json({ message: "Producto actualizado" });
+  });
 });
 
-// ==================================================
-// DELETE: Eliminar producto (solo ADMIN)
-// ==================================================
+// ============================
+// DELETE: Eliminar producto
+// ============================
 router.delete("/:id", verificarToken, verificarRol(["administrador"]), (req, res) => {
   const { id } = req.params;
-  DB.query("DELETE FROM producto WHERE ID_producto = ?", [id], (err, result) => {
-    if (err) return res.status(500).json({ error: "Error al eliminar el producto", details: err });
-    if (result.affectedRows === 0) return res.status(404).json({ message: "Producto no encontrado" });
-    res.json({ message: "Producto eliminado exitosamente", id });
+  const sql = "DELETE FROM producto WHERE ID_producto=?";
+  DB.query(sql, [id], (err) => {
+    if (err) return res.status(500).json({ message: "Error al eliminar producto", details: err });
+    res.json({ message: "Producto eliminado" });
   });
 });
 
-// ==================================================
-// POST: Carga masiva de productos (solo ADMIN)
-// ==================================================
-router.post("/bulk", verificarToken, verificarRol(["administrador"]), (req, res) => {
-  const productos = req.body;
-  if (!Array.isArray(productos) || productos.length === 0) return res.status(400).json({ message: "Debe enviar un arreglo de productos" });
-
-  for (const p of productos) {
-    if (!p.Nombre_producto || !p.Tipo_producto || !p.Precio || !p.Marca || !p.Fecha_fabricacion || !p.Garantia || !p.ID_proveedor) {
-      return res.status(400).json({ message: "Todos los campos son obligatorios en cada producto" });
-    }
-  }
-
-  const values = productos.map((p) => [p.Nombre_producto, p.Tipo_producto, p.Precio, p.Marca, p.Fecha_fabricacion, p.Garantia, p.ID_proveedor]);
-
-  DB.query(
-    `INSERT INTO producto (Nombre_producto, Tipo_producto, Precio, Marca, Fecha_fabricacion, Garantia, ID_proveedor) VALUES ?`,
-    [values],
-    (err) => {
-      if (err) return res.status(500).json({ error: "Error en la carga masiva", details: err });
-      res.status(201).json({ message: "Carga masiva realizada correctamente", cantidad: productos.length });
-    }
-  );
-});
-
-// ==================================================
-// POST: Subir imagen de producto (solo ADMIN)
-// ==================================================
+// ============================
+// POST: Subir imagen de producto
+// ============================
 router.post("/:id/imagen", verificarToken, verificarRol(["administrador"]), upload.single("imagen"), (req, res) => {
+  if (!req.file) return res.status(400).json({ message: "Archivo requerido" });
   const { id } = req.params;
-  if (!req.file) return res.status(400).json({ message: "No se envió ninguna imagen" });
-
-  const imagenPath = `/uploads/productos/${req.file.filename}`;
-
-  DB.query("UPDATE producto SET Foto = ? WHERE ID_producto = ?", [imagenPath, id], (err, result) => {
-    if (err) return res.status(500).json({ message: "Error al guardar la imagen", details: err });
-    res.json({ message: "Imagen subida correctamente", imagen: imagenPath });
+  const filePath = `/uploads/productos/${req.file.filename}`;
+  const sql = "UPDATE producto SET Foto=? WHERE ID_producto=?";
+  DB.query(sql, [filePath, id], (err) => {
+    if (err) return res.status(500).json({ message: "Error al subir imagen", details: err });
+    res.json({ message: "Imagen subida correctamente", imagen: filePath });
   });
 });
+
+// ==================================================
+// POST: Carga masiva de productos vía CSV (ADMIN)
+// ==================================================
+router.post(
+  "/carga-masiva",
+  verificarToken,
+  verificarRol(["administrador"]),
+  upload.single("archivo"),
+  (req, res) => {
+    if (!req.file) return res.status(400).json({ message: "Archivo requerido" });
+
+    const productos = [];
+    const filePath = req.file.path;
+
+    fs.createReadStream(filePath)
+      .pipe(csv())
+      .on("data", (row) => {
+        try {
+          const nombre = row.Nombre_producto?.trim() || null;
+          const tipo = row.Tipo_producto?.trim() || null;
+          const precio = parseFloat(row.Precio) || 0;
+          const marca = row.Marca?.trim() || null;
+          const fecha = row.Fecha_fabricacion?.trim() || null;
+          const garantia = parseInt(row.Garantia) || 0;
+          const idProveedor = parseInt(row.ID_proveedor) || null;
+
+          if (nombre && tipo && precio && marca && fecha && idProveedor) {
+            productos.push([nombre, tipo, precio, marca, fecha, garantia, idProveedor]);
+          }
+        } catch (err) {
+          console.error("Fila inválida ignorada:", row, err);
+        }
+      })
+      .on("end", () => {
+        fs.unlinkSync(filePath); // borramos archivo temporal
+
+        if (productos.length === 0)
+          return res.status(400).json({ message: "No se encontraron productos válidos en el archivo" });
+
+        const sql = `INSERT INTO producto (Nombre_producto, Tipo_producto, Precio, Marca, Fecha_fabricacion, Garantia, ID_proveedor) VALUES ?`;
+        DB.query(sql, [productos], (err, result) => {
+          if (err) return res.status(500).json({ message: "Error al insertar productos", details: err });
+          res.status(201).json({ message: `${result.affectedRows} productos cargados correctamente` });
+        });
+      });
+  }
+);
 
 module.exports = router;

@@ -1,0 +1,5 @@
+Nombre_producto,Tipo_producto,Precio,Marca,Fecha_fabricacion,Garantia,ID_proveedor
+Panel Solar 300W,Panel,1500000,SunPower,2025-01-01,24,1
+Inversor 5kW,Inversor,2000000,SolarMax,2025-02-15,12,2
+Batería Li-ion 10kWh,Batería,3500000,Tesla,2025-03-10,36,1
+Controlador de Carga MPPT,Controlador,500000,Renogy,2025-04-05,24,2
