@@ -186,7 +186,7 @@ function UsuariosList() {
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 to-slate-800">
       <div className="text-center">
         <div className="w-16 h-16 border-4 border-teal-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-white text-lg">Cargando usuarios...</p>
+        <p className="text-white text-lg">Cargando usuarios......</p>
       </div>
     </div>
   );
@@ -225,7 +225,7 @@ function UsuariosList() {
                 onChange={(e) => setRoleFilter(e.target.value)}
                 className="px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
               >
-                <option value="">Todos los roles</option>
+                <option value="">Todos os roles</option>
                 <option value="administrador">Administrador</option>
                 <option value="domiciliario">Domiciliario</option>
               </select>

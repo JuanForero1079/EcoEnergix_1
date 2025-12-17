@@ -24,11 +24,16 @@ function SoportesList() {
 
   const [editMode, setEditMode] = useState(false);
   const [editId, setEditId] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
-  // Filtros de búsqueda
+  /* ===== FILTROS ===== */
   const [searchTerm, setSearchTerm] = useState("");
   const [fechaInicio, setFechaInicio] = useState("");
   const [fechaFin, setFechaFin] = useState("");
+
+  /* ===== PAGINACIÓN ===== */
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
 
   useEffect(() => {
     fetchSoportes();
@@ -39,9 +44,9 @@ function SoportesList() {
       setLoading(true);
       setError("");
       const res = await getSoportes();
-      setSoportes(res);
+      setSoportes(res || []);
     } catch (err) {
-      console.error("Error al obtener soportes:", err);
+      console.error(err);
       setError("No se pudieron cargar las solicitudes de soporte.");
     } finally {
       setLoading(false);
@@ -51,6 +56,20 @@ function SoportesList() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const resetForm = () => {
+    setFormData({
+      Fecha_solicitud: "",
+      Descripcion_problema: "",
+      Fecha_resolucion: "",
+      ID_usuarioFK: "",
+      ID_producto: "",
+      ID_instalacion: "",
+      ID_domiciliario: "",
+    });
+    setEditMode(false);
+    setEditId(null);
   };
 
   const handleSubmit = async (e) => {
@@ -63,21 +82,12 @@ function SoportesList() {
         await createSoporte(formData);
         alert("Soporte creado correctamente");
       }
-      setFormData({
-        Fecha_solicitud: "",
-        Descripcion_problema: "",
-        Fecha_resolucion: "",
-        ID_usuarioFK: "",
-        ID_producto: "",
-        ID_instalacion: "",
-        ID_domiciliario: "",
-      });
-      setEditMode(false);
-      setEditId(null);
+      resetForm();
+      setShowModal(false);
       fetchSoportes();
     } catch (err) {
-      console.error("Error al guardar soporte:", err);
-      alert("Error al guardar soporte.");
+      console.error(err);
+      alert("Error al guardar soporte");
     }
   };
 
@@ -93,40 +103,48 @@ function SoportesList() {
     });
     setEditId(s.ID_soporte);
     setEditMode(true);
+    setShowModal(true);
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("¿Seguro que deseas eliminar esta solicitud de soporte?")) return;
-    try {
-      await deleteSoporte(id);
-      alert("Soporte eliminado correctamente");
-      fetchSoportes();
-    } catch (err) {
-      console.error("Error al eliminar soporte:", err);
-      alert("No se pudo eliminar la solicitud.");
-    }
+    if (!window.confirm("¿Eliminar solicitud de soporte?")) return;
+    await deleteSoporte(id);
+    fetchSoportes();
   };
 
-  const formatFecha = (fechaString) => {
-    if (!fechaString) return "";
-    const fecha = new Date(fechaString);
-    const dia = fecha.getDate();
-    const mes = fecha.getMonth() + 1;
-    const anio = fecha.getFullYear();
-    return `${dia}/${mes}/${anio}`;
+  const formatFecha = (fecha) => {
+    if (!fecha) return "";
+    const f = new Date(fecha);
+    return `${f.getDate()}/${f.getMonth() + 1}/${f.getFullYear()}`;
   };
 
+  /* ===== FILTRADO ===== */
   const filteredSoportes = soportes.filter((s) => {
     const fechaSolicitud = new Date(s.Fecha_solicitud);
     const inicio = fechaInicio ? new Date(fechaInicio) : null;
     const fin = fechaFin ? new Date(fechaFin) : null;
 
     const matchFecha = (!inicio || fechaSolicitud >= inicio) && (!fin || fechaSolicitud <= fin);
-    const matchSearch = s.Descripcion_problema.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchSearch = s.Descripcion_problema
+      ?.toLowerCase()
+      .includes(searchTerm.toLowerCase());
 
     return matchFecha && matchSearch;
   });
 
+  useEffect(() => setCurrentPage(1), [searchTerm, fechaInicio, fechaFin]);
+
+  /* ===== PAGINACIÓN ===== */
+  const indexOfLast = currentPage * itemsPerPage;
+  const indexOfFirst = indexOfLast - itemsPerPage;
+  const currentSoportes = filteredSoportes.slice(indexOfFirst, indexOfLast);
+  const totalPages = Math.ceil(filteredSoportes.length / itemsPerPage);
+
+  const paginate = (p) => {
+    if (p >= 1 && p <= totalPages) setCurrentPage(p);
+  };
+
+  /* ===== PDF ===== */
   const handleExportPDF = () => {
     const columns = [
       "ID",
@@ -151,79 +169,121 @@ function SoportesList() {
     exportTableToPDF("Solicitudes de Soporte", columns, rows);
   };
 
-  if (loading) return <p className="text-white p-4">Cargando solicitudes de soporte...</p>;
-  if (error) return <p className="text-red-500 p-4">{error}</p>;
+  if (loading) return <p className="text-white text-center">Cargando...</p>;
+  if (error) return <p className="text-red-400 text-center">{error}</p>;
 
   return (
-    <div className="p-6 bg-slate-800/60 rounded-2xl shadow-lg border border-slate-700 text-white">
-      <h2 className="text-2xl font-bold mb-4">Soporte Técnico</h2>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-6">
+      <div className="max-w-7xl mx-auto">
 
-      {/* Formulario */}
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <input type="date" name="Fecha_solicitud" value={formData.Fecha_solicitud} onChange={handleChange} className="p-2 rounded bg-slate-700 text-white" required />
-        <input type="text" name="Descripcion_problema" placeholder="Descripción del problema" value={formData.Descripcion_problema} onChange={handleChange} className="p-2 rounded bg-slate-700 text-white" required />
-        <input type="date" name="Fecha_resolucion" value={formData.Fecha_resolucion} onChange={handleChange} className="p-2 rounded bg-slate-700 text-white" />
-        <input type="number" name="ID_usuarioFK" placeholder="ID Usuario" value={formData.ID_usuarioFK} onChange={handleChange} className="p-2 rounded bg-slate-700 text-white" required />
-        <input type="number" name="ID_producto" placeholder="ID Producto" value={formData.ID_producto} onChange={handleChange} className="p-2 rounded bg-slate-700 text-white" required />
-        <input type="number" name="ID_instalacion" placeholder="ID Instalación" value={formData.ID_instalacion} onChange={handleChange} className="p-2 rounded bg-slate-700 text-white" required />
-        <input type="number" name="ID_domiciliario" placeholder="ID Domiciliario" value={formData.ID_domiciliario} onChange={handleChange} className="p-2 rounded bg-slate-700 text-white" required />
-        <button type="submit" className="col-span-1 md:col-span-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded">
-          {editMode ? "Guardar Cambios" : "Agregar Soporte"}
-        </button>
-      </form>
+        {/* Barra superior */}
+        <div className="bg-slate-800/60 p-6 rounded-2xl border border-slate-700/50 mb-6 flex flex-wrap gap-3 justify-between">
+          <input
+            placeholder="Buscar problema..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="px-4 py-3 bg-slate-700/50 rounded-xl text-white"
+          />
 
-      {/* Filtro por búsqueda y fechas */}
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-4">
-        <input type="text" placeholder="Buscar por problema..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="p-2 rounded bg-slate-700 text-white w-full md:w-1/3" />
-        <input type="date" value={fechaInicio} onChange={(e) => setFechaInicio(e.target.value)} className="p-2 rounded bg-slate-700 text-white" />
-        <input type="date" value={fechaFin} onChange={(e) => setFechaFin(e.target.value)} className="p-2 rounded bg-slate-700 text-white" />
-        <button onClick={handleExportPDF} className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-          Exportar PDF
-        </button>
+          <div className="flex gap-2 flex-wrap">
+            <input type="date" value={fechaInicio} onChange={(e) => setFechaInicio(e.target.value)} className="px-3 py-2 bg-slate-700 rounded-xl text-white" />
+            <input type="date" value={fechaFin} onChange={(e) => setFechaFin(e.target.value)} className="px-3 py-2 bg-slate-700 rounded-xl text-white" />
+            <button onClick={handleExportPDF} className="px-5 py-3 bg-green-600 rounded-xl text-white">
+              PDF
+            </button>
+            <button
+              onClick={() => { resetForm(); setShowModal(true); }}
+              className="px-6 py-3 bg-gradient-to-r from-teal-500 to-cyan-600 rounded-xl text-white"
+            >
+              + Nuevo Soporte
+            </button>
+          </div>
+        </div>
+
+        {/* Cards */}
+        <div className="space-y-4">
+          {currentSoportes.map((s) => (
+            <div
+              key={s.ID_soporte}
+              className="bg-slate-800/70 rounded-2xl p-6 border border-slate-700/50 flex justify-between items-center"
+            >
+              <div>
+                <p className="text-white font-medium">{s.Descripcion_problema}</p>
+                <p className="text-slate-400 text-sm">
+                  {formatFecha(s.Fecha_solicitud)} · Usuario {s.ID_usuarioFK}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={() => handleEdit(s)} className="px-4 py-2 bg-blue-600/20 text-blue-300 rounded-lg">
+                  Editar
+                </button>
+                <button onClick={() => handleDelete(s.ID_soporte)} className="px-4 py-2 bg-red-600/20 text-red-300 rounded-lg">
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* PAGINACIÓN */}
+        {totalPages > 1 && (
+          <div className="mt-6 flex justify-center gap-2 flex-wrap">
+            <button onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1}
+              className="px-4 py-2 bg-slate-700 rounded-lg text-white disabled:opacity-50">
+              Anterior
+            </button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter(p => p === 1 || p === totalPages || (p >= currentPage - 1 && p <= currentPage + 1))
+              .map(p => (
+                <button
+                  key={p}
+                  onClick={() => paginate(p)}
+                  className={`px-4 py-2 rounded-lg ${
+                    currentPage === p
+                      ? "bg-gradient-to-r from-teal-500 to-cyan-600"
+                      : "bg-slate-700"
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
+
+            <button onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages}
+              className="px-4 py-2 bg-slate-700 rounded-lg text-white disabled:opacity-50">
+              Siguiente
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Tabla */}
-      {filteredSoportes.length === 0 ? (
-        <p>No hay solicitudes registradas</p>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-slate-900 text-gray-100 border border-slate-700 rounded-lg">
-            <thead>
-              <tr className="bg-blue-600 text-left">
-                <th className="py-3 px-4">ID</th>
-                <th className="py-3 px-4">Fecha Solicitud</th>
-                <th className="py-3 px-4">Problema</th>
-                <th className="py-3 px-4">Fecha Resolución</th>
-                <th className="py-3 px-4">Usuario</th>
-                <th className="py-3 px-4">Producto</th>
-                <th className="py-3 px-4">Instalación</th>
-                <th className="py-3 px-4">Domiciliario</th>
-                <th className="py-3 px-4 text-center">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredSoportes.map((s) => (
-                <tr key={s.ID_soporte} className="border-b border-slate-700 hover:bg-slate-800">
-                  <td className="py-2 px-4">{s.ID_soporte}</td>
-                  <td className="py-2 px-4">{formatFecha(s.Fecha_solicitud)}</td>
-                  <td className="py-2 px-4">{s.Descripcion_problema}</td>
-                  <td className="py-2 px-4">{formatFecha(s.Fecha_resolucion)}</td>
-                  <td className="py-2 px-4">{s.ID_usuarioFK}</td>
-                  <td className="py-2 px-4">{s.ID_producto}</td>
-                  <td className="py-2 px-4">{s.ID_instalacion}</td>
-                  <td className="py-2 px-4">{s.ID_domiciliario}</td>
-                  <td className="py-2 px-4 text-center flex justify-center gap-2">
-                    <button onClick={() => handleEdit(s)} className="bg-yellow-500 hover:bg-yellow-600 text-black px-3 py-1 rounded">
-                      Editar
-                    </button>
-                    <button onClick={() => handleDelete(s.ID_soporte)} className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded">
-                      Eliminar
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* MODAL */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-slate-900 rounded-3xl p-8 max-w-xl w-full border border-slate-700">
+            <h2 className="text-2xl font-bold text-white mb-4">
+              {editMode ? "Editar Soporte" : "Nuevo Soporte"}
+            </h2>
+
+            <form onSubmit={handleSubmit} className="grid gap-4">
+              <input type="date" name="Fecha_solicitud" value={formData.Fecha_solicitud} onChange={handleChange} className="p-3 bg-slate-700 rounded-xl text-white" required />
+              <input name="Descripcion_problema" value={formData.Descripcion_problema} onChange={handleChange} placeholder="Descripción del problema" className="p-3 bg-slate-700 rounded-xl text-white" required />
+              <input type="date" name="Fecha_resolucion" value={formData.Fecha_resolucion} onChange={handleChange} className="p-3 bg-slate-700 rounded-xl text-white" />
+              <input name="ID_usuarioFK" value={formData.ID_usuarioFK} onChange={handleChange} placeholder="ID Usuario" className="p-3 bg-slate-700 rounded-xl text-white" />
+              <input name="ID_producto" value={formData.ID_producto} onChange={handleChange} placeholder="ID Producto" className="p-3 bg-slate-700 rounded-xl text-white" />
+              <input name="ID_instalacion" value={formData.ID_instalacion} onChange={handleChange} placeholder="ID Instalación" className="p-3 bg-slate-700 rounded-xl text-white" />
+              <input name="ID_domiciliario" value={formData.ID_domiciliario} onChange={handleChange} placeholder="ID Domiciliario" className="p-3 bg-slate-700 rounded-xl text-white" />
+
+              <div className="flex gap-3">
+                <button type="submit" className="flex-1 bg-teal-600 py-3 rounded-xl text-white">
+                  Guardar
+                </button>
+                <button type="button" onClick={() => setShowModal(false)} className="flex-1 bg-slate-700 py-3 rounded-xl text-white">
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>
