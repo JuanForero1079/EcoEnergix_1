@@ -3,9 +3,14 @@ import ProductosService from "../admin/services/productsServiceAdmin.js";
 import { exportTableToPDF } from "../utils/exportPDF";
 
 function ProductosList() {
+  /* ============================
+      STATES
+  ============================ */
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const [searchTerm, setSearchTerm] = useState("");
 
   const [formData, setFormData] = useState({
     ID_producto: null,
@@ -19,68 +24,28 @@ function ProductosList() {
   });
 
   const [editMode, setEditMode] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [showModal, setShowModal] = useState(false);
 
-  // CSV carga masiva
+  /* CSV */
   const [file, setFile] = useState(null);
   const [csvPreview, setCsvPreview] = useState([]);
 
-  // ============================
-  // Manejo CSV
-  // ============================
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-    setFile(selectedFile);
+  /* PAGINACIÓN */
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
-    if (!selectedFile) {
-      setCsvPreview([]);
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const text = event.target.result;
-      const lines = text.split("\n").filter((line) => line.trim() !== "");
-      const headers = lines[0].split(",");
-      const rows = lines.slice(1).map((line) => {
-        const values = line.split(",");
-        const rowObj = {};
-        headers.forEach((h, i) => (rowObj[h.trim()] = values[i]?.trim()));
-        return rowObj;
-      });
-      setCsvPreview(rows);
-    };
-    reader.readAsText(selectedFile);
-  };
-
-  const handleBulkUploadCSV = async () => {
-    if (!file) return alert("Selecciona un archivo CSV");
-    const formDataCSV = new FormData();
-    formDataCSV.append("archivo", file);
-
-    try {
-      const res = await ProductosService.bulkUpload(formDataCSV);
-      alert(res.message || "Carga masiva exitosa");
-      setFile(null);
-      setCsvPreview([]);
-      fetchProductos();
-    } catch (err) {
-      console.error("Error en carga masiva CSV:", err);
-      alert(err.response?.data?.message || "Error al subir CSV");
-    }
-  };
-
-  // ============================
-  // Obtener productos
-  // ============================
+  /* ============================
+      FETCH
+  ============================ */
   const fetchProductos = async () => {
     try {
       setLoading(true);
       const data = await ProductosService.getAll();
       setProductos(Array.isArray(data) ? data : []);
+      setError("");
     } catch (err) {
-      console.error("Error al obtener productos:", err);
-      setError("No se pudo obtener la lista de productos.");
+      console.error(err);
+      setError("No se pudo obtener la lista de productos");
     } finally {
       setLoading(false);
     }
@@ -90,14 +55,28 @@ function ProductosList() {
     fetchProductos();
   }, []);
 
+  /* ============================
+      FORM
+  ============================ */
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // ============================
-  // Crear / Editar producto
-  // ============================
+  const resetForm = () => {
+    setFormData({
+      ID_producto: null,
+      Nombre_producto: "",
+      Tipo_producto: "",
+      Precio: "",
+      Marca: "",
+      Fecha_fabricacion: "",
+      Garantia: "",
+      ID_proveedor: "",
+    });
+    setEditMode(false);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -108,201 +87,337 @@ function ProductosList() {
         await ProductosService.create(formData);
         alert("Producto creado correctamente");
       }
-
-      setFormData({
-        ID_producto: null,
-        Nombre_producto: "",
-        Tipo_producto: "",
-        Precio: "",
-        Marca: "",
-        Fecha_fabricacion: "",
-        Garantia: "",
-        ID_proveedor: "",
-      });
-      setEditMode(false);
+      resetForm();
+      setShowModal(false);
       fetchProductos();
-    } catch (err) {
-      console.error("Error al guardar producto:", err);
-      alert("Error al guardar producto.");
+    } catch {
+      alert("Error al guardar producto");
     }
   };
 
-  const handleEdit = (producto) => {
+  const handleEdit = (p) => {
     setFormData({
-      ID_producto: producto.ID_producto,
-      Nombre_producto: producto.Nombre_producto,
-      Tipo_producto: producto.Tipo_producto,
-      Precio: producto.Precio,
-      Marca: producto.Marca,
-      Fecha_fabricacion: producto.Fecha_fabricacion?.split("T")[0] || "",
-      Garantia: producto.Garantia,
-      ID_proveedor: producto.ID_proveedor,
+      ...p,
+      Fecha_fabricacion: p.Fecha_fabricacion?.split("T")[0] || "",
     });
     setEditMode(true);
+    setShowModal(true);
   };
 
-  // ============================
-  // Eliminar producto
-  // ============================
   const handleDelete = async (id) => {
-    if (!window.confirm("¿Seguro que deseas eliminar este producto?")) return;
+    if (!window.confirm("¿Eliminar producto?")) return;
+    await ProductosService.delete(id);
+    fetchProductos();
+  };
+
+  /* ============================
+      CSV
+  ============================ */
+  const handleFileChange = (e) => {
+    const selected = e.target.files[0];
+    setFile(selected);
+    if (!selected) return setCsvPreview([]);
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const lines = ev.target.result.split("\n").filter(Boolean);
+      const headers = lines[0].split(",");
+      const rows = lines.slice(1).map((line) => {
+        const values = line.split(",");
+        const obj = {};
+        headers.forEach((h, i) => (obj[h.trim()] = values[i]?.trim()));
+        return obj;
+      });
+      setCsvPreview(rows);
+    };
+    reader.readAsText(selected);
+  };
+
+  const handleBulkUploadCSV = async () => {
+    if (!file) return alert("Selecciona un CSV");
+    const fd = new FormData();
+    fd.append("archivo", file);
+
     try {
-      await ProductosService.delete(id);
-      alert("Producto eliminado correctamente");
+      await ProductosService.bulkUpload(fd);
+      alert("Carga masiva exitosa");
+      setFile(null);
+      setCsvPreview([]);
       fetchProductos();
     } catch (err) {
-      console.error("Error al eliminar producto:", err);
-      alert("No se pudo eliminar el producto.");
+      alert("Error al subir CSV");
     }
   };
 
-  // ============================
-  // Subir imagen
-  // ============================
-  const handleImageUpload = async (e, idProducto) => {
+  /* ============================
+      IMAGE
+  ============================ */
+  const handleImageUpload = async (e, id) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const formDataImg = new FormData();
-    formDataImg.append("imagen", file);
+    const fd = new FormData();
+    fd.append("imagen", file);
 
     try {
-      const data = await ProductosService.uploadImage(idProducto, formDataImg);
-      alert(data.message || "Imagen subida correctamente");
-
+      const data = await ProductosService.uploadImage(id, fd);
       setProductos((prev) =>
         prev.map((p) =>
-          p.ID_producto === idProducto ? { ...p, Foto: data.imagen } : p
+          p.ID_producto === id ? { ...p, Foto: data.imagen } : p
         )
       );
-    } catch (err) {
-      console.error(err);
-      alert("Error subiendo la imagen");
+    } catch {
+      alert("Error subiendo imagen");
     }
   };
 
-  // ============================
-  // Filtrado + PDF
-  // ============================
+  /* ============================
+      FILTER + PAGINATION
+  ============================ */
   const filteredProductos = productos.filter(
     (p) =>
       p.Nombre_producto.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.Tipo_producto.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      String(p.ID_proveedor).includes(searchTerm)
+      p.Tipo_producto.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const indexOfLast = currentPage * itemsPerPage;
+  const indexOfFirst = indexOfLast - itemsPerPage;
+  const currentProductos = filteredProductos.slice(indexOfFirst, indexOfLast);
+  const totalPages = Math.ceil(filteredProductos.length / itemsPerPage);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+  /* ============================
+      PDF
+  ============================ */
   const handleExportPDF = () => {
-    const columns = ["ID", "Nombre", "Tipo", "Precio", "Marca", "Garantía", "Proveedor"];
-    const rows = filteredProductos.map((p) => [
-      p.ID_producto,
-      p.Nombre_producto,
-      p.Tipo_producto,
-      p.Precio,
-      p.Marca,
-      p.Garantia,
-      p.ID_proveedor,
-    ]);
-    exportTableToPDF("Productos Registrados", columns, rows);
+    exportTableToPDF(
+      "Productos",
+      ["ID", "Nombre", "Tipo", "Precio", "Marca"],
+      filteredProductos.map((p) => [
+        p.ID_producto,
+        p.Nombre_producto,
+        p.Tipo_producto,
+        p.Precio,
+        p.Marca,
+      ])
+    );
   };
 
-  const getImagenUrl = (foto) => (foto ? `http://localhost:3001${foto}` : "/placeholder.png");
+  const getImagenUrl = (foto) =>
+    foto ? `http://localhost:3001${foto}` : "/placeholder.png";
 
-  if (loading) return <p className="text-white p-4">Cargando productos...</p>;
-  if (error) return <p className="text-red-500 p-4">{error}</p>;
+  /* ============================
+      LOADING / ERROR
+  ============================ */
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center text-white">
+        Cargando productos...
+      </div>
+    );
 
+  if (error)
+    return <div className="p-6 text-red-400">{error}</div>;
+
+  /* ============================
+      UI
+  ============================ */
   return (
-    <div className="p-6 bg-slate-800/60 rounded-2xl shadow-lg border border-slate-700 text-white">
-      <h2 className="text-2xl font-bold mb-4">Gestión de Productos</h2>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-6 text-white">
+      <div className="max-w-7xl mx-auto">
 
-      {/* Formulario */}
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <input type="text" name="Nombre_producto" placeholder="Nombre" value={formData.Nombre_producto} onChange={handleChange} className="p-2 rounded bg-slate-700 text-white" required />
-        <input type="text" name="Tipo_producto" placeholder="Tipo" value={formData.Tipo_producto} onChange={handleChange} className="p-2 rounded bg-slate-700 text-white" required />
-        <input type="number" name="Precio" placeholder="Precio" value={formData.Precio} onChange={handleChange} className="p-2 rounded bg-slate-700 text-white" required />
-        <input type="text" name="Marca" placeholder="Marca" value={formData.Marca} onChange={handleChange} className="p-2 rounded bg-slate-700 text-white" required />
-        <input type="date" name="Fecha_fabricacion" value={formData.Fecha_fabricacion} onChange={handleChange} className="p-2 rounded bg-slate-700 text-white" required />
-        <input type="text" name="Garantia" placeholder="Garantía (meses)" value={formData.Garantia} onChange={handleChange} className="p-2 rounded bg-slate-700 text-white" required />
-        <input type="number" name="ID_proveedor" placeholder="ID proveedor" value={formData.ID_proveedor} onChange={handleChange} className="p-2 rounded bg-slate-700 text-white" required />
-        <button type="submit" className="col-span-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded">
-          {editMode ? "Guardar Cambios" : "Agregar Producto"}
-        </button>
-      </form>
+        {/* TOP BAR */}
+        <div className="mb-6 bg-slate-800/50 rounded-2xl p-6 border border-slate-700/50 flex flex-col lg:flex-row gap-4 justify-between">
+          <input
+            type="text"
+            placeholder="Buscar producto..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="px-4 py-3 bg-slate-700/50 rounded-xl"
+          />
 
-      {/* Carga Masiva CSV */}
-      <div className="mb-6">
-        <input type="file" accept=".csv" onChange={handleFileChange} className="mb-2" />
-        {csvPreview.length > 0 && (
-          <div className="overflow-x-auto mb-2 text-black bg-white p-2 rounded">
-            <h3 className="font-bold mb-2">Previsualización CSV:</h3>
-            <table className="min-w-full border border-gray-300">
-              <thead>
-                <tr>{Object.keys(csvPreview[0]).map((key) => (<th key={key} className="border px-2 py-1">{key}</th>))}</tr>
-              </thead>
-              <tbody>
-                {csvPreview.map((row, idx) => (
-                  <tr key={idx}>{Object.values(row).map((val, i) => (<td key={i} className="border px-2 py-1">{val}</td>))}</tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="flex gap-3 flex-wrap">
+            <select
+              value={itemsPerPage}
+              onChange={(e) => setItemsPerPage(Number(e.target.value))}
+              className="px-3 py-3 bg-slate-700 rounded-xl"
+            >
+              <option value={2}>2 por pagina</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select>
+
+            <button
+              onClick={handleExportPDF}
+              className="px-6 py-3 bg-green-600 rounded-xl"
+            >
+              PDF
+            </button>
+
+            <button
+              onClick={() => {
+                resetForm();
+                setShowModal(true);
+              }}
+              className="px-6 py-3 bg-gradient-to-r from-teal-500 to-cyan-600 rounded-xl"
+            >
+              + Nuevo Producto
+            </button>
+          </div>
+        </div>
+
+        {/* CSV */}
+        <div className="mb-6 bg-slate-800/50 rounded-2xl p-6 border border-slate-700/50">
+          <input type="file" accept=".csv" onChange={handleFileChange} />
+          {csvPreview.length > 0 && (
+            <div className="mt-4 overflow-x-auto bg-white text-black p-4 rounded">
+              <table className="min-w-full border">
+                <thead>
+                  <tr>
+                    {Object.keys(csvPreview[0]).map((h) => (
+                      <th key={h} className="border px-2 py-1">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {csvPreview.map((r, i) => (
+                    <tr key={i}>
+                      {Object.values(r).map((v, j) => (
+                        <td key={j} className="border px-2 py-1">{v}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          <button
+            onClick={handleBulkUploadCSV}
+            className="mt-4 px-6 py-3 bg-blue-600 rounded-xl"
+          >
+            Cargar CSV
+          </button>
+        </div>
+
+        {/* CARDS */}
+        <div className="space-y-4">
+          {currentProductos.map((p) => (
+            <div
+              key={p.ID_producto}
+              className="bg-slate-800/70 rounded-2xl p-6 border border-slate-700 flex flex-wrap gap-4 justify-between"
+            >
+              <div className="flex gap-4">
+                <img
+                  src={getImagenUrl(p.Foto)}
+                  className="w-20 h-20 rounded-xl object-cover"
+                />
+                <div>
+                  <p className="text-lg font-semibold">{p.Nombre_producto}</p>
+                  <p className="text-slate-400 text-sm">{p.Tipo_producto}</p>
+                  <p className="text-slate-300 font-bold">${p.Precio}</p>
+                </div>
+              </div>
+
+              <div className="flex gap-2 items-center">
+                <label className="cursor-pointer text-xs bg-slate-700 px-3 py-2 rounded">
+                  Imagen
+                  <input
+                    type="file"
+                    hidden
+                    onChange={(e) =>
+                      handleImageUpload(e, p.ID_producto)
+                    }
+                  />
+                </label>
+
+                <button
+                  onClick={() => handleEdit(p)}
+                  className="px-4 py-2 bg-blue-600/20 text-blue-300 rounded-lg"
+                >
+                  Editar
+                </button>
+
+                <button
+                  onClick={() => handleDelete(p.ID_producto)}
+                  className="px-4 py-2 bg-red-600/20 text-red-300 rounded-lg"
+                >
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* PAGINATION */}
+        {totalPages > 1 && (
+          <div className="mt-6 flex justify-center gap-2">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+              (page) => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`px-4 py-2 rounded ${
+                    page === currentPage
+                      ? "bg-teal-600"
+                      : "bg-slate-700"
+                  }`}
+                >
+                  {page}
+                </button>
+              )
+            )}
           </div>
         )}
-        <button onClick={handleBulkUploadCSV} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-          Cargar CSV
-        </button>
       </div>
 
-      {/* Acciones */}
-      <div className="flex flex-col md:flex-row items-center gap-4 mb-4">
-        <input type="text" placeholder="Buscar productos..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="p-2 rounded bg-slate-700 text-white" />
-        <button onClick={handleExportPDF} className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Exportar PDF</button>
-      </div>
+      {/* MODAL */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl p-8 w-full max-w-2xl border border-slate-700">
 
-      {/* Tabla */}
-      <div className="overflow-x-auto">
-        {filteredProductos.length === 0 ? (
-          <p>No hay productos registrados.</p>
-        ) : (
-          <table className="min-w-full bg-slate-900 text-gray-100 border border-slate-700 rounded-lg">
-            <thead>
-              <tr className="bg-green-600 text-left">
-                <th className="py-3 px-4">ID</th>
-                <th className="py-3 px-4">Nombre</th>
-                <th className="py-3 px-4">Tipo</th>
-                <th className="py-3 px-4">Precio</th>
-                <th className="py-3 px-4">Marca</th>
-                <th className="py-3 px-4">Garantía</th>
-                <th className="py-3 px-4">Proveedor</th>
-                <th className="py-3 px-4 text-center">Imagen</th>
-                <th className="py-3 px-4 text-center">Subir Imagen</th>
-                <th className="py-3 px-4 text-center">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredProductos.map((p) => (
-                <tr key={p.ID_producto} className="border-b border-slate-700 hover:bg-slate-800">
-                  <td className="py-2 px-4">{p.ID_producto}</td>
-                  <td className="py-2 px-4">{p.Nombre_producto}</td>
-                  <td className="py-2 px-4">{p.Tipo_producto}</td>
-                  <td className="py-2 px-4">${p.Precio}</td>
-                  <td className="py-2 px-4">{p.Marca}</td>
-                  <td className="py-2 px-4">{p.Garantia}</td>
-                  <td className="py-2 px-4">{p.ID_proveedor}</td>
-                  <td className="py-2 px-4 text-center">
-                    <img src={getImagenUrl(p.Foto)} alt={p.Nombre_producto} className="w-16 h-16 object-cover mx-auto rounded" />
-                  </td>
-                  <td className="py-2 px-4 text-center">
-                    <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, p.ID_producto)} />
-                  </td>
-                  <td className="py-2 px-4 flex gap-2 justify-center">
-                    <button onClick={() => handleEdit(p)} className="bg-yellow-500 hover:bg-yellow-600 text-black px-3 py-1 rounded">Editar</button>
-                    <button onClick={() => handleDelete(p.ID_producto)} className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded">Eliminar</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+            <div className="flex justify-between mb-6">
+              <h2 className="text-2xl font-bold">
+                {editMode ? "Editar Producto" : "Nuevo Producto"}
+              </h2>
+              <button onClick={() => setShowModal(false)}>✕</button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {Object.entries(formData)
+                .filter(([k]) => k !== "ID_producto")
+                .map(([k, v]) => (
+                  <input
+                    key={k}
+                    name={k}
+                    value={v}
+                    onChange={handleChange}
+                    placeholder={k.replace("_", " ")}
+                    className="p-3 bg-slate-700 rounded-xl"
+                    required
+                  />
+                ))}
+
+              <div className="md:col-span-2 flex gap-3 pt-4">
+                <button className="flex-1 bg-teal-600 py-3 rounded-xl">
+                  {editMode ? "Guardar" : "Crear"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="px-6 py-3 bg-slate-700 rounded-xl"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+
+          </div>
+        </div>
+      )}
     </div>
   );
 }

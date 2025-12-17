@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import API from "../services/api";
 import { exportTableToPDF } from "../utils/exportPDF";
 
-// Estados válidos según la BD
 const ESTADOS_COMPRAS = [
   "pendiente",
   "aprobada",
@@ -11,36 +10,46 @@ const ESTADOS_COMPRAS = [
   "cancelada",
 ];
 
-function ComprasList() {
+export default function ComprasList() {
+  /* =====================
+      STATES
+  ===================== */
   const [compras, setCompras] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterEstado, setFilterEstado] = useState("");
+  const [filterFechaInicio, setFilterFechaInicio] = useState("");
+  const [filterFechaFin, setFilterFechaFin] = useState("");
+
+  const [showModal, setShowModal] = useState(false);
+  const [editMode, setEditMode] = useState(false);
 
   const [formData, setFormData] = useState({
     ID_compra: null,
     ID_usuario: "",
     Fecha_compra: "",
     Monto_total: "",
-    Estado: "",
+    Estado: "pendiente",
   });
-  const [editMode, setEditMode] = useState(false);
 
-  // Búsqueda y filtros
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterEstado, setFilterEstado] = useState("");
-  const [filterFechaInicio, setFilterFechaInicio] = useState("");
-  const [filterFechaFin, setFilterFechaFin] = useState("");
+  /* PAGINACIÓN */
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  // Obtener compras
+  /* =====================
+      FETCH
+  ===================== */
   const fetchCompras = async () => {
     try {
       setLoading(true);
-      setError("");
       const res = await API.get("/admin/compras");
-      setCompras(res.data);
+      setCompras(res.data || []);
+      setError("");
     } catch (err) {
-      console.error("Error al obtener compras:", err);
-      setError("No se pudo obtener la lista de compras. Verifica el backend.");
+      console.error(err);
+      setError("No se pudieron cargar las compras");
     } finally {
       setLoading(false);
     }
@@ -50,7 +59,20 @@ function ComprasList() {
     fetchCompras();
   }, []);
 
-  // Manejo de formulario
+  /* =====================
+      FORM
+  ===================== */
+  const resetForm = () => {
+    setFormData({
+      ID_compra: null,
+      ID_usuario: "",
+      Fecha_compra: "",
+      Monto_total: "",
+      Estado: "pendiente",
+    });
+    setEditMode(false);
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -58,7 +80,6 @@ function ComprasList() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Datos a enviar:", formData); // Para depuración
     try {
       if (editMode) {
         await API.put(`/admin/compras/${formData.ID_compra}`, formData);
@@ -67,235 +88,358 @@ function ComprasList() {
         await API.post("/admin/compras", formData);
         alert("Compra creada correctamente");
       }
-
-      setFormData({
-        ID_compra: null,
-        ID_usuario: "",
-        Fecha_compra: "",
-        Monto_total: "",
-        Estado: "",
-      });
-      setEditMode(false);
+      setShowModal(false);
+      resetForm();
       fetchCompras();
     } catch (err) {
-      console.error("Error al guardar compra:", err);
-      alert(
-        "Error al guardar compra. Verifica los datos y el token de autorización."
-      );
+      console.error(err);
+      alert("Error al guardar la compra");
     }
   };
 
-  const handleEdit = (compra) => {
+  const handleEdit = (c) => {
     setFormData({
-      ID_compra: compra.ID_compra,
-      ID_usuario: compra.ID_usuario,
-      Fecha_compra: compra.Fecha_compra?.split("T")[0] || "",
-      Monto_total: compra.Monto_total,
-      Estado: compra.Estado,
+      ID_compra: c.ID_compra,
+      ID_usuario: c.ID_usuario,
+      Fecha_compra: c.Fecha_compra?.split("T")[0],
+      Monto_total: c.Monto_total,
+      Estado: c.Estado,
     });
     setEditMode(true);
+    setShowModal(true);
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("¿Seguro que deseas eliminar esta compra?")) return;
+    if (!window.confirm("¿Eliminar esta compra?")) return;
     try {
       await API.delete(`/admin/compras/${id}`);
-      alert("Compra eliminada correctamente");
       fetchCompras();
     } catch (err) {
-      console.error("Error al eliminar compra:", err);
-      alert("No se pudo eliminar la compra.");
+      console.error(err);
+      alert("No se pudo eliminar");
     }
   };
 
-  // Filtrar compras por búsqueda, estado y rango de fechas
+  /* =====================
+      FILTERS
+  ===================== */
   const filteredCompras = compras.filter((c) => {
     const matchesSearch =
-      String(c.ID_usuario).includes(searchTerm) ||
-      String(c.ID_compra).includes(searchTerm);
+      String(c.ID_compra).includes(searchTerm) ||
+      String(c.ID_usuario).includes(searchTerm);
 
     const matchesEstado = filterEstado
-      ? c.Estado.toLowerCase() === filterEstado.toLowerCase()
+      ? c.Estado === filterEstado
       : true;
 
-    const fechaCompra = new Date(c.Fecha_compra);
+    const fecha = new Date(c.Fecha_compra);
     const matchesFecha =
-      (!filterFechaInicio || fechaCompra >= new Date(filterFechaInicio)) &&
-      (!filterFechaFin || fechaCompra <= new Date(filterFechaFin));
+      (!filterFechaInicio || fecha >= new Date(filterFechaInicio)) &&
+      (!filterFechaFin || fecha <= new Date(filterFechaFin));
 
     return matchesSearch && matchesEstado && matchesFecha;
   });
 
-  // Exportar PDF
+  /* RESET PAGINA AL FILTRAR */
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterEstado, filterFechaInicio, filterFechaFin]);
+
+  /* =====================
+      PAGINACIÓN
+  ===================== */
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentCompras = filteredCompras.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
+  const totalPages = Math.ceil(filteredCompras.length / itemsPerPage);
+
+  /* =====================
+      PDF
+  ===================== */
   const handleExportPDF = () => {
-    const columns = ["ID Compra", "ID Usuario", "Fecha", "Monto Total", "Estado"];
+    const columns = ["ID Compra", "ID Usuario", "Fecha", "Monto", "Estado"];
     const rows = filteredCompras.map((c) => [
       c.ID_compra,
       c.ID_usuario,
       new Date(c.Fecha_compra).toLocaleDateString(),
-      Number(c.Monto_total).toLocaleString(),
-      c.Estado.charAt(0).toUpperCase() + c.Estado.slice(1),
+      `$${Number(c.Monto_total).toLocaleString()}`,
+      c.Estado,
     ]);
     exportTableToPDF("Compras Registradas", columns, rows);
   };
 
-  if (loading) return <p className="text-white p-4">Cargando compras...</p>;
-  if (error) return <p className="text-red-500 p-4">{error}</p>;
+  /* =====================
+      LOADING / ERROR
+  ===================== */
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
+        <div className="text-white text-lg animate-pulse">
+          Cargando compras...
+        </div>
+      </div>
+    );
 
+  if (error)
+    return (
+      <div className="p-6 text-red-300 bg-red-500/20 rounded-xl max-w-md mx-auto mt-10">
+        {error}
+      </div>
+    );
+
+  /* =====================
+      UI
+  ===================== */
   return (
-    <div className="p-6 bg-slate-800/60 rounded-2xl shadow-lg border border-slate-700 text-white">
-      <h2 className="text-2xl font-bold mb-4">Gestión de Compras</h2>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-6">
+      <div className="max-w-7xl mx-auto">
 
-      {/* Formulario */}
-      <form
-        onSubmit={handleSubmit}
-        className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"
-      >
-        <input
-          type="number"
-          name="ID_usuario"
-          placeholder="ID Usuario"
-          value={formData.ID_usuario}
-          onChange={handleChange}
-          className="p-2 rounded bg-slate-700 text-white"
-          required
-        />
-        <input
-          type="date"
-          name="Fecha_compra"
-          placeholder="Fecha"
-          value={formData.Fecha_compra}
-          onChange={handleChange}
-          className="p-2 rounded bg-slate-700 text-white"
-          required
-        />
-        <input
-          type="number"
-          name="Monto_total"
-          placeholder="Monto Total"
-          value={formData.Monto_total}
-          onChange={handleChange}
-          className="p-2 rounded bg-slate-700 text-white"
-          required
-        />
-        <select
-          name="Estado"
-          value={formData.Estado}
-          onChange={handleChange}
-          className="p-2 rounded bg-slate-700 text-white"
-          required
-        >
-          <option value="">Selecciona un estado</option>
-          {ESTADOS_COMPRAS.map((estado) => (
-            <option key={estado} value={estado}>
-              {estado.charAt(0).toUpperCase() + estado.slice(1)}
-            </option>
-          ))}
-        </select>
-        <button
-          type="submit"
-          className="col-span-1 md:col-span-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded"
-        >
-          {editMode ? "Guardar Cambios" : "Agregar Compra"}
-        </button>
-      </form>
+        {/* HEADER */}
+        <div className="bg-slate-800/60 border border-slate-700 rounded-2xl p-6 mb-6">
+          <div className="flex flex-col lg:flex-row gap-4 justify-between">
 
-      {/* Filtros */}
-      <div className="flex flex-col md:flex-row items-center gap-4 mb-4">
-        <input
-          type="text"
-          placeholder="Buscar compras..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="p-2 rounded bg-slate-700 text-white"
-        />
-        <select
-          value={filterEstado}
-          onChange={(e) => setFilterEstado(e.target.value)}
-          className="p-2 rounded bg-slate-700 text-white"
-        >
-          <option value="">Todos los estados</option>
-          {ESTADOS_COMPRAS.map((estado) => (
-            <option key={estado} value={estado}>
-              {estado.charAt(0).toUpperCase() + estado.slice(1)}
-            </option>
-          ))}
-        </select>
-        <input
-          type="date"
-          value={filterFechaInicio}
-          onChange={(e) => setFilterFechaInicio(e.target.value)}
-          className="p-2 rounded bg-slate-700 text-white"
-        />
-        <input
-          type="date"
-          value={filterFechaFin}
-          onChange={(e) => setFilterFechaFin(e.target.value)}
-          className="p-2 rounded bg-slate-700 text-white"
-        />
-        <button
-          onClick={handleExportPDF}
-          className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Exportar PDF
-        </button>
+            <input
+              type="text"
+              placeholder="Buscar compra o usuario..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white w-full lg:w-1/3"
+            />
+
+            <div className="flex flex-wrap gap-3">
+              <select
+                value={filterEstado}
+                onChange={(e) => setFilterEstado(e.target.value)}
+                className="px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white"
+              >
+                <option value="">Todos los estados</option>
+                {ESTADOS_COMPRAS.map((e) => (
+                  <option key={e} value={e}>
+                    {e}
+                  </option>
+                ))}
+              </select>
+
+              <input
+                type="date"
+                value={filterFechaInicio}
+                onChange={(e) => setFilterFechaInicio(e.target.value)}
+                className="px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white"
+              />
+
+              <input
+                type="date"
+                value={filterFechaFin}
+                onChange={(e) => setFilterFechaFin(e.target.value)}
+                className="px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white"
+              />
+
+              <select
+                value={itemsPerPage}
+                onChange={(e) => {
+                  setItemsPerPage(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+                className="px-3 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white"
+              >
+                <option value={1}>1 por pagina </option>
+                <option value={10}>10 por pagina </option>
+                <option value={20}>20 por pagina </option>
+                <option value={50}>50 por pagina</option>
+              </select>
+
+              <button
+                onClick={handleExportPDF}
+                className="px-6 py-3 bg-green-600 hover:bg-green-700 rounded-xl text-white"
+              >
+                PDF
+              </button>
+
+              <button
+                onClick={() => {
+                  resetForm();
+                  setShowModal(true);
+                }}
+                className="px-6 py-3 bg-gradient-to-r from-teal-500 to-cyan-600 rounded-xl text-white"
+              >
+                + Nueva Compra
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* LISTA */}
+        <div className="space-y-4">
+          {currentCompras.length === 0 ? (
+            <div className="text-center text-slate-400 py-12">
+              No hay compras
+            </div>
+          ) : (
+            currentCompras.map((c) => (
+              <div
+                key={c.ID_compra}
+                className="bg-slate-800/70 border border-slate-700 rounded-2xl p-6 flex justify-between items-center flex-wrap gap-4"
+              >
+                <div>
+                  <p className="text-white font-semibold">
+                    Compra #{c.ID_compra}
+                  </p>
+                  <p className="text-slate-400 text-sm">
+                    Usuario ID: {c.ID_usuario}
+                  </p>
+                  <p className="text-slate-400 text-sm">
+                    {new Date(c.Fecha_compra).toLocaleDateString()}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <span className="text-white font-bold">
+                    ${Number(c.Monto_total).toLocaleString()}
+                  </span>
+
+                  <span className="px-3 py-1 rounded-full text-xs bg-slate-700 text-white">
+                    {c.Estado}
+                  </span>
+
+                  <button
+                    onClick={() => handleEdit(c)}
+                    className="px-3 py-1 bg-blue-600/20 text-blue-300 rounded-lg"
+                  >
+                    Editar
+                  </button>
+
+                  <button
+                    onClick={() => handleDelete(c.ID_compra)}
+                    className="px-3 py-1 bg-red-600/20 text-red-300 rounded-lg"
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* PAGINACIÓN */}
+        {totalPages > 1 && (
+          <div className="mt-6 flex justify-center gap-2 flex-wrap">
+            <button
+              onClick={() => setCurrentPage((p) => p - 1)}
+              disabled={currentPage === 1}
+              className="px-4 py-2 bg-slate-700 rounded text-white disabled:opacity-40"
+            >
+              Anterior
+            </button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+              (page) => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`px-4 py-2 rounded ${
+                    page === currentPage
+                      ? "bg-teal-600 text-white"
+                      : "bg-slate-700 text-white"
+                  }`}
+                >
+                  {page}
+                </button>
+              )
+            )}
+
+            <button
+              onClick={() => setCurrentPage((p) => p + 1)}
+              disabled={currentPage === totalPages}
+              className="px-4 py-2 bg-slate-700 rounded text-white disabled:opacity-40"
+            >
+              Siguiente
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Tabla */}
-      {filteredCompras.length === 0 ? (
-        <p>No hay compras registradas.</p>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-slate-900 text-gray-100 border border-slate-700 rounded-lg">
-            <thead>
-              <tr className="bg-green-600 text-left">
-                <th className="py-3 px-4">ID Compra</th>
-                <th className="py-3 px-4">ID Usuario</th>
-                <th className="py-3 px-4">Fecha</th>
-                <th className="py-3 px-4">Monto Total</th>
-                <th className="py-3 px-4">Estado</th>
-                <th className="py-3 px-4 text-center">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredCompras.map((c) => (
-                <tr
-                  key={c.ID_compra}
-                  className="border-b border-slate-700 hover:bg-slate-800"
+      {/* MODAL */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
+          <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl p-8 w-full max-w-2xl border border-slate-700 animate-scaleIn">
+
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-white">
+                {editMode ? "Editar Compra" : "Nueva Compra"}
+              </h2>
+              <button
+                onClick={() => setShowModal(false)}
+                className="text-slate-400 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <input
+                type="number"
+                name="ID_usuario"
+                placeholder="ID Usuario"
+                value={formData.ID_usuario}
+                onChange={handleChange}
+                className="w-full p-3 bg-slate-700 rounded text-white"
+                required
+              />
+
+              <input
+                type="date"
+                name="Fecha_compra"
+                value={formData.Fecha_compra}
+                onChange={handleChange}
+                className="w-full p-3 bg-slate-700 rounded text-white"
+                required
+              />
+
+              <input
+                type="number"
+                name="Monto_total"
+                placeholder="Monto total"
+                value={formData.Monto_total}
+                onChange={handleChange}
+                className="w-full p-3 bg-slate-700 rounded text-white"
+                required
+              />
+
+              <select
+                name="Estado"
+                value={formData.Estado}
+                onChange={handleChange}
+                className="w-full p-3 bg-slate-700 rounded text-white"
+              >
+                {ESTADOS_COMPRAS.map((e) => (
+                  <option key={e} value={e}>
+                    {e}
+                  </option>
+                ))}
+              </select>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="submit"
+                  className="flex-1 bg-teal-600 hover:bg-teal-700 py-3 rounded-xl text-white"
                 >
-                  <td className="py-2 px-4">{c.ID_compra}</td>
-                  <td className="py-2 px-4">{c.ID_usuario}</td>
-                  <td className="py-2 px-4">
-                    {new Date(c.Fecha_compra).toLocaleDateString()}
-                  </td>
-                  <td className="py-2 px-4 text-center">
-                    ${Number(c.Monto_total).toLocaleString()}
-                  </td>
-                  <td className="py-2 px-4">
-                    {c.Estado.charAt(0).toUpperCase() + c.Estado.slice(1)}
-                  </td>
-                  <td className="py-2 px-4 text-center flex justify-center gap-2">
-                    <button
-                      onClick={() => handleEdit(c)}
-                      className="bg-yellow-500 hover:bg-yellow-600 text-black px-3 py-1 rounded"
-                    >
-                      Editar
-                    </button>
-                    <button
-                      onClick={() => handleDelete(c.ID_compra)}
-                      className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
-                    >
-                      Eliminar
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  Guardar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="px-6 py-3 bg-slate-700 rounded-xl text-white"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>
   );
 }
-
-export default ComprasList;
