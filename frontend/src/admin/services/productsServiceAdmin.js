@@ -3,7 +3,7 @@
 const API_URL = "http://localhost:3001/api/admin/productos";
 
 // ===== Modo pruebas: false → usar token real; true → deshabilita token
-const modoPruebas = true;
+const modoPruebas = false;
 
 const getHeaders = () => {
   if (modoPruebas) return { "Content-Type": "application/json" };

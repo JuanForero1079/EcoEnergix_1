@@ -69,6 +69,7 @@ exports.register = async (req, res, next) => {
     if (!terms || !privacy)
       throw new AppError("Debes aceptar los Términos y la Política de Privacidad", 400);
 
+    // Verificar si el correo ya existe
     const existe = await new Promise((resolve, reject) => {
       DB.query(
         "SELECT ID_usuario FROM usuarios WHERE Correo_electronico = ? LIMIT 1",
@@ -76,42 +77,43 @@ exports.register = async (req, res, next) => {
         (err, r) => (err ? reject(err) : resolve(r))
       );
     });
-
     if (existe.length > 0) throw new AppError("El correo ya está registrado", 400);
 
     const hashed = await hashPassword(Contraseña);
+
+    // Crear token para verificación
     const token = crypto.randomBytes(40).toString("hex");
-    const expira = new Date(Date.now() + 60 * 60 * 1000);
+    const expira = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
     const fechaConsentimiento = new Date();
 
     await new Promise((resolve, reject) => {
       DB.query(
         `INSERT INTO usuarios
-        (Nombre, Correo_electronico, Contraseña, Tipo_documento, Numero_documento,
-         Rol_usuario, verificado, token_verificacion, token_expira_en,
-         consentimiento_datos, fecha_consentimiento)
-        VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?)`,
+          (Nombre, Correo_electronico, Contraseña, Tipo_documento, Numero_documento,
+           Rol_usuario, verificado, token_verificacion, token_expira_en,
+           consentimiento_datos, fecha_consentimiento)
+         VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?)`,
         [Nombre, Correo_electronico, hashed, Tipo_documento, Numero_documento, Rol_usuario.toLowerCase(), token, expira, 1, fechaConsentimiento],
         (err) => (err ? reject(err) : resolve())
       );
     });
 
+    // Enviar correo de verificación
     const link = `${SERVER_URL}/api/auth/verificar/${token}`;
     await transporter.sendMail({
       from: `"Ecoenergix" <${EMAIL_USER}>`,
       to: Correo_electronico,
       subject: "Verifica tu correo ✔",
       html: `<h3>Hola ${Nombre}</h3>
-             <p>Tu enlace es válido por 1 hora</p>
+             <p>Tu enlace es válido por 1 hora. Haz clic para confirmar tu consentimiento:</p>
              <a href="${link}">Verificar cuenta</a>`,
     });
 
-    res.status(201).json({ message: "Registro exitoso. Verifica tu correo." });
+    res.status(201).json({ message: "Registro exitoso. Revisa tu correo para verificar la cuenta." });
   } catch (error) {
     next(error);
   }
 };
-
 
 /* =====================================================
    LOGIN

@@ -11,21 +11,32 @@ import {
   FaLeaf,
   FaArrowRight
 } from "react-icons/fa";
+import API from "../../services/api";
 
 export default function HomeUsuario() {
   const navigate = useNavigate();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [energySaved, setEnergySaved] = useState(0);
-
-  // Obtener usuario del localStorage
-  const usuario = JSON.parse(localStorage.getItem("usuario"));
-  const nombreUsuario = usuario?.nombre || "Usuario";
+  const [user, setUser] = useState(null); // <- aquí guardaremos el usuario desde la API
 
   // Función cerrar sesión
   const handleLogout = () => {
-    localStorage.clear(); // Borra token, refreshToken y usuario
-    navigate("/login", { replace: true }); // Redirige al login reemplazando la ruta actual
+    localStorage.clear();
+    navigate("/login", { replace: true });
   };
+
+  // Traer usuario desde la API al cargar la página
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const { data } = await API.get("/auth/perfil"); // Endpoint para obtener perfil
+        setUser(data);
+      } catch (err) {
+        console.error("Error al obtener usuario:", err);
+      }
+    };
+    fetchUser();
+  }, []);
 
   // Reloj en tiempo real
   useEffect(() => {
@@ -55,9 +66,9 @@ export default function HomeUsuario() {
   ];
 
   const mainActions = [
-    { title: "Mis Compras", description: "Revisa tus pedidos y seguimiento", icon: FaShoppingCart, path: `/usuario/mis-compras/${usuario?.id || ""}`, gradient: "from-[#3dc692] to-[#2aa876]" },
-    { title: "Mis Pagos", description: "Gestiona tus facturas y métodos de pago", icon: FaCreditCard, path: `/usuario/mis-pagos/${usuario?.id || ""}`, gradient: "from-[#5f54b3] to-[#4a3f8f]" },
-    { title: "Soporte Técnico", description: "Solicita ayuda especializada", icon: FaTools, path: `/usuario/soporte/${usuario?.id || ""}`, gradient: "from-[#4375b2] to-[#2d5a8f]" },
+    { title: "Mis Compras", description: "Revisa tus pedidos y seguimiento", icon: FaShoppingCart, path: `/usuario/mis-compras/${user?.id || ""}`, gradient: "from-[#3dc692] to-[#2aa876]" },
+    { title: "Mis Pagos", description: "Gestiona tus facturas y métodos de pago", icon: FaCreditCard, path: `/usuario/mis-pagos/${user?.id || ""}`, gradient: "from-[#5f54b3] to-[#4a3f8f]" },
+    { title: "Soporte Técnico", description: "Solicita ayuda especializada", icon: FaTools, path: `/usuario/soporte/${user?.id || ""}`, gradient: "from-[#4375b2] to-[#2d5a8f]" },
   ];
 
   const infoCards = [
@@ -80,13 +91,15 @@ export default function HomeUsuario() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex-1 text-center md:text-left">
               <p className="text-blue-200 text-lg mb-2">{getGreeting()}</p>
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-4">
-                ¡Hola,{" "}
-                <span className="bg-gradient-to-r from-[#3dc692] via-[#5f54b3] to-[#4375b2] bg-clip-text text-transparent">
-                  {nombreUsuario}
-                </span>
-                !
-              </h1>
+              {user && (
+                <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-4">
+                  ¡Hola,{" "}
+                  <span className="bg-gradient-to-r from-[#3dc692] via-[#5f54b3] to-[#4375b2] bg-clip-text text-transparent">
+                    {user.Nombre}
+                  </span>
+                  !
+                </h1>
+              )}
               <p className="text-lg text-gray-200 max-w-2xl">
                 Bienvenido a tu panel de control energético. Gestiona todo desde un solo lugar.
               </p>

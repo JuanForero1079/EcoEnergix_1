@@ -1,7 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 
 export default function Register() {
+  const navigate = useNavigate(); // <--- Hook para redirección
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -29,56 +32,84 @@ export default function Register() {
 
   const validateForm = () => {
     const newErrors = {};
-
     if (!formData.name.trim()) newErrors.name = "El nombre es obligatorio.";
     if (!formData.email.trim()) newErrors.email = "El correo es obligatorio.";
-    if (!formData.password) {
-      newErrors.password = "La contraseña es obligatoria.";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Debe tener al menos 6 caracteres.";
-    }
+    if (!formData.password) newErrors.password = "La contraseña es obligatoria.";
+    else if (formData.password.length < 6) newErrors.password = "Debe tener al menos 6 caracteres.";
     if (!formData.documentType) newErrors.documentType = "Selecciona el tipo.";
-    if (!formData.documentNumber.trim())
-      newErrors.documentNumber = "El número es obligatorio.";
-    if (!formData.terms)
-      newErrors.terms = "Debes aceptar los Términos y Condiciones.";
-    if (!formData.privacy)
-      newErrors.privacy = "Debes aceptar la Política de Privacidad.";
+    if (!formData.documentNumber.trim()) newErrors.documentNumber = "El número es obligatorio.";
+    if (!formData.terms) newErrors.terms = "Debes aceptar los Términos y Condiciones.";
+    if (!formData.privacy) newErrors.privacy = "Debes aceptar la Política de Privacidad.";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setSuccess("");
+    setErrors({});
 
     if (!validateForm()) return;
 
     setLoading(true);
-    setTimeout(() => {
-      setSuccess("¡Registro exitoso! Redirigiendo al inicio de sesión...");
+
+    try {
+      const response = await fetch("http://localhost:3001/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          Nombre: formData.name,
+          Correo_electronico: formData.email,
+          Contraseña: formData.password,
+          Tipo_documento: formData.documentType,
+          Numero_documento: formData.documentNumber,
+          terms: formData.terms,
+          privacy: formData.privacy,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) throw new Error(data.message || "Error en el registro");
+
+      setSuccess("¡Registro exitoso! Revisa tu correo para verificar la cuenta.");
+
+      // Limpiar formulario
+      setFormData({
+        name: "",
+        email: "",
+        password: "",
+        documentType: "",
+        documentNumber: "",
+        terms: false,
+        privacy: false,
+      });
+
+      // Redirigir al login después de 2 segundos
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000);
+
+    } catch (error) {
+      setErrors({ general: error.message });
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-10">
       <div className="w-full max-w-2xl p-6 rounded-2xl shadow-2xl bg-white/20 backdrop-blur-lg border border-white/30">
-        <h2 className="text-3xl font-bold text-center text-white mb-2">
-          Crear Cuenta
-        </h2>
+        <h2 className="text-3xl font-bold text-center text-white mb-2">Crear Cuenta</h2>
         <p className="text-center text-white/80 mb-4">
           Regístrate y empieza a ahorrar con energía solar
         </p>
 
         <p className="text-sm text-white/70 mb-4">* Campos obligatorios</p>
 
-        {success && (
-          <p className="text-green-400 text-center mb-4 font-medium">
-            {success}
-          </p>
-        )}
+        {errors.general && <p className="text-red-400 text-center mb-2">{errors.general}</p>}
+        {success && <p className="text-green-400 text-center mb-4 font-medium">{success}</p>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Nombre */}
@@ -126,9 +157,7 @@ export default function Register() {
               placeholder="Mínimo 6 caracteres"
               className="w-full px-4 py-2 rounded-lg bg-white/30 text-white placeholder-white/70"
             />
-            {errors.password && (
-              <p className="text-red-400 text-sm">{errors.password}</p>
-            )}
+            {errors.password && <p className="text-red-400 text-sm">{errors.password}</p>}
           </div>
 
           {/* Documento */}
@@ -185,7 +214,6 @@ export default function Register() {
               </button>
               <span className="text-red-400 ml-1">*</span>
             </label>
-
             {showTerminos && (
               <div className="ml-6 p-4 bg-white/10 rounded-lg max-h-60 overflow-y-auto text-xs text-blue-200 space-y-2">
                 <p>Al usar EcoEnergix aceptas cumplir estos términos.</p>
@@ -193,10 +221,7 @@ export default function Register() {
                 <p>Los precios pueden cambiar sin previo aviso.</p>
               </div>
             )}
-
-            {errors.terms && (
-              <p className="text-red-400 text-sm ml-6">{errors.terms}</p>
-            )}
+            {errors.terms && <p className="text-red-400 text-sm ml-6">{errors.terms}</p>}
           </div>
 
           {/* Privacidad */}
@@ -220,7 +245,6 @@ export default function Register() {
               </button>
               <span className="text-red-400 ml-1">*</span>
             </label>
-
             {showPrivacidad && (
               <div className="ml-6 p-4 bg-white/10 rounded-lg max-h-60 overflow-y-auto text-xs text-blue-200 space-y-2">
                 <p>Protegemos tus datos personales.</p>
@@ -228,10 +252,7 @@ export default function Register() {
                 <p>Puedes solicitar eliminación de datos.</p>
               </div>
             )}
-
-            {errors.privacy && (
-              <p className="text-red-400 text-sm ml-6">{errors.privacy}</p>
-            )}
+            {errors.privacy && <p className="text-red-400 text-sm ml-6">{errors.privacy}</p>}
           </div>
 
           <button

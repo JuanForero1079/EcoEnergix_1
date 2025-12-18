@@ -1,5 +1,5 @@
 // routes/productos.js
-const express = require("express"); 
+const express = require("express");
 const router = express.Router();
 const DB = require("../db/connection");
 const { verificarToken, verificarRol } = require("../middleware/auth");
@@ -31,7 +31,8 @@ const upload = multer({ storage });
 router.get("/", verificarToken, verificarRol(["administrador"]), (req, res) => {
   const sql = "SELECT * FROM producto";
   DB.query(sql, (err, results) => {
-    if (err) return res.status(500).json({ message: "Error al obtener productos", details: err });
+    if (err)
+      return res.status(500).json({ message: "Error al obtener productos", details: err });
     res.json(results);
   });
 });
@@ -40,12 +41,42 @@ router.get("/", verificarToken, verificarRol(["administrador"]), (req, res) => {
 // POST: Crear producto
 // ============================
 router.post("/", verificarToken, verificarRol(["administrador"]), (req, res) => {
-  const { Nombre_producto, Tipo_producto, Precio, Marca, Fecha_fabricacion, Garantia, ID_proveedor } = req.body;
-  const sql = "INSERT INTO producto (Nombre_producto, Tipo_producto, Precio, Marca, Fecha_fabricacion, Garantia, ID_proveedor) VALUES (?, ?, ?, ?, ?, ?, ?)";
-  DB.query(sql, [Nombre_producto, Tipo_producto, Precio, Marca, Fecha_fabricacion, Garantia, ID_proveedor], (err, result) => {
-    if (err) return res.status(500).json({ message: "Error al crear producto", details: err });
-    res.status(201).json({ message: "Producto creado", ID_producto: result.insertId });
-  });
+  const {
+    Nombre_producto,
+    Descripcion,
+    Tipo_producto,
+    Precio,
+    Marca,
+    Fecha_fabricacion,
+    Garantia,
+    ID_proveedor,
+  } = req.body;
+
+  if (!Nombre_producto || !Tipo_producto || !Precio || !ID_proveedor)
+    return res.status(400).json({ message: "Campos obligatorios incompletos" });
+
+  const sql =
+    "INSERT INTO producto (Nombre_producto, Descripcion, Tipo_producto, Precio, Marca, Fecha_fabricacion, Garantia, ID_proveedor, creado_por, actualizado_por) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+  DB.query(
+    sql,
+    [
+      Nombre_producto,
+      Descripcion || null,
+      Tipo_producto,
+      Precio,
+      Marca || null,
+      Fecha_fabricacion || null,
+      Garantia || 0,
+      ID_proveedor,
+      req.user.id,
+      req.user.id,
+    ],
+    (err, result) => {
+      if (err)
+        return res.status(500).json({ message: "Error al crear producto", details: err });
+      res.status(201).json({ message: "Producto creado", ID_producto: result.insertId });
+    }
+  );
 });
 
 // ============================
@@ -53,12 +84,39 @@ router.post("/", verificarToken, verificarRol(["administrador"]), (req, res) => 
 // ============================
 router.put("/:id", verificarToken, verificarRol(["administrador"]), (req, res) => {
   const { id } = req.params;
-  const { Nombre_producto, Tipo_producto, Precio, Marca, Fecha_fabricacion, Garantia, ID_proveedor } = req.body;
-  const sql = "UPDATE producto SET Nombre_producto=?, Tipo_producto=?, Precio=?, Marca=?, Fecha_fabricacion=?, Garantia=?, ID_proveedor=? WHERE ID_producto=?";
-  DB.query(sql, [Nombre_producto, Tipo_producto, Precio, Marca, Fecha_fabricacion, Garantia, ID_proveedor, id], (err) => {
-    if (err) return res.status(500).json({ message: "Error al actualizar producto", details: err });
-    res.json({ message: "Producto actualizado" });
-  });
+  const {
+    Nombre_producto,
+    Descripcion,
+    Tipo_producto,
+    Precio,
+    Marca,
+    Fecha_fabricacion,
+    Garantia,
+    ID_proveedor,
+  } = req.body;
+
+  const sql =
+    "UPDATE producto SET Nombre_producto=?, Descripcion=?, Tipo_producto=?, Precio=?, Marca=?, Fecha_fabricacion=?, Garantia=?, ID_proveedor=?, actualizado_por=? WHERE ID_producto=?";
+  DB.query(
+    sql,
+    [
+      Nombre_producto,
+      Descripcion || null,
+      Tipo_producto,
+      Precio,
+      Marca || null,
+      Fecha_fabricacion || null,
+      Garantia || 0,
+      ID_proveedor,
+      req.user.id,
+      id,
+    ],
+    (err) => {
+      if (err)
+        return res.status(500).json({ message: "Error al actualizar producto", details: err });
+      res.json({ message: "Producto actualizado" });
+    }
+  );
 });
 
 // ============================
@@ -68,7 +126,8 @@ router.delete("/:id", verificarToken, verificarRol(["administrador"]), (req, res
   const { id } = req.params;
   const sql = "DELETE FROM producto WHERE ID_producto=?";
   DB.query(sql, [id], (err) => {
-    if (err) return res.status(500).json({ message: "Error al eliminar producto", details: err });
+    if (err)
+      return res.status(500).json({ message: "Error al eliminar producto", details: err });
     res.json({ message: "Producto eliminado" });
   });
 });
@@ -76,16 +135,23 @@ router.delete("/:id", verificarToken, verificarRol(["administrador"]), (req, res
 // ============================
 // POST: Subir imagen de producto
 // ============================
-router.post("/:id/imagen", verificarToken, verificarRol(["administrador"]), upload.single("imagen"), (req, res) => {
-  if (!req.file) return res.status(400).json({ message: "Archivo requerido" });
-  const { id } = req.params;
-  const filePath = `/uploads/productos/${req.file.filename}`;
-  const sql = "UPDATE producto SET Foto=? WHERE ID_producto=?";
-  DB.query(sql, [filePath, id], (err) => {
-    if (err) return res.status(500).json({ message: "Error al subir imagen", details: err });
-    res.json({ message: "Imagen subida correctamente", imagen: filePath });
-  });
-});
+router.post(
+  "/:id/imagen",
+  verificarToken,
+  verificarRol(["administrador"]),
+  upload.single("imagen"),
+  (req, res) => {
+    if (!req.file) return res.status(400).json({ message: "Archivo requerido" });
+    const { id } = req.params;
+    const filePath = `/uploads/productos/${req.file.filename}`;
+    const sql = "UPDATE producto SET Foto=?, actualizado_por=? WHERE ID_producto=?";
+    DB.query(sql, [filePath, req.user.id, id], (err) => {
+      if (err)
+        return res.status(500).json({ message: "Error al subir imagen", details: err });
+      res.json({ message: "Imagen subida correctamente", imagen: filePath });
+    });
+  }
+);
 
 // ==================================================
 // POST: Carga masiva de productos vía CSV (ADMIN)
@@ -106,6 +172,7 @@ router.post(
       .on("data", (row) => {
         try {
           const nombre = row.Nombre_producto?.trim() || null;
+          const descripcion = row.Descripcion?.trim() || null;
           const tipo = row.Tipo_producto?.trim() || null;
           const precio = parseFloat(row.Precio) || 0;
           const marca = row.Marca?.trim() || null;
@@ -113,8 +180,19 @@ router.post(
           const garantia = parseInt(row.Garantia) || 0;
           const idProveedor = parseInt(row.ID_proveedor) || null;
 
-          if (nombre && tipo && precio && marca && fecha && idProveedor) {
-            productos.push([nombre, tipo, precio, marca, fecha, garantia, idProveedor]);
+          if (nombre && tipo && precio && idProveedor) {
+            productos.push([
+              nombre,
+              descripcion,
+              tipo,
+              precio,
+              marca,
+              fecha,
+              garantia,
+              idProveedor,
+              req.user.id,
+              req.user.id,
+            ]);
           }
         } catch (err) {
           console.error("Fila inválida ignorada:", row, err);
@@ -126,9 +204,10 @@ router.post(
         if (productos.length === 0)
           return res.status(400).json({ message: "No se encontraron productos válidos en el archivo" });
 
-        const sql = `INSERT INTO producto (Nombre_producto, Tipo_producto, Precio, Marca, Fecha_fabricacion, Garantia, ID_proveedor) VALUES ?`;
+        const sql = `INSERT INTO producto (Nombre_producto, Descripcion, Tipo_producto, Precio, Marca, Fecha_fabricacion, Garantia, ID_proveedor, creado_por, actualizado_por) VALUES ?`;
         DB.query(sql, [productos], (err, result) => {
-          if (err) return res.status(500).json({ message: "Error al insertar productos", details: err });
+          if (err)
+            return res.status(500).json({ message: "Error al insertar productos", details: err });
           res.status(201).json({ message: `${result.affectedRows} productos cargados correctamente` });
         });
       });

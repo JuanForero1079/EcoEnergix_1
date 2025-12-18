@@ -3,7 +3,7 @@ require("dotenv").config();
 
 const JWT_SECRET = process.env.JWT_SECRET;
 // ==================================================
-const modoPruebas = true; 
+const modoPruebas = false; 
 
 if (modoPruebas) {
   console.log(" MODO PRUEBAS");
@@ -42,7 +42,7 @@ function verificarToken(req, res, next) {
     req.user = {
       id: decoded.id,
       correo: decoded.correo,
-      // ✅ normalizamos SIEMPRE el rol
+      //  normalizamos SIEMPRE el rol
       rol: String(decoded.rol).toLowerCase(),
     };
 
@@ -66,21 +66,21 @@ function verificarRol(rolesPermitidos = []) {
       });
     }
 
-    // ✅ Si no se especifican roles, permitir acceso
+    //  Si no se especifican roles, permitir acceso
     if (rolesPermitidos.length === 0) {
       return next();
     }
 
     const rolUsuario = req.user.rol;
 
-    // ✅ Normalizar roles permitidos
+    //  Normalizar roles permitidos
     const rolesNormalizados = rolesPermitidos.map((rol) =>
       String(rol).toLowerCase()
     );
 
-    // 🔎 Log útil para depuración
-    console.log("🔐 Rol usuario:", rolUsuario);
-    console.log("✅ Roles permitidos:", rolesNormalizados);
+    //  Log útil para depuración
+    console.log(" Rol usuario:", rolUsuario);
+    console.log(" Roles permitidos:", rolesNormalizados);
 
     if (!rolesNormalizados.includes(rolUsuario)) {
       return res.status(403).json({

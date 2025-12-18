@@ -62,7 +62,7 @@ APIAdmin.interceptors.response.use(
 );
 
 // -----------------------------
-// 🔐 RECUPERACIÓN DE CONTRASEÑA ADMIN
+//  RECUPERACIÓN DE CONTRASEÑA ADMIN
 // -----------------------------
 export const forgotPasswordAdmin = (correo) => {
   return APIAdmin.post("/auth/forgot-password", {
